@@ -14,7 +14,7 @@ from models import Bet
 from utils.anti_fraud import anti_fraud
 from utils.config import Config
 from utils.economy_utils import EconomyUtils
-from utils.helpers import EmbedBuilder, format_coins, RNG
+from utils.helpers import EmbedBuilder, format_coins
 from bot import Fun2OoshBot
 
 
@@ -198,9 +198,9 @@ class BlackjackView(ui.View):
             self.disable_buttons()
             await interaction.response.edit_message(embed=embed, view=self)
             
-            # Send result message
+            # Send result message and process payout
             payout = self.game.get_payout()
-            await self.cog.process_game_end_slash(interaction, self.game, payout)
+            await self.process_game_end_button(interaction, self.game, payout)
         else:
             # Game continues, update the embed
             embed = self.cog.create_game_embed(self.game)
@@ -220,15 +220,56 @@ class BlackjackView(ui.View):
         self.disable_buttons()
         await interaction.response.edit_message(embed=embed, view=self)
         
-        # Send result message
+        # Send result message and process payout
         payout = self.game.get_payout()
-        await self.cog.process_game_end_slash(interaction, self.game, payout)
+        await self.process_game_end_button(interaction, self.game, payout)
 
     def disable_buttons(self):
         """Disable all buttons when game ends."""
         for child in self.children:
             if isinstance(child, ui.Button):
                 child.disabled = True
+
+    async def process_game_end_button(self, interaction: discord.Interaction, game: BlackjackGame, payout: int):
+        """Process game end for button interactions"""
+        async with self.cog.bot.get_session() as session:
+            if payout > game.bet_amount:
+                # Win
+                win_amount = payout - game.bet_amount
+                await EconomyUtils.add_money(
+                    session, interaction.user.id, win_amount, 'win', f'Blackjack win of {win_amount}', 'blackjack'
+                )
+            elif payout == 0:
+                # Loss - already deducted
+                pass
+            else:
+                # Push - return bet
+                await EconomyUtils.add_money(
+                    session, interaction.user.id, game.bet_amount, 'push', 'Blackjack push', 'blackjack'
+                )
+
+            # Record bet
+            bet_record = Bet(
+                user_id=interaction.user.id,
+                game='blackjack',
+                amount=game.bet_amount,
+                outcome=game.result,
+                payout=payout
+            )
+            session.add(bet_record)
+            await session.commit()
+
+        # Send result message
+        if game.result == 'win':
+            await interaction.followup.send(f"🎉 You won {format_coins(payout)}!")
+        elif game.result == 'lose':
+            await interaction.followup.send("😞 You lost. Better luck next time!")
+        else:
+            await interaction.followup.send("🤝 Push! Your bet has been returned.")
+
+        # Clean up
+        if interaction.user.id in self.cog.active_games:
+            del self.cog.active_games[interaction.user.id]
 
 
 class Blackjack(commands.Cog):
