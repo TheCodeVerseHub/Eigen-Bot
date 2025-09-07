@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  fun2oosh:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: fun2oosh
+      POSTGRES_USER: fun2oosh
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
