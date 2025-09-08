@@ -90,20 +90,19 @@ Adjust in `.env`:
 ## Usage
 
 ### Basic Commands
-- `!balance` - Check your wallet and bank
-- `!work` - Earn coins (30 min cooldown)
-- `!daily` - Claim daily reward
-- `!leaderboard` - Top 10 richest users
+- `^balance` - Check your wallet and bank
+- `^work` - Earn coins (30 min cooldown)
+- `^daily` - Claim daily reward
+- `^leaderboard` - Top 10 richest users
 
 ### Games
-- `!blackjack <bet>` - Start blackjack game
-- `!hit` / `!stand` - Play blackjack
-- `!roulette <type> <value> <bet>` - Play roulette
-- `!slots <bet>` - Play slots
+- `^blackjack <bet>` - Start blackjack game
+- `^roulette <type> <value> <bet>` - Play roulette
+- `^slots <bet>` - Play slots
 
 ### Admin Commands
-- `!add_money <user> <amount>` - Add coins to user
-- `!reset_economy` - Reset all economy data
+- `^add_money <user> <amount>` - Add coins to user
+- `^reset_economy` - Reset all economy data
 
 ## Deployment
 
