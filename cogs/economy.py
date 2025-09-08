@@ -38,6 +38,7 @@ class Economy(commands.Cog):
 
         async with self.bot.get_session() as session:
             wallet = await EconomyUtils.get_or_create_wallet(session, target_user.id)
+            await session.commit()  # Ensure wallet is saved
 
         embed = EmbedBuilder.wallet_embed(target_user, wallet.balance, wallet.bank)
         await ctx.send(embed=embed)
@@ -47,6 +48,7 @@ class Economy(commands.Cog):
         """Slash command for balance."""
         async with self.bot.get_session() as session:
             wallet = await EconomyUtils.get_or_create_wallet(session, interaction.user.id)
+            await session.commit()  # Ensure wallet is saved
 
         embed = EmbedBuilder.wallet_embed(interaction.user, wallet.balance, wallet.bank)
         await interaction.response.send_message(embed=embed)

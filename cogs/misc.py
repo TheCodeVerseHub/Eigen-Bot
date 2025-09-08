@@ -30,6 +30,7 @@ class Misc(commands.Cog):
 
         async with self.bot.get_session() as session:
             wallet = await EconomyUtils.get_or_create_wallet(session, target.id)
+            await session.commit()  # Ensure wallet is saved
             # Get user stats
             stmt = select(User).filter(User.id == target.id)
             result = await session.execute(stmt)
@@ -49,6 +50,7 @@ class Misc(commands.Cog):
 
         async with self.bot.get_session() as session:
             wallet = await EconomyUtils.get_or_create_wallet(session, target.id)
+            await session.commit()  # Ensure wallet is saved
             # Get user stats
             stmt = select(User).filter(User.id == target.id)
             result = await session.execute(stmt)

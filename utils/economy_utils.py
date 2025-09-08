@@ -35,6 +35,13 @@ class EconomyUtils:
         wallet = await EconomyUtils.get_wallet(session, user_id)
         if wallet is None:
             wallet = await EconomyUtils.create_wallet(session, user_id)
+            # Flush to ensure defaults are applied
+            await session.flush()
+            # Ensure default values are set
+            if wallet.balance is None:
+                wallet.balance = 0
+            if wallet.bank is None:
+                wallet.bank = 0
         return wallet
 
     @staticmethod

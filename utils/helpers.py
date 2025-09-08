@@ -35,6 +35,12 @@ class EmbedBuilder:
     @staticmethod
     def wallet_embed(user: discord.User | discord.Member, balance: int, bank: int) -> Embed:
         """Create a wallet display embed."""
+        # Handle None values
+        if balance is None:
+            balance = 0
+        if bank is None:
+            bank = 0
+            
         embed = Embed(title=f"{user.display_name}'s Wallet", color=discord.Color.gold())
         embed.add_field(name="💰 Wallet", value=f"{balance:,} coins", inline=True)
         embed.add_field(name="🏦 Bank", value=f"{bank:,} coins", inline=True)
@@ -77,6 +83,8 @@ class RNG:
 
 def format_coins(amount: int) -> str:
     """Format coin amount with commas."""
+    if amount is None:
+        amount = 0
     return f"{amount:,} coins"
 
 
