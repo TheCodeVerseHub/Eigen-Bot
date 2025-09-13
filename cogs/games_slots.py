@@ -26,17 +26,17 @@ class Slots(commands.Cog):
 
         # Slot symbols and their weights
         self.symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣']
-        self.weights = [30, 25, 20, 15, 7, 2, 1]  # Higher weight = more common
+        self.weights = [25, 22, 18, 15, 10, 5, 5]  # More balanced distribution
 
-        # Paytable: symbol -> multiplier for matches
+        # Paytable: symbol -> multiplier for 3 of a kind only
         self.paytable = {
-            '🍒': {2: 2, 3: 5},
-            '🍋': {2: 3, 3: 8},
-            '🍊': {2: 4, 3: 10},
-            '🍇': {2: 5, 3: 15},
-            '🔔': {2: 8, 3: 25},
-            '💎': {2: 10, 3: 50},
-            '7️⃣': {2: 15, 3: 100}  # Jackpot
+            '🍒': 3,    # Low payout for common symbol
+            '🍋': 5,    # Slightly better
+            '🍊': 8,    # Medium payout
+            '🍇': 12,   # Good payout
+            '🔔': 20,   # High payout
+            '💎': 50,   # Very high payout
+            '7️⃣': 100  # Jackpot - rare but huge
         }
 
     @commands.command(name='slots', aliases=['slot'])
@@ -158,24 +158,22 @@ class Slots(commands.Cog):
 
     def calculate_payout(self, reels: List[str], bet: int) -> int:
         """Calculate payout based on reels."""
+        # Only pay for three of a kind (like real slot machines)
         if reels[0] == reels[1] == reels[2]:
-            # Three of a kind
             symbol = reels[0]
-            multiplier = self.paytable.get(symbol, {}).get(3, 0)
+            multiplier = self.paytable.get(symbol, 0)
             return bet * multiplier
-        elif reels[0] == reels[1] or reels[1] == reels[2] or reels[0] == reels[2]:
-            # Two of a kind
-            # Find which two match
-            if reels[0] == reels[1]:
-                symbol = reels[0]
-            elif reels[1] == reels[2]:
-                symbol = reels[1]
-            else:
-                symbol = reels[0]
-
-            multiplier = self.paytable.get(symbol, {}).get(2, 0)
-            return bet * multiplier
+        
+        # Small consolation prize for two 7s (jackpot symbols)
+        elif reels.count('7️⃣') == 2:
+            return bet // 2  # Return half the bet as consolation
+        
+        # Small consolation prize for two diamonds
+        elif reels.count('💎') == 2:
+            return bet // 4  # Return quarter of the bet
+        
         else:
+            # No payout - you need three of a kind to win big
             return 0
 
     def create_slots_embed(self, user: discord.User | discord.Member, reels: List[str], bet: int, payout: int) -> discord.Embed:
@@ -188,13 +186,25 @@ class Slots(commands.Cog):
 
         embed.add_field(name="Bet", value=format_coins(bet), inline=True)
 
-        if payout > 0:
-            embed.add_field(name="Win", value=format_coins(payout), inline=True)
+        if payout > bet:
+            # Big win - three of a kind
+            embed.add_field(name="🎉 WIN!", value=format_coins(payout), inline=True)
+            embed.add_field(name="Net", value=f"+{format_coins(payout - bet)}", inline=True)
+            embed.color = discord.Color.gold()
+            if reels[0] == '7️⃣':
+                embed.description = "🚨 **JACKPOT!** 🚨"
+            elif reels[0] == '💎':
+                embed.description = "💎 **DIAMONDS!** 💎"
+        elif payout > 0:
+            # Small consolation prize
+            embed.add_field(name="💰 Consolation", value=format_coins(payout), inline=True)
             embed.add_field(name="Net", value=format_coins(payout - bet), inline=True)
-            embed.color = discord.Color.green()
+            embed.color = discord.Color.orange()
+            embed.description = "Close call! Small consolation prize."
         else:
-            embed.add_field(name="Win", value="0 coins", inline=True)
-            embed.add_field(name="Net", value=format_coins(-bet), inline=True)
+            # Loss
+            embed.add_field(name="Result", value="No match", inline=True)
+            embed.add_field(name="Net", value=f"-{format_coins(bet)}", inline=True)
             embed.color = discord.Color.red()
 
         return embed
