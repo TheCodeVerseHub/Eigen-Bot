@@ -102,3 +102,14 @@ def validate_age(user: discord.User) -> bool:
     """Basic age validation (placeholder - implement proper age verification)."""
     # In a real implementation, you'd check user age or require verification
     return True  # Placeholder
+
+# --- Compatibility helper aliases for other cogs (starboard) ---
+def create_success_embed(title: str, description: str = "") -> Embed:
+    return EmbedBuilder.success_embed(title, description)
+
+def create_error_embed(title: str, description: str = "") -> Embed:
+    return EmbedBuilder.error_embed(title, description)
+
+def create_warning_embed(title: str, description: str = "") -> Embed:
+    # Using yellow/orange for warning style
+    return Embed(title=title, description=description, color=discord.Color.orange())

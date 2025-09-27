@@ -43,7 +43,7 @@ class Fun2OoshBot(commands.Bot):
         intents.message_content = True  # For message commands
 
         super().__init__(
-            command_prefix='^',
+            command_prefix='f?',
             intents=intents,
             help_command=commands.DefaultHelpCommand()
         )
@@ -124,7 +124,7 @@ class Fun2OoshBot(commands.Bot):
 
         # Set presence
         await self.change_presence(
-            activity=discord.Game(name="Casino Games | ^commands")
+            activity=discord.Game(name="Casino Games | f?commands")
         )
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
