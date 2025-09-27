@@ -72,6 +72,22 @@ class Fun2OoshBot(commands.Bot):
         await self.load_extension('cogs.games_poker')
         await self.load_extension('cogs.misc')
         await self.load_extension('cogs.admin')
+        # Newly added feature cogs
+        try:
+            await self.load_extension('cogs.tags')
+            logger.info('Loaded cogs.tags')
+        except Exception as e:
+            logger.error(f'Failed to load cogs.tags: {e}')
+        try:
+            await self.load_extension('cogs.fun')
+            logger.info('Loaded cogs.fun')
+        except Exception as e:
+            logger.error(f'Failed to load cogs.fun: {e}')
+        try:
+            await self.load_extension('cogs.starboard')
+            logger.info('Loaded cogs.starboard')
+        except Exception as e:
+            logger.error(f'Failed to load cogs.starboard: {e}')
 
         # Clear any existing commands and force fresh sync
         if self.config.guild_id:
