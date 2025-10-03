@@ -18,26 +18,43 @@ class StarboardSystem(commands.Cog):
     async def starboard_info(self, ctx: commands.Context):
         """Show starboard usage tips and quick setup guide"""
         embed = discord.Embed(
-            title="⭐ Modern Starboard Guide",
+            title="⭐ Modern Starboard System",
             description=(
-                "Highlight popular messages with stars!\n"
-                "\n**How it works:**\n"
-                "• React to any message with the configured star emoji (default: ⭐)\n"
-                "• When a message reaches the threshold, it appears in the starboard channel\n"
-                "• Self-starring is allowed\n"
-                "• Attachments and images are supported\n"
-                "• Footer shows who starred and when\n"
-                "\n**Quick Setup:**\n"
-                "`/starboard setup #starboard 3 ⭐`\n"
-                "• Change channel: `/starboard channel #starboard`\n"
-                "• Change threshold: `/starboard threshold 5`\n"
-                "• Change emoji: `/starboard emoji 🌟`\n"
-                "• View stats: `/starboard stats`\n"
-                "• Clean up: `/starboard_cleanup confirm`\n"
+                "**Transform popular messages into highlighted showcases!**\n\n"
+                "✨ **Visual Features:**\n"
+                "• Dynamic colors based on star count (gold for 20+, red for 10+, teal for 5+)\n"
+                "• Author thumbnails and clean message formatting\n"
+                "• Smart attachment handling (images, videos, files)\n"
+                "• Relative timestamps and jump links\n"
+                "• Shows who starred and when\n\n"
+                "🚀 **How it works:**\n"
+                "• React with the star emoji (default: ⭐) on any message\n"
+                "• When threshold is reached, message appears in starboard\n"
+                "• Self-starring allowed by default\n"
+                "• Real-time updates as more stars are added\n\n"
+                "⚙️ **Quick Setup:**\n"
+                "`f?starboard setup #starboard 3 ⭐`\n\n"
+                "🛠️ **Management Commands:**\n"
+                "• `f?starboard channel #channel` - Change starboard channel\n"
+                "• `f?starboard threshold 5` - Change star requirement\n"
+                "• `f?starboard emoji 🌟` - Change star emoji\n"
+                "• `f?starboard stats` - View server statistics\n"
+                "• `f?starboard toggle` - Enable/disable system\n"
             ),
-            color=discord.Color.blurple()
+            color=0xFFD700  # Gold color
         )
-        embed.set_footer(text="Starboard by Codeverse Bot • Modern & Professional")
+        embed.set_thumbnail(url=self.bot.user.avatar.url if self.bot.user and self.bot.user.avatar else None)
+        embed.add_field(
+            name="💎 Pro Tips",
+            value=(
+                "• Higher star counts get more vibrant colors\n"
+                "• Images are displayed inline for better engagement\n"
+                "• Message authors get visual recognition\n"
+                "• Clean, mobile-friendly design"
+            ),
+            inline=False
+        )
+        embed.set_footer(text="fun2oosh Bot • Modern Discord Experience", icon_url=ctx.author.display_avatar.url)
         await ctx.send(embed=embed)
     """Starboard system for highlighting popular messages with star reactions"""
     
@@ -229,14 +246,22 @@ class StarboardSystem(commands.Cog):
         )
         
         embed = create_success_embed(
-            "Starboard Setup Complete",
-            f"Starboard has been configured successfully!"
+            "✨ Starboard Setup Complete!",
+            f"Your modern starboard system is now active and ready to showcase your community's best messages!"
         )
+        embed.color = 0x00FF7F  # Spring green
         embed.add_field(name="📍 Channel", value=channel.mention, inline=True)
-        embed.add_field(name="⭐ Threshold", value=str(threshold), inline=True)
-        embed.add_field(name="🌟 Emoji", value=emoji, inline=True)
+        embed.add_field(name="🎯 Threshold", value=f"{threshold} {emoji}", inline=True)
+        embed.add_field(name="🌟 Star Emoji", value=emoji, inline=True)
         embed.add_field(name="✅ Self-starring", value="Allowed", inline=True)
-        embed.add_field(name="🎯 Status", value="Enabled", inline=True)
+        embed.add_field(name="⚡ Status", value="🟢 Active", inline=True)
+        embed.add_field(name="🎨 Features", value="Dynamic colors, thumbnails, smart formatting", inline=True)
+        embed.add_field(
+            name="🚀 Next Steps",
+            value=f"Start starring messages with {emoji} reactions!\nUse `f?starboard stats` to track activity.",
+            inline=False
+        )
+        embed.set_footer(text="💎 Your starboard will get more beautiful as messages get more stars!")
         
         await ctx.send(embed=embed)
         
@@ -341,7 +366,7 @@ class StarboardSystem(commands.Cog):
         
     @starboard.command(name="stats", description="Show starboard statistics")
     async def starboard_stats(self, ctx: commands.Context):
-        """Show starboard statistics"""
+        """Show enhanced starboard statistics"""
         if not ctx.guild:
             return
             
@@ -349,7 +374,7 @@ class StarboardSystem(commands.Cog):
         if not settings:
             await ctx.send(embed=create_error_embed(
                 "Starboard Not Setup",
-                "Please run `/starboard setup` first to configure the starboard system."
+                "Please run `f?starboard setup` first to configure the starboard system."
             ))
             return
             
@@ -370,27 +395,118 @@ class StarboardSystem(commands.Cog):
             result = await cursor.fetchone()
             total_stars = result[0] if result else 0
             
-            # Get top starred message
-            cursor = await db.execute(
-                "SELECT star_count, message_id FROM starred_messages WHERE guild_id = ? ORDER BY star_count DESC LIMIT 1",
-                (ctx.guild.id,)
-            )
+            # Get top starred message with more details
+            cursor = await db.execute("""
+                SELECT star_count, message_id, author_id, content 
+                FROM starred_messages 
+                WHERE guild_id = ? 
+                ORDER BY star_count DESC 
+                LIMIT 1
+            """, (ctx.guild.id,))
             top_message = await cursor.fetchone()
+            
+            # Get top 3 most active users (who give the most stars)
+            cursor = await db.execute("""
+                SELECT user_id, COUNT(*) as stars_given 
+                FROM user_stars 
+                WHERE guild_id = ? 
+                GROUP BY user_id 
+                ORDER BY stars_given DESC 
+                LIMIT 3
+            """, (ctx.guild.id,))
+            top_starers = await cursor.fetchall()
+            
+        # Dynamic color based on activity level
+        if total_stars >= 100:
+            color = 0xFFD700  # Gold
+        elif total_stars >= 50:
+            color = 0xFF6B6B  # Red
+        elif total_stars >= 20:
+            color = 0x4ECDC4  # Teal
+        else:
+            color = 0xF7DC6F  # Yellow
             
         embed = discord.Embed(
             title="⭐ Starboard Statistics",
-            color=discord.Color.gold()
+            description=f"Here's how your server is shining!",
+            color=color
         )
-        embed.add_field(name="📊 Total Starred Messages", value=str(total_starred), inline=True)
-        embed.add_field(name="⭐ Total Stars Given", value=str(total_stars), inline=True)
-        embed.add_field(name="🎯 Current Threshold", value=str(settings['threshold']), inline=True)
         
+        # Main stats in a clean grid
+        embed.add_field(
+            name="📊 Messages Starred", 
+            value=f"**{total_starred:,}**", 
+            inline=True
+        )
+        embed.add_field(
+            name="⭐ Total Stars", 
+            value=f"**{total_stars:,}**", 
+            inline=True
+        )
+        embed.add_field(
+            name="🎯 Threshold", 
+            value=f"**{settings['threshold']}** {settings['star_emoji']}", 
+            inline=True
+        )
+        
+        # Configuration info
+        embed.add_field(
+            name="📍 Channel", 
+            value=f"<#{settings['channel_id']}>", 
+            inline=True
+        )
+        embed.add_field(
+            name="� Star Emoji", 
+            value=settings['star_emoji'], 
+            inline=True
+        )
+        status_emoji = "🟢" if settings.get('enabled', True) else "🔴"
+        embed.add_field(
+            name="⚡ Status", 
+            value=f"{status_emoji} {'Active' if settings.get('enabled', True) else 'Disabled'}", 
+            inline=True
+        )
+        
+        # Top starred message info
         if top_message:
-            embed.add_field(name="🏆 Most Starred", value=f"{top_message[0]} stars", inline=True)
+            star_count, msg_id, author_id, content = top_message
+            author = ctx.guild.get_member(author_id)
+            author_name = author.display_name if author else "Unknown User"
             
-        embed.add_field(name="📍 Channel", value=f"<#{settings['channel_id']}>", inline=True)
-        embed.add_field(name="🌟 Emoji", value=settings['star_emoji'], inline=True)
+            # Truncate content for display
+            display_content = content[:100] + "..." if content and len(content) > 100 else content or "*No text*"
+            
+            embed.add_field(
+                name=f"🏆 Most Starred ({star_count} {settings['star_emoji']})",
+                value=f"By **{author_name}**\n*{display_content}*",
+                inline=False
+            )
+            
+        # Top starers
+        if top_starers:
+            starer_list = []
+            for user_id, count in top_starers:
+                user = ctx.guild.get_member(user_id)
+                if user:
+                    starer_list.append(f"**{user.display_name}** - {count} stars")
+                    
+            if starer_list:
+                embed.add_field(
+                    name="🌟 Top Star Givers",
+                    value="\n".join(starer_list),
+                    inline=False
+                )
         
+        # Add some flavor text based on activity
+        if total_stars == 0:
+            embed.set_footer(text="🚀 Ready to start starring messages! React with ⭐ to get started.")
+        elif total_stars < 10:
+            embed.set_footer(text="🌱 Your starboard is just getting started! Keep starring great messages.")
+        elif total_stars < 50:
+            embed.set_footer(text="✨ Great activity! Your community is engaged with the starboard.")
+        else:
+            embed.set_footer(text="🔥 Amazing! Your starboard is thriving with community engagement.")
+            
         await ctx.send(embed=embed)
         
     async def show_starboard_status(self, ctx: commands.Context):
@@ -592,72 +708,129 @@ class StarboardSystem(commands.Cog):
             print(f"❌ Error removing starboard message: {e}")
             
     async def create_starboard_embed(self, message: discord.Message, star_count: int, settings: Dict) -> discord.Embed:
-        """Create embed for starboard message"""
+        """Create a beautiful, modern embed for starboard message"""
         star_emoji = settings.get('star_emoji', '⭐')
+        
+        # Dynamic color based on star count for visual appeal
+        if star_count >= 20:
+            color = 0xFFD700  # Gold
+        elif star_count >= 10:
+            color = 0xFF6B6B  # Red
+        elif star_count >= 5:
+            color = 0x4ECDC4  # Teal
+        else:
+            color = 0xF7DC6F  # Light yellow
+        
+        # Main content with better formatting
+        content = message.content or "*No text content*"
+        if len(content) > 1800:
+            content = content[:1800] + "..."
+            
         embed = discord.Embed(
-            description=message.content or "*No text content*",
-            color=discord.Color.blurple(),
+            description=content,
+            color=color,
             timestamp=message.created_at
         )
-        # Modern author header
+        
+        # Enhanced author section with star count prominently displayed
         embed.set_author(
-            name=f"{message.author.display_name} • {star_emoji} {star_count}",
+            name=f"{message.author.display_name}",
             icon_url=message.author.display_avatar.url
         )
-        # Add jump link as a field
-        embed.add_field(
-            name="Jump to Message",
-            value=f"[Click here]({message.jump_url})",
-            inline=True
-        )
-        # Channel info
+        
+        # Add author avatar as thumbnail for better visual hierarchy
+        embed.set_thumbnail(url=message.author.display_avatar.url)
+        
+        # Star count as prominent title
+        embed.title = f"{star_emoji} {star_count} | Starred Message"
+        
+        # Message info in a compact format
         if isinstance(message.channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread)):
             channel_name = message.channel.mention
         elif hasattr(message.channel, 'name'):
             channel_name = f"#{getattr(message.channel, 'name', 'Unknown')}"
         else:
             channel_name = "Unknown Channel"
+            
+        # Compact info section
         embed.add_field(
-            name="Channel",
-            value=channel_name,
+            name="📍 Source",
+            value=f"{channel_name}\n[Jump to message →]({message.jump_url})",
             inline=True
         )
-        # Attachments
+        
+        # Add relative time info
+        time_ago = discord.utils.format_dt(message.created_at, style='R')
+        embed.add_field(
+            name="🕒 Posted",
+            value=time_ago,
+            inline=True
+        )
+        
+        # Attachment handling with better presentation
         if message.attachments:
             attachment = message.attachments[0]
             if attachment.content_type and attachment.content_type.startswith('image'):
                 embed.set_image(url=attachment.url)
-            else:
+            elif attachment.content_type and attachment.content_type.startswith('video'):
                 embed.add_field(
-                    name="Attachment",
+                    name="🎥 Video",
                     value=f"[{attachment.filename}]({attachment.url})",
                     inline=False
                 )
+            else:
+                embed.add_field(
+                    name="📎 File",
+                    value=f"[{attachment.filename}]({attachment.url})",
+                    inline=False
+                )
+                
+        # Show additional attachments more compactly
         if len(message.attachments) > 1:
-            other_attachments = message.attachments[1:]
-            attachment_list = [f"[{att.filename}]({att.url})" for att in other_attachments]
+            other_count = len(message.attachments) - 1
             embed.add_field(
-                name=f"Additional Attachments ({len(other_attachments)})",
-                value="\n".join(attachment_list[:5]),
-                inline=False
+                name=f"📁 +{other_count} more file{'s' if other_count > 1 else ''}",
+                value="*Click message link to view all*",
+                inline=True
             )
-        # Starred by avatars (footer)
+        
+        # Enhanced footer with star user info
         async with aiosqlite.connect(self.database_path) as db:
-            cursor = await db.execute("SELECT user_id, starred_at FROM user_stars WHERE message_id = ? ORDER BY starred_at ASC", (message.id,))
+            cursor = await db.execute("""
+                SELECT user_id, starred_at FROM user_stars 
+                WHERE message_id = ? 
+                ORDER BY starred_at ASC
+            """, (message.id,))
             star_users = list(await cursor.fetchall())
+            
         if star_users:
-            user_mentions = []
             guild = message.guild
-            for row in star_users[:10]:
-                user_id, starred_at = row
+            user_names = []
+            
+            # Get display names for first few users
+            for row in star_users[:8]:  # Show up to 8 users
+                user_id, _ = row
                 user = guild.get_member(user_id) if guild else None
                 if user:
-                    user_mentions.append(user.display_name)
-            first_star = star_users[0][1]
-            last_star = star_users[-1][1]
-            embed.set_footer(text=f"Starred by: {', '.join(user_mentions)}\nFirst: {first_star} • Last: {last_star}\nMsg ID: {message.id}")
+                    user_names.append(user.display_name)
+                    
+            if len(star_users) > 8:
+                remaining = len(star_users) - 8
+                user_list = f"{', '.join(user_names[:8])} +{remaining} more"
+            else:
+                user_list = ', '.join(user_names)
+                
+            # Clean timestamp formatting
+            first_starred = datetime.fromisoformat(star_users[0][1].replace('Z', '+00:00'))
+            first_time = discord.utils.format_dt(first_starred, style='R')
+            
+            embed.set_footer(
+                text=f"⭐ Starred by: {user_list} • First starred {first_time}",
+                icon_url=star_emoji if len(star_emoji) == 1 else None
+            )
         else:
-            embed.set_footer(text=f"Msg ID: {message.id}")
+            embed.set_footer(text=f"Message ID: {message.id}")
+            
         return embed
 
     # ==================== ADMIN UTILITIES ====================
