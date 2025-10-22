@@ -13,6 +13,15 @@ from typing import Optional, Dict, Tuple
 import os
 from pathlib import Path
 from utils.helpers import create_success_embed, create_error_embed, create_warning_embed
+from types import SimpleNamespace
+from typing import Any
+
+
+class ReactionProxy:
+    """Minimal reaction-like proxy used for raw events when message isn't cached."""
+    def __init__(self, emoji: Any, message: discord.Message):
+        self.emoji = emoji
+        self.message = message
 
 class StarboardSystem(commands.Cog):
     @commands.hybrid_command(name="starboard_info", description="Show starboard usage tips and quick setup guide")
@@ -560,6 +569,116 @@ class StarboardSystem(commands.Cog):
             return
             
         await self.handle_star_reaction(reaction, user, added=False)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        """Handle reactions added for uncached messages by fetching the message and delegating."""
+        if not self.ready:
+            return
+
+        # Only handle guild reactions
+        if payload.guild_id is None:
+            return
+
+        settings = await self.get_starboard_settings(payload.guild_id)
+        if not settings or not settings.get('enabled', True):
+            return
+
+        # Quick emoji check to avoid extra fetches
+        try:
+            if str(payload.emoji) != settings.get('star_emoji', '⭐'):
+                return
+        except Exception:
+            return
+
+        # Fetch channel and message
+        try:
+            channel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+        except Exception:
+            return
+
+        # Try to find an existing Reaction object on the message; otherwise create a lightweight proxy
+        reaction_obj = None
+        for r in getattr(message, 'reactions', []):
+            if str(r.emoji) == str(payload.emoji):
+                reaction_obj = r
+                break
+
+        if reaction_obj is None:
+            reaction_obj = ReactionProxy(payload.emoji, message)
+
+        # Resolve user object
+        user = None
+        guild = self.bot.get_guild(payload.guild_id)
+        if guild:
+            user = guild.get_member(payload.user_id)
+
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(payload.user_id)
+            except Exception:
+                return
+
+        # Ensure user is a discord.User (convert Member if necessary)
+        if hasattr(user, 'user'):
+            user_obj = getattr(user, 'user')
+        else:
+            user_obj = user
+
+        await self.handle_star_reaction(reaction_obj, user_obj, added=True)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Handle reaction removals for uncached messages."""
+        if not self.ready:
+            return
+
+        if payload.guild_id is None:
+            return
+
+        settings = await self.get_starboard_settings(payload.guild_id)
+        if not settings or not settings.get('enabled', True):
+            return
+
+        try:
+            if str(payload.emoji) != settings.get('star_emoji', '⭐'):
+                return
+        except Exception:
+            return
+
+        try:
+            channel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
+            message = await channel.fetch_message(payload.message_id)
+        except Exception:
+            return
+
+        reaction_obj = None
+        for r in getattr(message, 'reactions', []):
+            if str(r.emoji) == str(payload.emoji):
+                reaction_obj = r
+                break
+
+        if reaction_obj is None:
+            reaction_obj = ReactionProxy(payload.emoji, message)
+
+        user = None
+        guild = self.bot.get_guild(payload.guild_id)
+        if guild:
+            user = guild.get_member(payload.user_id)
+
+        if user is None:
+            try:
+                user = await self.bot.fetch_user(payload.user_id)
+            except Exception:
+                return
+
+        if hasattr(user, 'user'):
+            user_obj = getattr(user, 'user')
+        else:
+            user_obj = user
+
+        await self.handle_star_reaction(reaction_obj, user_obj, added=False)
         
     async def handle_star_reaction(self, reaction: discord.Reaction, user: discord.User, added: bool):
         """Process star reactions (add or remove)"""
