@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import aiosqlite
+import asyncio
 from datetime import datetime, timezone
 from typing import Optional, Dict, Tuple
 import os
@@ -456,7 +457,7 @@ class StarboardSystem(commands.Cog):
             inline=True
         )
         embed.add_field(
-            name="� Star Emoji", 
+            name="🌟 Star Emoji", 
             value=settings['star_emoji'], 
             inline=True
         )
@@ -576,13 +577,17 @@ class StarboardSystem(commands.Cog):
         if message.channel.id == settings.get('channel_id'):
             return
             
-        # Check if this is the star emoji
+        # Check if this is the configured star emoji
         star_emoji = settings.get('star_emoji', '⭐')
         if str(reaction.emoji) != star_emoji:
             return
-            
-        # Skip if reacting user is a bot (unless it's self-starring)
-        if user.bot and user.id != message.author.id:
+
+        # Ignore reactions from bots entirely
+        if user.bot:
+            return
+
+        # Enforce self-starring setting: if disabled, ignore reactions by the message author
+        if not settings.get('self_star', True) and user.id == message.author.id:
             return
             
         # Handle the star
@@ -820,13 +825,20 @@ class StarboardSystem(commands.Cog):
             else:
                 user_list = ', '.join(user_names)
                 
-            # Clean timestamp formatting
-            first_starred = datetime.fromisoformat(star_users[0][1].replace('Z', '+00:00'))
-            first_time = discord.utils.format_dt(first_starred, style='R')
-            
+            # Clean timestamp formatting (be lenient with stored formats)
+            try:
+                first_starred = datetime.fromisoformat(star_users[0][1].replace('Z', '+00:00'))
+            except Exception:
+                try:
+                    # Fallback: parse without timezone
+                    first_starred = datetime.fromisoformat(star_users[0][1])
+                except Exception:
+                    first_starred = None
+
+            first_time = discord.utils.format_dt(first_starred, style='R') if first_starred else "some time ago"
+
             embed.set_footer(
-                text=f"⭐ Starred by: {user_list} • First starred {first_time}",
-                icon_url=star_emoji if len(star_emoji) == 1 else None
+                text=f"⭐ Starred by: {user_list} • First starred {first_time}"
             )
         else:
             embed.set_footer(text=f"Message ID: {message.id}")
@@ -863,7 +875,17 @@ class StarboardSystem(commands.Cog):
             await ctx.send(embed=embed)
             return
             
-        await ctx.defer()
+        try:
+            await ctx.defer()
+        except Exception:
+            try:
+                # Fallback for non-interaction commands: show typing indicator in the channel
+                async with ctx.channel.typing():
+                    # small sleep to ensure the typing indicator is sent
+                    await asyncio.sleep(0)
+            except Exception:
+                pass
+                pass
         
         cleaned_count = 0
         

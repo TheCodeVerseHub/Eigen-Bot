@@ -27,6 +27,12 @@ class EconomyUtils:
         """Create a new wallet for a user."""
         wallet = Wallet(user_id=user_id)
         session.add(wallet)
+        # Flush so that defaults declared in the model are applied and available on the instance
+        try:
+            await session.flush()
+        except Exception:
+            # If flush fails for any reason, ignore here; calling code/tests can handle commit
+            pass
         return wallet
 
     @staticmethod
