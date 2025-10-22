@@ -1,6 +1,6 @@
-# Fun2Oosh - Discord Casino Bot
+# Eigen Bot - Discord Casino & Economy Bot
 
-A fun, production-ready Discord bot featuring casino games, in-server economy, and responsible gaming features.
+Eigen Bot is a production-ready Discord bot that provides casino-style games, an in-server economy, and responsible-gaming features for community servers.
 
 ## Features
 
@@ -37,21 +37,21 @@ A fun, production-ready Discord bot featuring casino games, in-server economy, a
 
 ### Prerequisites
 - Python 3.11+
-- Discord Bot Token (from [Discord Developer Portal](https://discord.com/developers/applications))
+- Discord Bot Token (from the Discord Developer Portal: https://discord.com/developers/applications)
 
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/fun2oosh.git
-   cd fun2oosh
+   git clone https://github.com/TheCodeVerseHub/Eigen-Bot.git
+   cd Eigen-Bot
    ```
 
-2. Create virtual environment:
+2. Create a virtual environment:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/macOS
    # or
-   venv\Scripts\activate     # Windows
+   .venv\Scripts\activate   # Windows
    ```
 
 3. Install dependencies:
@@ -108,8 +108,8 @@ Adjust in `.env`:
 
 ### Docker
 ```bash
-docker build -t fun2oosh .
-docker run -d --env-file .env fun2oosh
+docker build -t eigen-bot .
+docker run -d --env-file .env eigen-bot
 ```
 
 ### Docker Compose
@@ -126,7 +126,7 @@ docker-compose up -d
 ## Database
 
 ### Development (SQLite)
-Default: `sqlite+aiosqlite:///fun2oosh.db`
+Default: `sqlite+aiosqlite:///eigen.db`
 
 ### Production (PostgreSQL)
 Set `DATABASE_URL=postgresql+asyncpg://user:pass@host:port/db`
