@@ -42,10 +42,11 @@ class Fun2OoshBot(commands.Bot):
         intents.members = True  # For member-related commands
         intents.message_content = True  # For message commands
 
+        # Disable the built-in help_command so a custom help cog can register `f?help` and `/help`
         super().__init__(
             command_prefix='f?',
             intents=intents,
-            help_command=commands.DefaultHelpCommand()
+            help_command=None
         )
 
         self.config = config

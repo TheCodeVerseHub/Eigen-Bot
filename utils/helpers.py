@@ -103,6 +103,34 @@ def validate_age(user: discord.User) -> bool:
     # In a real implementation, you'd check user age or require verification
     return True  # Placeholder
 
+
+# --- Additional helpers used by cogs/community.py ---
+def get_random_quote(quotes: list) -> str:
+    if not quotes:
+        return ""
+    return random.choice(quotes)
+
+
+def get_random_question(questions: list):
+    if not questions:
+        return None
+    return random.choice(questions)
+
+
+async def fetch_programming_meme() -> str:
+    # Minimal placeholder: return a stock image URL or a short message
+    # In production, this would call an external API
+    return "https://i.imgur.com/3G9jQ.jpg"
+
+
+def sanitize_input(text: str, max_len: int = 1000) -> str:
+    if not text:
+        return ""
+    cleaned = text.strip()
+    if len(cleaned) > max_len:
+        cleaned = cleaned[:max_len]
+    return cleaned
+
 # --- Compatibility helper aliases for other cogs (starboard) ---
 def create_success_embed(title: str, description: str = "") -> Embed:
     return EmbedBuilder.success_embed(title, description)
