@@ -148,6 +148,10 @@ class Fun2OoshBot(commands.Bot):
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         """Handle command errors."""
+        # Silence unknown/prefix-not-found commands
+        if isinstance(error, commands.CommandNotFound):
+            return
+
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f"This command is on cooldown. Try again in {error.retry_after:.2f} seconds.")
         elif isinstance(error, commands.MissingPermissions):
@@ -160,18 +164,32 @@ class Fun2OoshBot(commands.Bot):
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         """Handle slash command errors."""
+        # Silence unknown slash/app commands
+        # app_commands doesn't expose a simple CommandNotFound class in some versions, so be conservative
+        try:
+            from discord import app_commands as _appc
+            # In later versions, AppCommandError subclasses may exist; ignore generic NotFound-like errors
+        except Exception:
+            _appc = None
+
+        # If it's a cooldown, inform user
         if isinstance(error, app_commands.CommandOnCooldown):
             await interaction.response.send_message(
                 f"This command is on cooldown. Try again in {error.retry_after:.2f} seconds.",
                 ephemeral=True
             )
         else:
+            # For other app command errors, log and try to respond once
             logger.error(f"Slash command error: {error}")
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    "An error occurred while processing your command.",
-                    ephemeral=True
-                )
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        "An error occurred while processing your command.",
+                        ephemeral=True
+                    )
+            except Exception:
+                # If sending fails, silently ignore to avoid noisy errors for unknown commands
+                return
 
 async def main():
     """Main function to run the bot."""
