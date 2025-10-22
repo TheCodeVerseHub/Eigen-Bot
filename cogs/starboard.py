@@ -22,23 +22,23 @@ class StarboardSystem(commands.Cog):
             title="⭐ Modern Starboard System",
             description=(
                 "**Transform popular messages into highlighted showcases!**\n\n"
-                "✨ **Visual Features:**\n"
+                " **Visual Features:**\n"
                 "• Dynamic colors based on star count (gold for 20+, red for 10+, teal for 5+)\n"
                 "• Author thumbnails and clean message formatting\n"
                 "• Smart attachment handling (images, videos, files)\n"
                 "• Relative timestamps and jump links\n"
                 "• Shows who starred and when\n\n"
-                "🚀 **How it works:**\n"
+                " **How it works:**\n"
                 "• React with the star emoji (default: ⭐) on any message\n"
                 "• When threshold is reached, message appears in starboard\n"
                 "• Self-starring allowed by default\n"
                 "• Real-time updates as more stars are added\n\n"
-                "⚙️ **Quick Setup:**\n"
+                " **Quick Setup:**\n"
                 "`f?starboard setup #starboard 3 ⭐`\n\n"
-                "🛠️ **Management Commands:**\n"
+                " **Management Commands:**\n"
                 "• `f?starboard channel #channel` - Change starboard channel\n"
                 "• `f?starboard threshold 5` - Change star requirement\n"
-                "• `f?starboard emoji 🌟` - Change star emoji\n"
+                "• `f?starboard emoji ` - Change star emoji\n"
                 "• `f?starboard stats` - View server statistics\n"
                 "• `f?starboard toggle` - Enable/disable system\n"
             ),
@@ -46,7 +46,7 @@ class StarboardSystem(commands.Cog):
         )
         embed.set_thumbnail(url=self.bot.user.avatar.url if self.bot.user and self.bot.user.avatar else None)
         embed.add_field(
-            name="💎 Pro Tips",
+            name=" Pro Tips",
             value=(
                 "• Higher star counts get more vibrant colors\n"
                 "• Images are displayed inline for better engagement\n"
@@ -247,22 +247,22 @@ class StarboardSystem(commands.Cog):
         )
         
         embed = create_success_embed(
-            "✨ Starboard Setup Complete!",
+            " Starboard Setup Complete!",
             f"Your modern starboard system is now active and ready to showcase your community's best messages!"
         )
         embed.color = 0x00FF7F  # Spring green
-        embed.add_field(name="📍 Channel", value=channel.mention, inline=True)
-        embed.add_field(name="🎯 Threshold", value=f"{threshold} {emoji}", inline=True)
-        embed.add_field(name="🌟 Star Emoji", value=emoji, inline=True)
-        embed.add_field(name="✅ Self-starring", value="Allowed", inline=True)
-        embed.add_field(name="⚡ Status", value="🟢 Active", inline=True)
-        embed.add_field(name="🎨 Features", value="Dynamic colors, thumbnails, smart formatting", inline=True)
+        embed.add_field(name=" Channel", value=channel.mention, inline=True)
+        embed.add_field(name=" Threshold", value=f"{threshold} {emoji}", inline=True)
+        embed.add_field(name=" Star Emoji", value=emoji, inline=True)
+        embed.add_field(name=" Self-starring", value="Allowed", inline=True)
+        embed.add_field(name=" Status", value="🟢 Active", inline=True)
+        embed.add_field(name=" Features", value="Dynamic colors, thumbnails, smart formatting", inline=True)
         embed.add_field(
-            name="🚀 Next Steps",
+            name=" Next Steps",
             value=f"Start starring messages with {emoji} reactions!\nUse `f?starboard stats` to track activity.",
             inline=False
         )
-        embed.set_footer(text="💎 Your starboard will get more beautiful as messages get more stars!")
+        embed.set_footer(text=" Your starboard will get more beautiful as messages get more stars!")
         
         await ctx.send(embed=embed)
         
@@ -313,7 +313,7 @@ class StarboardSystem(commands.Cog):
         await ctx.send(embed=embed)
         
     @starboard.command(name="emoji", description="Set the star emoji")
-    @app_commands.describe(emoji="Emoji to use for starring (⭐, 🌟, etc.)")
+    @app_commands.describe(emoji="Emoji to use for starring (⭐, , etc.)")
     @commands.has_permissions(manage_guild=True)
     async def starboard_emoji(self, ctx: commands.Context, emoji: str):
         """Set the star emoji"""
@@ -435,7 +435,7 @@ class StarboardSystem(commands.Cog):
         
         # Main stats in a clean grid
         embed.add_field(
-            name="📊 Messages Starred", 
+            name=" Messages Starred", 
             value=f"**{total_starred:,}**", 
             inline=True
         )
@@ -445,25 +445,25 @@ class StarboardSystem(commands.Cog):
             inline=True
         )
         embed.add_field(
-            name="🎯 Threshold", 
+            name=" Threshold", 
             value=f"**{settings['threshold']}** {settings['star_emoji']}", 
             inline=True
         )
         
         # Configuration info
         embed.add_field(
-            name="📍 Channel", 
+            name=" Channel", 
             value=f"<#{settings['channel_id']}>", 
             inline=True
         )
         embed.add_field(
-            name="🌟 Star Emoji", 
+            name=" Star Emoji", 
             value=settings['star_emoji'], 
             inline=True
         )
-        status_emoji = "🟢" if settings.get('enabled', True) else "🔴"
+        status_emoji = "🟢" if settings.get('enabled', True) else ""
         embed.add_field(
-            name="⚡ Status", 
+            name=" Status", 
             value=f"{status_emoji} {'Active' if settings.get('enabled', True) else 'Disabled'}", 
             inline=True
         )
@@ -478,7 +478,7 @@ class StarboardSystem(commands.Cog):
             display_content = content[:100] + "..." if content and len(content) > 100 else content or "*No text*"
             
             embed.add_field(
-                name=f"🏆 Most Starred ({star_count} {settings['star_emoji']})",
+                name=f" Most Starred ({star_count} {settings['star_emoji']})",
                 value=f"By **{author_name}**\n*{display_content}*",
                 inline=False
             )
@@ -493,20 +493,20 @@ class StarboardSystem(commands.Cog):
                     
             if starer_list:
                 embed.add_field(
-                    name="🌟 Top Star Givers",
+                    name=" Top Star Givers",
                     value="\n".join(starer_list),
                     inline=False
                 )
         
         # Add some flavor text based on activity
         if total_stars == 0:
-            embed.set_footer(text="🚀 Ready to start starring messages! React with ⭐ to get started.")
+            embed.set_footer(text=" Ready to start starring messages! React with ⭐ to get started.")
         elif total_stars < 10:
-            embed.set_footer(text="🌱 Your starboard is just getting started! Keep starring great messages.")
+            embed.set_footer(text=" Your starboard is just getting started! Keep starring great messages.")
         elif total_stars < 50:
-            embed.set_footer(text="✨ Great activity! Your community is engaged with the starboard.")
+            embed.set_footer(text=" Great activity! Your community is engaged with the starboard.")
         else:
-            embed.set_footer(text="🔥 Amazing! Your starboard is thriving with community engagement.")
+            embed.set_footer(text=" Amazing! Your starboard is thriving with community engagement.")
             
         await ctx.send(embed=embed)
         
@@ -523,23 +523,23 @@ class StarboardSystem(commands.Cog):
                 "Starboard is not configured for this server.\nUse `/starboard setup` to get started!"
             )
             embed.add_field(
-                name="💡 Quick Setup",
+                name=" Quick Setup",
                 value="`/starboard setup #channel-name 3 ⭐`",
                 inline=False
             )
         else:
-            status = "🟢 Enabled" if settings['enabled'] else "🔴 Disabled"
+            status = "🟢 Enabled" if settings['enabled'] else " Disabled"
             channel = f"<#{settings['channel_id']}>" if settings['channel_id'] else "Not set"
             
             embed = discord.Embed(
                 title="⭐ Starboard Configuration",
                 color=discord.Color.gold()
             )
-            embed.add_field(name="📊 Status", value=status, inline=True)
-            embed.add_field(name="📍 Channel", value=channel, inline=True)
-            embed.add_field(name="🎯 Threshold", value=str(settings['threshold']), inline=True)
-            embed.add_field(name="🌟 Emoji", value=settings['star_emoji'], inline=True)
-            embed.add_field(name="✅ Self-starring", value="Allowed", inline=True)
+            embed.add_field(name=" Status", value=status, inline=True)
+            embed.add_field(name=" Channel", value=channel, inline=True)
+            embed.add_field(name=" Threshold", value=str(settings['threshold']), inline=True)
+            embed.add_field(name=" Emoji", value=settings['star_emoji'], inline=True)
+            embed.add_field(name=" Self-starring", value="Allowed", inline=True)
             
         await ctx.send(embed=embed)
 
@@ -673,7 +673,7 @@ class StarboardSystem(commands.Cog):
             starboard_msg = await starboard_channel.send(embed=embed)
             return starboard_msg.id
         except Exception as e:
-            print(f"❌ Error creating starboard message: {e}")
+            print(f" Error creating starboard message: {e}")
             return None
             
     async def update_starboard_message(self, message: discord.Message, star_count: int, 
@@ -696,7 +696,7 @@ class StarboardSystem(commands.Cog):
                 await db.execute("DELETE FROM starred_messages WHERE starboard_message_id = ?", (starboard_msg_id,))
                 await db.commit()
         except Exception as e:
-            print(f"❌ Error updating starboard message: {e}")
+            print(f" Error updating starboard message: {e}")
             
     async def remove_starboard_message(self, starboard_msg_id: int, settings: Dict):
         """Remove a starboard message"""
@@ -710,7 +710,7 @@ class StarboardSystem(commands.Cog):
         except discord.NotFound:
             pass  # Already deleted
         except Exception as e:
-            print(f"❌ Error removing starboard message: {e}")
+            print(f" Error removing starboard message: {e}")
             
     async def create_starboard_embed(self, message: discord.Message, star_count: int, settings: Dict) -> discord.Embed:
         """Create a beautiful, modern embed for starboard message"""
@@ -759,7 +759,7 @@ class StarboardSystem(commands.Cog):
             
         # Compact info section
         embed.add_field(
-            name="📍 Source",
+            name=" Source",
             value=f"{channel_name}\n[Jump to message →]({message.jump_url})",
             inline=True
         )
@@ -767,7 +767,7 @@ class StarboardSystem(commands.Cog):
         # Add relative time info
         time_ago = discord.utils.format_dt(message.created_at, style='R')
         embed.add_field(
-            name="🕒 Posted",
+            name=" Posted",
             value=time_ago,
             inline=True
         )
@@ -779,13 +779,13 @@ class StarboardSystem(commands.Cog):
                 embed.set_image(url=attachment.url)
             elif attachment.content_type and attachment.content_type.startswith('video'):
                 embed.add_field(
-                    name="🎥 Video",
+                    name=" Video",
                     value=f"[{attachment.filename}]({attachment.url})",
                     inline=False
                 )
             else:
                 embed.add_field(
-                    name="📎 File",
+                    name=" File",
                     value=f"[{attachment.filename}]({attachment.url})",
                     inline=False
                 )
@@ -794,7 +794,7 @@ class StarboardSystem(commands.Cog):
         if len(message.attachments) > 1:
             other_count = len(message.attachments) - 1
             embed.add_field(
-                name=f"📁 +{other_count} more file{'s' if other_count > 1 else ''}",
+                name=f" +{other_count} more file{'s' if other_count > 1 else ''}",
                 value="*Click message link to view all*",
                 inline=True
             )
@@ -934,14 +934,14 @@ class StarboardSystem(commands.Cog):
             await db.commit()
             
         embed = discord.Embed(
-            title="✅ Starboard Cleanup Complete",
+            title=" Starboard Cleanup Complete",
             description=f"Cleaned up {cleaned_count} invalid entries",
             color=discord.Color.green()
         )
         
         if cleaned_count > 0:
             embed.add_field(
-                name="🗑️ Removed",
+                name=" Removed",
                 value=f"{cleaned_count} invalid starboard entries",
                 inline=False
             )
