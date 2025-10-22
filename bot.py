@@ -64,30 +64,39 @@ class Fun2OoshBot(commands.Bot):
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-        # Load cogs
-        await self.load_extension('cogs.economy')
-        await self.load_extension('cogs.games_blackjack')
-        await self.load_extension('cogs.games_slots')
-        await self.load_extension('cogs.games_roulette')
-        await self.load_extension('cogs.games_poker')
-        await self.load_extension('cogs.misc')
-        await self.load_extension('cogs.admin')
-        # Newly added feature cogs
-        try:
-            await self.load_extension('cogs.tags')
-            logger.info('Loaded cogs.tags')
-        except Exception as e:
-            logger.error(f'Failed to load cogs.tags: {e}')
-        try:
-            await self.load_extension('cogs.fun')
-            logger.info('Loaded cogs.fun')
-        except Exception as e:
-            logger.error(f'Failed to load cogs.fun: {e}')
-        try:
-            await self.load_extension('cogs.starboard')
-            logger.info('Loaded cogs.starboard')
-        except Exception as e:
-            logger.error(f'Failed to load cogs.starboard: {e}')
+        # Load core cogs
+        core_cogs = [
+            'cogs.economy',
+            'cogs.misc',
+            'cogs.admin',
+        ]
+
+        for ext in core_cogs:
+            try:
+                await self.load_extension(ext)
+                logger.info(f'Loaded {ext}')
+            except Exception as e:
+                logger.error(f'Failed to load {ext}: {e}')
+
+        # Load feature cogs (new/renamed)
+        feature_cogs = [
+            'cogs.tags',
+            'cogs.fun',
+            'cogs.starboard',
+            'cogs.help',
+            'cogs.community',
+            'cogs.election',
+            'cogs.highlights',
+            'cogs.whois_alias',
+            'cogs.utility_extra',
+        ]
+
+        for ext in feature_cogs:
+            try:
+                await self.load_extension(ext)
+                logger.info(f'Loaded {ext}')
+            except Exception as e:
+                logger.error(f'Failed to load {ext}: {e}')
 
         # Clear any existing commands and force fresh sync
         if self.config.guild_id:
@@ -124,7 +133,7 @@ class Fun2OoshBot(commands.Bot):
 
         # Set presence
         await self.change_presence(
-            activity=discord.Game(name="Casino Games | f?commands")
+            activity=discord.Game(name="Eigen Bot | f?help")
         )
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
