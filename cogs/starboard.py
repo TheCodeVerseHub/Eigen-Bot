@@ -591,10 +591,16 @@ class StarboardSystem(commands.Cog):
         except Exception:
             return
 
-        # Fetch channel and message
+        # Fetch channel and message (ensure channel supports fetch_message)
         try:
             channel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
+            if not hasattr(channel, 'fetch_message'):
+                return
+            # Cast to Messageable for type checkers
+            from typing import cast
+            from discord.abc import Messageable
+            mchannel = cast(Messageable, channel)
+            message = await mchannel.fetch_message(payload.message_id)
         except Exception:
             return
 
@@ -649,7 +655,13 @@ class StarboardSystem(commands.Cog):
 
         try:
             channel = self.bot.get_channel(payload.channel_id) or await self.bot.fetch_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
+            if not hasattr(channel, 'fetch_message'):
+                return
+            # Cast to Messageable for type checkers
+            from typing import cast
+            from discord.abc import Messageable
+            mchannel = cast(Messageable, channel)
+            message = await mchannel.fetch_message(payload.message_id)
         except Exception:
             return
 
@@ -680,7 +692,7 @@ class StarboardSystem(commands.Cog):
 
         await self.handle_star_reaction(reaction_obj, user_obj, added=False)
         
-    async def handle_star_reaction(self, reaction: discord.Reaction, user: discord.User, added: bool):
+    async def handle_star_reaction(self, reaction: Any, user: Any, added: bool):
         """Process star reactions (add or remove)"""
         message = reaction.message
         
