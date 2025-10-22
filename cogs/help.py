@@ -97,13 +97,29 @@ class HelpCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    # If a help command is already registered (built-in), remove it so our custom help can register cleanly.
+    # Aggressively remove any existing 'help' registration (prefix & app commands)
     try:
-        existing = bot.get_command('help')
-        if existing:
-            bot.remove_command('help')
+        # Remove prefix/legacy command if present
+        if bot.get_command('help'):
+            try:
+                bot.remove_command('help')
+            except Exception:
+                # Best-effort removal
+                pass
+
+        # Remove any app command named 'help' from the command tree (guild/global)
+        try:
+            # Clear commands with the name 'help' on the tree (best-effort)
+            for cmd in list(bot.tree.get_commands()):
+                if getattr(cmd, 'name', '') == 'help':
+                    try:
+                        bot.tree.remove_command(cmd.name, guild=None)
+                    except Exception:
+                        # ignore failures removing individual commands
+                        pass
+        except Exception:
+            pass
     except Exception:
-        # If removal fails for any reason, continue and let add_cog raise an informative error.
         pass
 
     await bot.add_cog(HelpCog(bot))
