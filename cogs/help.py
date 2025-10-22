@@ -97,4 +97,13 @@ class HelpCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
+    # If a help command is already registered (built-in), remove it so our custom help can register cleanly.
+    try:
+        existing = bot.get_command('help')
+        if existing:
+            bot.remove_command('help')
+    except Exception:
+        # If removal fails for any reason, continue and let add_cog raise an informative error.
+        pass
+
     await bot.add_cog(HelpCog(bot))
