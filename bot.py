@@ -53,6 +53,15 @@ class Fun2OoshBot(commands.Bot):
         self.async_session_maker = async_sessionmaker(
             self.engine, expire_on_commit=False
         )
+        # Discover available cog modules from the cogs directory
+        from pathlib import Path
+        cogs_dir = Path(__file__).resolve().parent / 'cogs'
+        self.available_cogs = []
+        if cogs_dir.exists() and cogs_dir.is_dir():
+            for p in sorted(cogs_dir.iterdir()):
+                if p.suffix == '.py' and p.stem != '__init__':
+                    self.available_cogs.append(p.stem)
+        logger.info(f"Available cogs discovered: {self.available_cogs}")
 
     def get_session(self) -> AsyncSession:
         """Get a database session."""

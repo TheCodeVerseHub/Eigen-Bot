@@ -30,9 +30,17 @@ class HelpCog(commands.Cog):
         )
 
         # Build a map of cog name -> list of command signatures
-        for cog_name, cog in sorted(self.bot.cogs.items()):
-            # Skip internal or hidden cogs
-            if cog_name in ("HelpCog",):
+        # Use the bot's discovered available cogs to maintain consistent ordering
+        available = getattr(self.bot, 'available_cogs', list(self.bot.cogs.keys()))
+        for cog_name in available:
+            # Display loaded cogs with their commands; otherwise mark as not loaded
+            cog = self.bot.get_cog(cog_name)
+            if cog is None:
+                embed.add_field(name=cog_name, value="Not loaded", inline=False)
+                continue
+
+            # Skip the help cog itself
+            if cog_name == 'help':
                 continue
 
             visible_cmds = []
