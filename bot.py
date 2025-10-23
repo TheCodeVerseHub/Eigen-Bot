@@ -123,15 +123,24 @@ class Fun2OoshBot(commands.Bot):
             if self.config.guild_id:
                 guild = discord.Object(id=self.config.guild_id)
                 self.tree.copy_global_to(guild=guild)
-                await self.tree.sync(guild=guild)
-                logger.info(f"Synced slash commands to guild {self.config.guild_id}")
+                synced = await self.tree.sync(guild=guild)
+                logger.info(f"✅ Synced {len(synced)} slash commands to guild {self.config.guild_id}")
+                logger.info(f"📊 Guild Command Slots: {len(synced)}/100 used ({100 - len(synced)} remaining)")
             else:
-                await self.tree.sync()
-                logger.info("Synced slash commands globally")
+                synced = await self.tree.sync()
+                logger.info(f"✅ Synced {len(synced)} slash commands globally")
+                logger.info(f"📊 Global Command Slots: {len(synced)}/100 used ({100 - len(synced)} remaining)")
+            
+            # Log all synced command names
+            command_names = [cmd.name for cmd in synced]
+            logger.info(f"📝 Synced commands: {', '.join(command_names)}")
+            
         except Exception as e:
-            logger.error(f"Failed to sync slash commands: {e}")
+            logger.error(f"❌ Failed to sync slash commands: {e}")
 
-        logger.info(f"Registered slash commands: {[cmd.name for cmd in self.tree.get_commands()]}")
+        # Also log commands from the tree
+        tree_commands = self.tree.get_commands()
+        logger.info(f"🌲 Command tree contains {len(tree_commands)} commands")
 
     async def on_ready(self):
         """Called when the bot is ready."""
