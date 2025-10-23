@@ -41,6 +41,7 @@ class Fun2OoshBot(commands.Bot):
         intents = discord.Intents.default()
         intents.members = True  # For member-related commands
         intents.message_content = True  # For message commands
+        intents.presences = True  # For seeing user activities (Spotify, games, etc.)
 
         # Disable the built-in help_command so a custom help cog can register `f?help` and `/help`
         super().__init__(
