@@ -206,42 +206,82 @@ class BlackjackGame:
         return self.message
     
     def create_embed(self, final: bool = False) -> discord.Embed:
-        """Create game status embed."""
+        """Create professional game status embed."""
+        # Professional color scheme
+        if final:
+            color = discord.Color.green() if not self.player_hand.busted else discord.Color.red()
+        else:
+            color = 0x2F3136  # Dark gray for in-progress
+        
         embed = discord.Embed(
-            title="🎰 Blackjack",
-            color=discord.Color.blue() if not final else discord.Color.green()
+            title="BLACKJACK",
+            description="━━━━━━━━━━━━━━━━━━━━━━",
+            color=color
         )
         
         # Dealer's hand
         if final or self.player_hand.busted:
             dealer_cards = str(self.dealer_hand)
+            dealer_value = f"[{self.dealer_hand.value}]"
         else:
             # Hide dealer's second card
             visible_card = str(self.dealer_hand.cards[0])
-            dealer_cards = f"{visible_card} ?" 
+            dealer_cards = f"{visible_card} 🂠"
+            dealer_value = "[?]"
         
         embed.add_field(
-            name="Dealer's Hand",
-            value=dealer_cards,
+            name="DEALER",
+            value=f"```\n{dealer_cards}\n```\n**Value:** {dealer_value}",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="━━━━━━━━━━━━━━━━━━━━━━",
+            value="",
             inline=False
         )
         
         # Player's hand
+        player_cards = ' '.join(str(card) for card in self.player_hand.cards)
+        player_value = f"[{self.player_hand.value}]"
+        
+        if self.player_hand.is_blackjack:
+            status_text = "BLACKJACK!"
+        elif self.player_hand.busted:
+            status_text = "BUST"
+        elif self.player_hand.stand:
+            status_text = "STANDING"
+        else:
+            status_text = "IN PLAY"
+        
         embed.add_field(
-            name=f"{self.player.display_name}'s Hand",
-            value=str(self.player_hand),
+            name=f"PLAYER: {self.player.display_name}",
+            value=f"```\n{player_cards}\n```\n**Value:** {player_value} | **Status:** {status_text}",
             inline=False
         )
         
         embed.add_field(
-            name="Current Bet",
-            value=f"💰 {self.player_hand.bet:,} coins",
+            name="━━━━━━━━━━━━━━━━━━━━━━",
+            value="",
+            inline=False
+        )
+        
+        # Bet information
+        embed.add_field(
+            name="WAGER",
+            value=f"```\n{self.player_hand.bet:,} coins\n```",
             inline=True
         )
         
-        if self.player_hand.busted:
-            embed.add_field(name="Result", value="**BUST!** You lose.", inline=False)
-            embed.color = discord.Color.red()
+        if final:
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="",
+                inline=False
+            )
+        
+        # Footer
+        embed.set_footer(text="Casino • Blackjack Table")
         
         return embed
     
@@ -354,29 +394,27 @@ class BlackjackGame:
         
         await self.session.commit()
         
-        # Create final embed
+        # Create professional final embed
         embed = self.create_embed(final=True)
         embed.color = color
-        embed.add_field(name="Result", value=result, inline=False)
         
+        # Result section
         if payout > 0:
             profit = payout - self.initial_bet
-            embed.add_field(
-                name="Payout",
-                value=f"💰 {payout:,} coins (+{profit:,})",
-                inline=True
-            )
+            result_value = f"```diff\n+ WIN\n```\n**Payout:** {payout:,} coins\n**Profit:** +{profit:,} coins"
         else:
-            embed.add_field(
-                name="Loss",
-                value=f"💔 -{self.initial_bet:,} coins",
-                inline=True
-            )
+            result_value = f"```diff\n- LOSS\n```\n**Lost:** {self.initial_bet:,} coins"
         
         embed.add_field(
-            name="New Balance",
-            value=f"💵 {wallet.balance:,} coins",
-            inline=True
+            name="OUTCOME",
+            value=result_value,
+            inline=False
+        )
+        
+        embed.add_field(
+            name="BALANCE",
+            value=f"```\n{wallet.balance:,} coins\n```",
+            inline=False
         )
         
         # Disable all buttons
@@ -1079,6 +1117,437 @@ class Casino(commands.Cog):
             )
             
             await message.edit(embed=embed)
+    
+    @commands.hybrid_command(name="war", description="Play War! High card wins!")
+    @app_commands.describe(bet="Amount to bet")
+    async def war(self, ctx: commands.Context, bet: int):
+        """Play the card game War."""
+        async with self.bot.get_session() as session:
+            # Check bet limits
+            valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
+            if not valid:
+                await ctx.send(error, ephemeral=True)
+                return
+            
+            # Deduct bet
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            wallet.balance -= bet
+            await session.commit()
+            
+            # Deal cards
+            deck = Deck()
+            player_card = deck.deal(1)[0]
+            dealer_card = deck.deal(1)[0]
+            
+            # Create embed
+            embed = discord.Embed(
+                title="WAR",
+                description="━━━━━━━━━━━━━━━━━━━━━━",
+                color=0x2F3136
+            )
+            
+            embed.add_field(
+                name="DEALER",
+                value=f"```\n{dealer_card}\n```\n**Value:** [{dealer_card.value}]",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="PLAYER",
+                value=f"```\n{player_card}\n```\n**Value:** [{player_card.value}]",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="",
+                inline=False
+            )
+            
+            # Determine winner
+            if player_card.value > dealer_card.value:
+                payout = bet * 2
+                profit = bet
+                wallet.balance += payout
+                
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, payout,
+                    'casino', f'War win: {payout} coins'
+                )
+                
+                result_text = f"```diff\n+ WIN\n```\n**Payout:** {payout:,} coins\n**Profit:** +{profit:,} coins"
+                embed.color = discord.Color.green()
+            elif player_card.value < dealer_card.value:
+                result_text = f"```diff\n- LOSS\n```\n**Lost:** {bet:,} coins"
+                embed.color = discord.Color.red()
+            else:
+                # Tie - return bet
+                wallet.balance += bet
+                result_text = f"```\nPUSH\n```\n**Returned:** {bet:,} coins"
+                embed.color = discord.Color.blue()
+            
+            await session.commit()
+            
+            embed.add_field(
+                name="OUTCOME",
+                value=result_text,
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BALANCE",
+                value=f"```\n{wallet.balance:,} coins\n```",
+                inline=False
+            )
+            
+            embed.set_footer(text="Casino • War Table")
+            await ctx.send(embed=embed)
+    
+    @commands.hybrid_command(name="baccarat", description="Play Baccarat! Bet on Player, Banker, or Tie!")
+    @app_commands.describe(
+        bet_on="Bet on: player, banker, or tie",
+        amount="Amount to bet"
+    )
+    async def baccarat(self, ctx: commands.Context, bet_on: str, amount: int):
+        """Play Baccarat."""
+        bet_on = bet_on.lower()
+        if bet_on not in ['player', 'banker', 'tie']:
+            await ctx.send("Invalid bet! Choose: player, banker, or tie", ephemeral=True)
+            return
+        
+        async with self.bot.get_session() as session:
+            # Check bet limits
+            valid, error = await self.check_bet_limits(ctx.author.id, amount, session)
+            if not valid:
+                await ctx.send(error, ephemeral=True)
+                return
+            
+            # Deduct bet
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            wallet.balance -= amount
+            await session.commit()
+            
+            # Deal cards
+            deck = Deck()
+            player_hand = deck.deal(2)
+            banker_hand = deck.deal(2)
+            
+            # Calculate baccarat values (only last digit matters)
+            player_value = (sum(min(c.value, 10) for c in player_hand)) % 10
+            banker_value = (sum(min(c.value, 10) for c in banker_hand)) % 10
+            
+            # Natural win check
+            natural = player_value >= 8 or banker_value >= 8
+            
+            # Third card rules (simplified)
+            if not natural:
+                if player_value <= 5:
+                    player_hand.append(deck.deal(1)[0])
+                    player_value = (sum(min(c.value, 10) for c in player_hand)) % 10
+                
+                if banker_value <= 5:
+                    banker_hand.append(deck.deal(1)[0])
+                    banker_value = (sum(min(c.value, 10) for c in banker_hand)) % 10
+            
+            # Create embed
+            embed = discord.Embed(
+                title="BACCARAT",
+                description="━━━━━━━━━━━━━━━━━━━━━━",
+                color=0x2F3136
+            )
+            
+            player_cards = ' '.join(str(c) for c in player_hand)
+            banker_cards = ' '.join(str(c) for c in banker_hand)
+            
+            embed.add_field(
+                name="PLAYER HAND",
+                value=f"```\n{player_cards}\n```\n**Value:** [{player_value}]",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BANKER HAND",
+                value=f"```\n{banker_cards}\n```\n**Value:** [{banker_value}]",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="YOUR BET",
+                value=f"```\n{bet_on.upper()}\n```",
+                inline=True
+            )
+            
+            # Determine winner
+            payout = 0
+            if player_value > banker_value:
+                winner = 'player'
+            elif banker_value > player_value:
+                winner = 'banker'
+            else:
+                winner = 'tie'
+            
+            if bet_on == winner:
+                if winner == 'tie':
+                    payout = amount * 9  # 8:1 payout for tie
+                elif winner == 'banker':
+                    payout = int(amount * 1.95)  # 0.95:1 payout (5% commission)
+                else:
+                    payout = amount * 2  # 1:1 payout for player
+                
+                profit = payout - amount
+                wallet.balance += payout
+                
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, payout,
+                    'casino', f'Baccarat win: {payout} coins'
+                )
+                
+                result_text = f"```diff\n+ WIN\n```\n**Winner:** {winner.upper()}\n**Payout:** {payout:,} coins\n**Profit:** +{profit:,} coins"
+                embed.color = discord.Color.green()
+            else:
+                result_text = f"```diff\n- LOSS\n```\n**Winner:** {winner.upper()}\n**Lost:** {amount:,} coins"
+                embed.color = discord.Color.red()
+            
+            await session.commit()
+            
+            embed.add_field(
+                name="OUTCOME",
+                value=result_text,
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BALANCE",
+                value=f"```\n{wallet.balance:,} coins\n```",
+                inline=False
+            )
+            
+            embed.set_footer(text="Casino • Baccarat Table")
+            await ctx.send(embed=embed)
+    
+    @commands.hybrid_command(name="hilo", description="Guess if the next card is higher or lower!")
+    @app_commands.describe(
+        guess="Guess: high or low",
+        bet="Amount to bet"
+    )
+    async def hilo(self, ctx: commands.Context, guess: str, bet: int):
+        """Play High-Low card game."""
+        guess = guess.lower()
+        if guess not in ['high', 'low', 'h', 'l']:
+            await ctx.send("Invalid guess! Choose: high or low", ephemeral=True)
+            return
+        
+        guess = 'high' if guess in ['high', 'h'] else 'low'
+        
+        async with self.bot.get_session() as session:
+            # Check bet limits
+            valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
+            if not valid:
+                await ctx.send(error, ephemeral=True)
+                return
+            
+            # Deduct bet
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            wallet.balance -= bet
+            await session.commit()
+            
+            # Deal cards
+            deck = Deck()
+            current_card = deck.deal(1)[0]
+            next_card = deck.deal(1)[0]
+            
+            # Create embed
+            embed = discord.Embed(
+                title="HIGH-LOW",
+                description="━━━━━━━━━━━━━━━━━━━━━━",
+                color=0x2F3136
+            )
+            
+            embed.add_field(
+                name="CURRENT CARD",
+                value=f"```\n{current_card}\n```\n**Value:** [{current_card.value}]",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="NEXT CARD",
+                value=f"```\n{next_card}\n```\n**Value:** [{next_card.value}]",
+                inline=True
+            )
+            
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="YOUR GUESS",
+                value=f"```\n{guess.upper()}\n```",
+                inline=True
+            )
+            
+            # Determine winner
+            won = False
+            if guess == 'high' and next_card.value > current_card.value:
+                won = True
+            elif guess == 'low' and next_card.value < current_card.value:
+                won = True
+            elif next_card.value == current_card.value:
+                # Push on tie
+                wallet.balance += bet
+                result_text = f"```\nPUSH\n```\n**Cards matched!**\n**Returned:** {bet:,} coins"
+                embed.color = discord.Color.blue()
+            
+            if next_card.value != current_card.value:
+                if won:
+                    payout = bet * 2
+                    profit = bet
+                    wallet.balance += payout
+                    
+                    await EconomyUtils.add_money(
+                        session, ctx.author.id, payout,
+                        'casino', f'High-Low win: {payout} coins'
+                    )
+                    
+                    result_text = f"```diff\n+ WIN\n```\n**Payout:** {payout:,} coins\n**Profit:** +{profit:,} coins"
+                    embed.color = discord.Color.green()
+                else:
+                    result_text = f"```diff\n- LOSS\n```\n**Lost:** {bet:,} coins"
+                    embed.color = discord.Color.red()
+            
+            await session.commit()
+            
+            embed.add_field(
+                name="OUTCOME",
+                value=result_text,
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BALANCE",
+                value=f"```\n{wallet.balance:,} coins\n```",
+                inline=False
+            )
+            
+            embed.set_footer(text="Casino • High-Low Table")
+            await ctx.send(embed=embed)
+    
+    @commands.hybrid_command(name="keno", description="Pick numbers and hope they match!")
+    @app_commands.describe(
+        numbers="Pick 5 numbers (1-80) separated by spaces",
+        bet="Amount to bet"
+    )
+    async def keno(self, ctx: commands.Context, numbers: str, bet: int):
+        """Play Keno - lottery style number matching."""
+        try:
+            picked = [int(n) for n in numbers.split()]
+            if len(picked) != 5:
+                await ctx.send("Pick exactly 5 numbers!", ephemeral=True)
+                return
+            if any(n < 1 or n > 80 for n in picked):
+                await ctx.send("Numbers must be between 1 and 80!", ephemeral=True)
+                return
+            if len(set(picked)) != 5:
+                await ctx.send("No duplicate numbers allowed!", ephemeral=True)
+                return
+        except:
+            await ctx.send("Invalid format! Example: `5 12 23 45 67`", ephemeral=True)
+            return
+        
+        async with self.bot.get_session() as session:
+            # Check bet limits
+            valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
+            if not valid:
+                await ctx.send(error, ephemeral=True)
+                return
+            
+            # Deduct bet
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            wallet.balance -= bet
+            await session.commit()
+            
+            # Draw 20 numbers
+            drawn = random.sample(range(1, 81), 20)
+            matches = len(set(picked) & set(drawn))
+            
+            # Payout table
+            payouts = {
+                5: 50,  # All 5 match
+                4: 10,  # 4 match
+                3: 3,   # 3 match
+                2: 1,   # 2 match
+            }
+            
+            # Create embed
+            embed = discord.Embed(
+                title="KENO",
+                description="━━━━━━━━━━━━━━━━━━━━━━",
+                color=0x2F3136
+            )
+            
+            picked_str = ', '.join(str(n) for n in sorted(picked))
+            matched_nums = sorted(set(picked) & set(drawn))
+            matched_str = ', '.join(str(n) for n in matched_nums) if matched_nums else "None"
+            
+            embed.add_field(
+                name="YOUR NUMBERS",
+                value=f"```\n{picked_str}\n```",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="MATCHED",
+                value=f"```\n{matched_str}\n```\n**Count:** {matches}/5",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="",
+                inline=False
+            )
+            
+            # Calculate payout
+            multiplier = payouts.get(matches, 0)
+            if multiplier > 0:
+                payout = bet * multiplier
+                profit = payout - bet
+                wallet.balance += payout
+                
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, payout,
+                    'casino', f'Keno win: {payout} coins'
+                )
+                
+                result_text = f"```diff\n+ WIN\n```\n**Multiplier:** {multiplier}x\n**Payout:** {payout:,} coins\n**Profit:** +{profit:,} coins"
+                embed.color = discord.Color.green()
+            else:
+                result_text = f"```diff\n- LOSS\n```\n**Matches:** {matches}/5\n**Lost:** {bet:,} coins"
+                embed.color = discord.Color.red()
+            
+            await session.commit()
+            
+            embed.add_field(
+                name="OUTCOME",
+                value=result_text,
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BALANCE",
+                value=f"```\n{wallet.balance:,} coins\n```",
+                inline=False
+            )
+            
+            embed.set_footer(text="Casino • Keno")
+            await ctx.send(embed=embed)
 
 
 async def setup(bot: Fun2OoshBot):
