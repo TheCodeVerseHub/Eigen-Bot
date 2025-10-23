@@ -1548,6 +1548,490 @@ class Casino(commands.Cog):
             
             embed.set_footer(text="Casino • Keno")
             await ctx.send(embed=embed)
+    
+    @commands.hybrid_command(name="poker", aliases=['holdem', 'texasholdem'])
+    async def poker(self, ctx: commands.Context, bet: int):
+        """
+        Play Texas Hold'em Poker against the dealer.
+        
+        Args:
+            bet: Amount to bet (minimum 100 coins)
+        """
+        if not await anti_fraud_instance.check_user(ctx):
+            return
+        
+        if bet < 100:
+            return await ctx.send("❌ Minimum bet is 100 coins!")
+        
+        if bet > 1_000_000:
+            return await ctx.send("❌ Maximum bet is 1,000,000 coins!")
+        
+        async with EconomyUtils.SessionLocal() as session:
+            wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+            
+            if wallet.balance < bet:
+                return await ctx.send(f"❌ You don't have enough coins! Balance: {wallet.balance:,}")
+            
+            # Deduct bet
+            wallet.balance -= bet
+            await EconomyUtils.add_transaction(
+                session, ctx.author.id, -bet,
+                'casino', 'Poker bet'
+            )
+            await session.commit()
+            
+            # Initialize game
+            deck = Deck(num_decks=1)
+            player_hand = deck.deal(2)
+            dealer_hand = deck.deal(2)
+            community_cards = []
+            pot = bet * 2  # Player bet + dealer bet
+            
+            # Helper function to evaluate poker hands
+            def evaluate_hand(hole_cards: List[Card], community: List[Card]) -> Tuple[int, str, List[Card]]:
+                """
+                Evaluate a poker hand. Returns (rank, name, best_cards).
+                Rank: 9=Royal Flush, 8=Straight Flush, 7=Four of a Kind, etc.
+                """
+                all_cards = hole_cards + community
+                if len(all_cards) < 5:
+                    return (0, "High Card", all_cards[:5])
+                
+                # Convert cards to values for evaluation
+                card_values = []
+                for card in all_cards:
+                    if card.rank == 'A':
+                        val = 14
+                    elif card.rank == 'K':
+                        val = 13
+                    elif card.rank == 'Q':
+                        val = 12
+                    elif card.rank == 'J':
+                        val = 11
+                    else:
+                        val = int(card.rank)
+                    card_values.append((val, card.suit, card))
+                
+                card_values.sort(reverse=True, key=lambda x: x[0])
+                
+                # Check for flush
+                suits = {}
+                for val, suit, card in card_values:
+                    if suit not in suits:
+                        suits[suit] = []
+                    suits[suit].append((val, card))
+                
+                flush_suit = None
+                flush_cards = []
+                for suit, cards in suits.items():
+                    if len(cards) >= 5:
+                        flush_suit = suit
+                        flush_cards = [c[1] for c in sorted(cards, reverse=True, key=lambda x: x[0])[:5]]
+                        break
+                
+                # Check for straight
+                def check_straight(values):
+                    values = sorted(set(values), reverse=True)
+                    # Check for A-2-3-4-5 straight
+                    if 14 in values and set([2, 3, 4, 5]).issubset(set(values)):
+                        return [5, 4, 3, 2, 14]  # Special case: Ace low
+                    
+                    for i in range(len(values) - 4):
+                        if values[i] - values[i+4] == 4:
+                            return values[i:i+5]
+                    return None
+                
+                all_values = [v[0] for v in card_values]
+                straight_values = check_straight(all_values)
+                
+                # Check for straight flush
+                if flush_suit and flush_cards:
+                    flush_values = [v for v, s, c in card_values if s == flush_suit]
+                    sf_values = check_straight(flush_values)
+                    if sf_values:
+                        sf_cards = [c for v, s, c in card_values if s == flush_suit and v in sf_values][:5]
+                        if sf_values[0] == 14 and sf_values[1] == 13:  # Royal flush
+                            return (9, "Royal Flush", sf_cards)
+                        return (8, "Straight Flush", sf_cards)
+                
+                # Count ranks
+                rank_counts = {}
+                for val, suit, card in card_values:
+                    if val not in rank_counts:
+                        rank_counts[val] = []
+                    rank_counts[val].append(card)
+                
+                counts = sorted([(len(cards), val, cards) for val, cards in rank_counts.items()], 
+                               reverse=True, key=lambda x: (x[0], x[1]))
+                
+                # Four of a kind
+                if counts[0][0] == 4:
+                    best_cards = counts[0][2] + [counts[1][2][0]]
+                    return (7, "Four of a Kind", best_cards)
+                
+                # Full house
+                if counts[0][0] == 3 and counts[1][0] >= 2:
+                    best_cards = counts[0][2] + counts[1][2][:2]
+                    return (6, "Full House", best_cards)
+                
+                # Flush
+                if flush_cards:
+                    return (5, "Flush", flush_cards)
+                
+                # Straight
+                if straight_values:
+                    straight_cards = []
+                    for val in straight_values:
+                        for v, s, c in card_values:
+                            if v == val and c not in straight_cards:
+                                straight_cards.append(c)
+                                break
+                    return (4, "Straight", straight_cards[:5])
+                
+                # Three of a kind
+                if counts[0][0] == 3:
+                    best_cards = counts[0][2] + [counts[1][2][0], counts[2][2][0]]
+                    return (3, "Three of a Kind", best_cards)
+                
+                # Two pair
+                if counts[0][0] == 2 and counts[1][0] == 2:
+                    best_cards = counts[0][2] + counts[1][2] + [counts[2][2][0]]
+                    return (2, "Two Pair", best_cards)
+                
+                # One pair
+                if counts[0][0] == 2:
+                    best_cards = counts[0][2] + [counts[1][2][0], counts[2][2][0], counts[3][2][0]]
+                    return (1, "One Pair", best_cards)
+                
+                # High card
+                best_cards = [c[2] for c in card_values[:5]]
+                return (0, "High Card", best_cards)
+            
+            # Create initial embed
+            def create_poker_embed(stage: str, show_dealer: bool = False):
+                embed = discord.Embed(
+                    title="♠️ TEXAS HOLD'EM POKER ♠️",
+                    color=0x2F3136
+                )
+                
+                embed.add_field(
+                    name="━━━━━━━━━━━━━━━━━━━━━━",
+                    value=f"**STAGE:** {stage.upper()}",
+                    inline=False
+                )
+                
+                # Player hand
+                player_cards_str = "  ".join([str(c) for c in player_hand])
+                embed.add_field(
+                    name="YOUR HAND",
+                    value=f"```\n{player_cards_str}\n```",
+                    inline=False
+                )
+                
+                # Community cards
+                if community_cards:
+                    community_str = "  ".join([str(c) for c in community_cards])
+                else:
+                    community_str = "No cards yet"
+                
+                embed.add_field(
+                    name="COMMUNITY CARDS",
+                    value=f"```\n{community_str}\n```",
+                    inline=False
+                )
+                
+                # Dealer hand
+                if show_dealer:
+                    dealer_cards_str = "  ".join([str(c) for c in dealer_hand])
+                else:
+                    dealer_cards_str = "🂠  🂠"
+                
+                embed.add_field(
+                    name="DEALER HAND",
+                    value=f"```\n{dealer_cards_str}\n```",
+                    inline=False
+                )
+                
+                embed.add_field(
+                    name="POT",
+                    value=f"```\n{pot:,} coins\n```",
+                    inline=True
+                )
+                
+                embed.add_field(
+                    name="YOUR BET",
+                    value=f"```\n{bet:,} coins\n```",
+                    inline=True
+                )
+                
+                embed.set_footer(text="Casino • Texas Hold'em Poker")
+                return embed
+            
+            # PRE-FLOP
+            embed = create_poker_embed("Pre-Flop")
+            
+            class PokerView(discord.ui.View):
+                def __init__(self):
+                    super().__init__(timeout=60)
+                    self.action = None
+                
+                @discord.ui.button(label="Call", style=discord.ButtonStyle.green)
+                async def call_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                    if interaction.user.id != ctx.author.id:
+                        return await interaction.response.send_message("❌ This isn't your game!", ephemeral=True)
+                    self.action = "call"
+                    self.stop()
+                    await interaction.response.defer()
+                
+                @discord.ui.button(label="Fold", style=discord.ButtonStyle.red)
+                async def fold_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                    if interaction.user.id != ctx.author.id:
+                        return await interaction.response.send_message("❌ This isn't your game!", ephemeral=True)
+                    self.action = "fold"
+                    self.stop()
+                    await interaction.response.defer()
+            
+            view = PokerView()
+            message = await ctx.send(embed=embed, view=view)
+            
+            await view.wait()
+            
+            if view.action == "fold":
+                embed = discord.Embed(
+                    title="♠️ TEXAS HOLD'EM POKER ♠️",
+                    color=discord.Color.red()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value="```diff\n- FOLDED\n```\n**Lost:** " + f"{bet:,} coins",
+                    inline=False
+                )
+                
+                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+                
+                embed.set_footer(text="Casino • Texas Hold'em Poker")
+                await message.edit(embed=embed, view=None)
+                return
+            
+            # FLOP - Deal 3 community cards
+            community_cards.extend(deck.deal(3))
+            embed = create_poker_embed("Flop")
+            view = PokerView()
+            await message.edit(embed=embed, view=view)
+            await view.wait()
+            
+            if view.action == "fold":
+                embed = discord.Embed(
+                    title="♠️ TEXAS HOLD'EM POKER ♠️",
+                    color=discord.Color.red()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value="```diff\n- FOLDED\n```\n**Lost:** " + f"{bet:,} coins",
+                    inline=False
+                )
+                
+                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+                
+                embed.set_footer(text="Casino • Texas Hold'em Poker")
+                await message.edit(embed=embed, view=None)
+                return
+            
+            # TURN - Deal 1 community card
+            community_cards.append(deck.deal(1)[0])
+            embed = create_poker_embed("Turn")
+            view = PokerView()
+            await message.edit(embed=embed, view=view)
+            await view.wait()
+            
+            if view.action == "fold":
+                embed = discord.Embed(
+                    title="♠️ TEXAS HOLD'EM POKER ♠️",
+                    color=discord.Color.red()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value="```diff\n- FOLDED\n```\n**Lost:** " + f"{bet:,} coins",
+                    inline=False
+                )
+                
+                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+                
+                embed.set_footer(text="Casino • Texas Hold'em Poker")
+                await message.edit(embed=embed, view=None)
+                return
+            
+            # RIVER - Deal final community card
+            community_cards.append(deck.deal(1)[0])
+            embed = create_poker_embed("River")
+            view = PokerView()
+            await message.edit(embed=embed, view=view)
+            await view.wait()
+            
+            if view.action == "fold":
+                embed = discord.Embed(
+                    title="♠️ TEXAS HOLD'EM POKER ♠️",
+                    color=discord.Color.red()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value="```diff\n- FOLDED\n```\n**Lost:** " + f"{bet:,} coins",
+                    inline=False
+                )
+                
+                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+                
+                embed.set_footer(text="Casino • Texas Hold'em Poker")
+                await message.edit(embed=embed, view=None)
+                return
+            
+            # SHOWDOWN
+            player_rank, player_hand_name, player_best = evaluate_hand(player_hand, community_cards)
+            dealer_rank, dealer_hand_name, dealer_best = evaluate_hand(dealer_hand, community_cards)
+            
+            # Determine winner
+            wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+            
+            embed = discord.Embed(
+                title="♠️ TEXAS HOLD'EM POKER ♠️",
+                color=0x2F3136
+            )
+            
+            embed.add_field(
+                name="━━━━━━━━━━━━━━━━━━━━━━",
+                value="**STAGE:** SHOWDOWN",
+                inline=False
+            )
+            
+            # Show all hands
+            player_cards_str = "  ".join([str(c) for c in player_hand])
+            dealer_cards_str = "  ".join([str(c) for c in dealer_hand])
+            community_str = "  ".join([str(c) for c in community_cards])
+            
+            embed.add_field(
+                name="YOUR HAND",
+                value=f"```\n{player_cards_str}\n```\n**{player_hand_name}**",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="COMMUNITY CARDS",
+                value=f"```\n{community_str}\n```",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="DEALER HAND",
+                value=f"```\n{dealer_cards_str}\n```\n**{dealer_hand_name}**",
+                inline=False
+            )
+            
+            # Tiebreaker - compare high cards if same rank
+            if player_rank == dealer_rank:
+                # Compare best cards
+                player_values = []
+                dealer_values = []
+                
+                for card in player_best:
+                    if card.rank == 'A':
+                        player_values.append(14)
+                    elif card.rank == 'K':
+                        player_values.append(13)
+                    elif card.rank == 'Q':
+                        player_values.append(12)
+                    elif card.rank == 'J':
+                        player_values.append(11)
+                    else:
+                        player_values.append(int(card.rank))
+                
+                for card in dealer_best:
+                    if card.rank == 'A':
+                        dealer_values.append(14)
+                    elif card.rank == 'K':
+                        dealer_values.append(13)
+                    elif card.rank == 'Q':
+                        dealer_values.append(12)
+                    elif card.rank == 'J':
+                        dealer_values.append(11)
+                    else:
+                        dealer_values.append(int(card.rank))
+                
+                player_values.sort(reverse=True)
+                dealer_values.sort(reverse=True)
+                
+                if player_values > dealer_values:
+                    winner = "player"
+                elif dealer_values > player_values:
+                    winner = "dealer"
+                else:
+                    winner = "tie"
+            elif player_rank > dealer_rank:
+                winner = "player"
+            else:
+                winner = "dealer"
+            
+            if winner == "player":
+                payout = pot
+                profit = payout - bet
+                wallet.balance += payout
+                
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, payout,
+                    'casino', f'Poker win: {payout} coins'
+                )
+                
+                result_text = f"```diff\n+ WIN\n```\n**Won:** {payout:,} coins\n**Profit:** +{profit:,} coins"
+                embed.color = discord.Color.green()
+            elif winner == "tie":
+                # Return bet on tie
+                wallet.balance += bet
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, bet,
+                    'casino', f'Poker tie: {bet} coins returned'
+                )
+                
+                result_text = f"```yaml\nTIE\n```\n**Bet Returned:** {bet:,} coins"
+                embed.color = discord.Color.gold()
+            else:
+                result_text = f"```diff\n- LOSS\n```\n**Lost:** {bet:,} coins"
+                embed.color = discord.Color.red()
+            
+            await session.commit()
+            
+            embed.add_field(
+                name="OUTCOME",
+                value=result_text,
+                inline=False
+            )
+            
+            embed.add_field(
+                name="BALANCE",
+                value=f"```\n{wallet.balance:,} coins\n```",
+                inline=False
+            )
+            
+            embed.set_footer(text="Casino • Texas Hold'em Poker")
+            await message.edit(embed=embed, view=None)
 
 
 async def setup(bot: Fun2OoshBot):
