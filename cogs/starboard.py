@@ -560,8 +560,15 @@ class StarboardSystem(commands.Cog):
         if not self.ready:
             return
         
-        print(f"🔔 Starboard: Reaction added - {reaction.emoji} by {user.name} on message {reaction.message.id}")
-        await self.handle_star_reaction(reaction, user, added=True)
+        # Only process if in a guild and not from bot
+        if not reaction.message.guild or user.bot:
+            return
+        
+        # Quick check if it might be a star emoji before doing heavy processing
+        settings = await self.get_starboard_settings(reaction.message.guild.id)
+        if settings and str(reaction.emoji) == settings.get('star_emoji', '⭐'):
+            print(f"⭐ Starboard: Star reaction added by {user.name} on message {reaction.message.id}")
+            await self.handle_star_reaction(reaction, user, added=True)
         
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction: discord.Reaction, user: discord.User):
@@ -569,8 +576,15 @@ class StarboardSystem(commands.Cog):
         if not self.ready:
             return
         
-        print(f"🔔 Starboard: Reaction removed - {reaction.emoji} by {user.name} on message {reaction.message.id}")
-        await self.handle_star_reaction(reaction, user, added=False)
+        # Only process if in a guild and not from bot
+        if not reaction.message.guild or user.bot:
+            return
+        
+        # Quick check if it might be a star emoji before doing heavy processing
+        settings = await self.get_starboard_settings(reaction.message.guild.id)
+        if settings and str(reaction.emoji) == settings.get('star_emoji', '⭐'):
+            print(f"⭐ Starboard: Star reaction removed by {user.name} on message {reaction.message.id}")
+            await self.handle_star_reaction(reaction, user, added=False)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
@@ -695,41 +709,21 @@ class StarboardSystem(commands.Cog):
         await self.handle_star_reaction(reaction_obj, user_obj, added=False)
         
     async def handle_star_reaction(self, reaction: Any, user: Any, added: bool):
-        """Process star reactions (add or remove)"""
+        """Process star reactions (add or remove) - assumes pre-validated emoji"""
         message = reaction.message
         
-        # Skip if not in a guild
-        if not message.guild:
-            return
-            
-        # Get starboard settings
+        # Get starboard settings (should exist from pre-check)
         settings = await self.get_starboard_settings(message.guild.id)
-        if not settings:
-            print(f"⚠️ Starboard: No settings found for guild {message.guild.id}. Please run f?starboard setup first.")
-            return
-        
-        if not settings.get('enabled', True):
-            print(f"⚠️ Starboard: Disabled for guild {message.guild.id}")
+        if not settings or not settings.get('enabled', True):
             return
             
         # Skip bot messages in starboard channel to prevent loops
         if message.channel.id == settings.get('channel_id'):
             return
-            
-        # Check if this is the configured star emoji
-        star_emoji = settings.get('star_emoji', '⭐')
-        if str(reaction.emoji) != star_emoji:
-            return
-
-        # Ignore reactions from bots entirely
-        if user.bot:
-            return
 
         # Enforce self-starring setting: if disabled, ignore reactions by the message author
         if not settings.get('self_star', True) and user.id == message.author.id:
             return
-        
-        print(f"✅ Starboard: Processing {star_emoji} reaction on message {message.id} by {user.name} (added={added})")
             
         # Handle the star
         current_time = datetime.now(timezone.utc).isoformat()
@@ -743,8 +737,10 @@ class StarboardSystem(commands.Cog):
                         VALUES (?, ?, ?, ?)
                     """, (message.id, user.id, message.guild.id, current_time))
                     await db.commit()
-                except:
+                    print(f"💫 Starboard: Star added to DB for message {message.id} by user {user.id}")
+                except Exception as e:
                     # Star already exists, ignore
+                    print(f"ℹ️ Starboard: Star already exists or error: {e}")
                     return
             else:
                 # Remove star
@@ -753,6 +749,7 @@ class StarboardSystem(commands.Cog):
                     WHERE message_id = ? AND user_id = ?
                 """, (message.id, user.id))
                 await db.commit()
+                print(f"💫 Starboard: Star removed from DB for message {message.id} by user {user.id}")
             
             # Get current star count
             cursor = await db.execute("""
@@ -760,6 +757,7 @@ class StarboardSystem(commands.Cog):
             """, (message.id,))
             result = await cursor.fetchone()
             star_count = result[0] if result else 0
+            print(f"📊 Starboard: Message {message.id} now has {star_count} stars (threshold: {settings['threshold']})")
             
             # Check if message exists in starred_messages
             cursor = await db.execute("""
@@ -808,18 +806,25 @@ class StarboardSystem(commands.Cog):
     async def create_starboard_message(self, message: discord.Message, star_count: int, settings: Dict) -> Optional[int]:
         """Create a new starboard message"""
         if not message.guild:
+            print(f"❌ Starboard: Message {message.id} is not in a guild")
             return None
             
         starboard_channel = message.guild.get_channel(settings['channel_id'])
-        if not starboard_channel or not isinstance(starboard_channel, discord.TextChannel):
+        if not starboard_channel:
+            print(f"❌ Starboard: Channel {settings['channel_id']} not found in guild {message.guild.id}")
+            return None
+        if not isinstance(starboard_channel, discord.TextChannel):
+            print(f"❌ Starboard: Channel {settings['channel_id']} is not a text channel")
             return None
             
         try:
+            print(f"📤 Starboard: Sending starboard embed to {starboard_channel.name}")
             embed = await self.create_starboard_embed(message, star_count, settings)
             starboard_msg = await starboard_channel.send(embed=embed)
+            print(f"✅ Starboard: Successfully posted message {starboard_msg.id} to starboard")
             return starboard_msg.id
         except Exception as e:
-            print(f" Error creating starboard message: {e}")
+            print(f"❌ Starboard: Error creating starboard message: {e}")
             return None
             
     async def update_starboard_message(self, message: discord.Message, star_count: int, 
