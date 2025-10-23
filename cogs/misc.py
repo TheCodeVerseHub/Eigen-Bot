@@ -112,7 +112,7 @@ class Misc(commands.Cog):
             value=(
                 "[GitHub](https://github.com/TheCodeVerseHub/Eigen-Bot) • "
                 "[Invite Bot](https://discord.com/api/oauth2/authorize) • "
-                "[Support](https://discord.gg/your-server)"
+                "[Support Server](https://discord.gg/3xKFvKhuGR)"
             ),
             inline=False
         )
