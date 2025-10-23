@@ -99,6 +99,7 @@ class Fun2OoshBot(commands.Bot):
             'cogs.highlights',
             'cogs.whois_alias',
             'cogs.utility_extra',
+            'cogs.invitetracker',
         ]
 
         for ext in feature_cogs:
