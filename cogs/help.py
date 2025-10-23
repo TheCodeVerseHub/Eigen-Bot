@@ -168,17 +168,41 @@ class HelpSelect(discord.ui.Select):
                 # Format: command name + signature + description
                 signature = f"{cmd.name} {cmd.signature}".strip()
                 desc = cmd.short_doc or "No description"
+                # Limit description length to prevent overflow
+                if len(desc) > 80:
+                    desc = desc[:77] + "..."
                 commands_list.append(f"`{signature}`\n└─ {desc}")
         
         if commands_list:
-            # Split into chunks if too long
-            chunk_size = 10
-            for i in range(0, len(commands_list), chunk_size):
-                chunk = commands_list[i:i+chunk_size]
-                field_name = "Commands" if i == 0 else "Commands (continued)"
+            # Split into chunks by character count (max 1000 to be safe)
+            current_chunk = []
+            current_length = 0
+            field_number = 0
+            
+            for cmd_text in commands_list:
+                cmd_length = len(cmd_text) + 2  # +2 for "\n\n" separator
+                
+                # If adding this command would exceed limit, start new field
+                if current_length + cmd_length > 1000 and current_chunk:
+                    field_name = "Commands" if field_number == 0 else f"Commands (continued {field_number})"
+                    embed.add_field(
+                        name=field_name,
+                        value="\n\n".join(current_chunk),
+                        inline=False
+                    )
+                    current_chunk = []
+                    current_length = 0
+                    field_number += 1
+                
+                current_chunk.append(cmd_text)
+                current_length += cmd_length
+            
+            # Add remaining commands
+            if current_chunk:
+                field_name = "Commands" if field_number == 0 else f"Commands (continued {field_number})"
                 embed.add_field(
                     name=field_name,
-                    value="\n\n".join(chunk),
+                    value="\n\n".join(current_chunk),
                     inline=False
                 )
         else:
