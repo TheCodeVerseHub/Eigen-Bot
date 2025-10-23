@@ -1557,7 +1557,21 @@ class Casino(commands.Cog):
         Args:
             bet: Amount to bet (minimum 100 coins)
         """
-        if not await anti_fraud_instance.check_user(ctx):
+        # Anti-fraud check - support different anti_fraud API versions
+        allowed = True
+        check = getattr(anti_fraud_instance, "check_user", None)
+        if check is None:
+            check = getattr(anti_fraud_instance, "check", None)
+        if check is None and callable(anti_fraud_instance):
+            check = anti_fraud_instance
+        if check is not None:
+            result = check(ctx)
+            if asyncio.iscoroutine(result):
+                allowed = await result
+            else:
+                allowed = bool(result)
+        # If the anti-fraud check exists and fails, stop
+        if not allowed:
             return
         
         if bet < 100:
@@ -1566,18 +1580,16 @@ class Casino(commands.Cog):
         if bet > 1_000_000:
             return await ctx.send("❌ Maximum bet is 1,000,000 coins!")
         
-        async with EconomyUtils.SessionLocal() as session:
-            wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
-            
-            if wallet.balance < bet:
-                return await ctx.send(f"❌ You don't have enough coins! Balance: {wallet.balance:,}")
+        async with self.bot.get_session() as session:
+            # Check bet limits
+            valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
+            if not valid:
+                await ctx.send(error, ephemeral=True)
+                return
             
             # Deduct bet
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
             wallet.balance -= bet
-            await EconomyUtils.add_transaction(
-                session, ctx.author.id, -bet,
-                'casino', 'Poker bet'
-            )
             await session.commit()
             
             # Initialize game
@@ -1807,7 +1819,7 @@ class Casino(commands.Cog):
                     inline=False
                 )
                 
-                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
                 embed.add_field(
                     name="BALANCE",
                     value=f"```\n{wallet.balance:,} coins\n```",
@@ -1836,7 +1848,7 @@ class Casino(commands.Cog):
                     inline=False
                 )
                 
-                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
                 embed.add_field(
                     name="BALANCE",
                     value=f"```\n{wallet.balance:,} coins\n```",
@@ -1865,7 +1877,7 @@ class Casino(commands.Cog):
                     inline=False
                 )
                 
-                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
                 embed.add_field(
                     name="BALANCE",
                     value=f"```\n{wallet.balance:,} coins\n```",
@@ -1894,7 +1906,7 @@ class Casino(commands.Cog):
                     inline=False
                 )
                 
-                wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+                wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
                 embed.add_field(
                     name="BALANCE",
                     value=f"```\n{wallet.balance:,} coins\n```",
@@ -1910,7 +1922,7 @@ class Casino(commands.Cog):
             dealer_rank, dealer_hand_name, dealer_best = evaluate_hand(dealer_hand, community_cards)
             
             # Determine winner
-            wallet = await EconomyUtils.get_wallet(session, ctx.author.id)
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
             
             embed = discord.Embed(
                 title="♠️ TEXAS HOLD'EM POKER ♠️",
