@@ -866,7 +866,7 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="dice", aliases=['roll'], description="Roll dice and bet on the outcome!")
+    @commands.hybrid_command(name="dice", aliases=['di'], description="Roll dice and bet on the outcome!")
     @app_commands.describe(
         prediction="Predict: over (8+), under (6-), seven, or specific number (2-12)",
         bet="Amount to bet"
