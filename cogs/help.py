@@ -12,11 +12,11 @@ COG_EMOJIS = {
     "tags": "🏷️",
     "communitycommands": "👥",
     "election": "🗳️",
-    "highlights": "🔔",
     "misc": "📝",
     "starboardsystem": "⭐",
     "whoisalias": "🔍",
     "utilityextra": "🛠️",
+    "invitetracker": "📊",
 }
 
 # Category descriptions
@@ -27,11 +27,11 @@ COG_DESCRIPTIONS = {
     "tags": "Create and manage custom text snippets for your server",
     "communitycommands": "Engage your community with quotes, questions, and memes",
     "election": "Democratic voting system with weighted votes",
-    "highlights": "Get notified when your keywords are mentioned",
     "misc": "Miscellaneous utility commands",
     "starboardsystem": "Highlight the best messages with stars",
     "whoisalias": "User information and lookup commands",
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
+    "invitetracker": "Professional invite tracking system with analytics",
 }
 
 

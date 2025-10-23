@@ -96,7 +96,6 @@ class Fun2OoshBot(commands.Bot):
             'cogs.help',
             'cogs.community',
             'cogs.election',
-            'cogs.highlights',
             'cogs.whois_alias',
             'cogs.utility_extra',
             'cogs.invitetracker',

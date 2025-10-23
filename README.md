@@ -72,14 +72,16 @@ Democratic decision-making for your community:
 - **Timed Elections**: Auto-close after specified duration (1-1440 minutes)
 - **Visual Results**: Beautiful result displays with percentages and vote counts
 
-### **Highlights System**
-Personal mention system for keywords:
-- **Add Highlights**: `f?highlights add <phrase>` - Get notified when phrase is mentioned
-- **Remove Highlights**: `f?highlights remove <phrase>` - Stop tracking a phrase
-- **List Highlights**: `f?highlights list` - View all your tracked phrases
-- **Smart Notifications**: DM notifications when your phrases appear in chat
-- **Flexible Matching**: Case-insensitive phrase detection (3-100 characters)
-- **Per-User**: Each user manages their own highlight list
+### **Invite Tracker System**
+Professional invite tracking and analytics:
+- **Invite Codes**: `/invitecodes` - View your invite codes and usage statistics
+- **Invited List**: `/invitedlist` - List members you've invited to the server
+- **Check Inviter**: `/inviter` - See who invited a specific member
+- **Leaderboard**: `/inviteleaderboard` - Server-wide invite rankings
+- **Real-time Tracking**: Automatic detection of invite usage
+- **Fake Detection**: Flags accounts less than 7 days old
+- **Leave Tracking**: Updates stats when invited members leave
+- **Detailed Analytics**: Total, valid, left, and fake invite statistics
 
 ### **Fun Commands**
 Entertainment and engagement features:
@@ -134,13 +136,13 @@ Powerful tools for server administrators:
 - **SQLAlchemy ORM**: Modern async database operations
 - **SQLite (Dev)**: Fast development with file-based database
 - **PostgreSQL (Production)**: Scalable production deployment
-- **Multiple Databases**: Separate SQLite DBs for tags, starboard, highlights
+- **Multiple Databases**: Separate SQLite DBs for tags, starboard, invites
 - **Data Integrity**: Proper constraints, indexes, and transaction handling
 - **Migration Ready**: Easy schema updates and data migrations
 
 ### **Performance & Reliability**
 - **Connection Pooling**: Efficient database connection management
-- **Caching**: Smart caching for starboard and highlight systems
+- **Caching**: Smart caching for starboard and invite systems
 - **Rate Limiting**: Built-in cooldown management
 - **Graceful Degradation**: Continues working even if some features fail
 - **Comprehensive Logging**: Detailed logs for debugging and monitoring
@@ -282,11 +284,14 @@ f?election results                                 - View results
 f?election end                                     - Force end election
 ```
 
-### **Highlight Commands**
+### **Invite Tracker Commands**
 ```
-f?highlights add <phrase>      - Add highlight word/phrase
-f?highlights remove <phrase>   - Remove highlight
-f?highlights list              - List your highlights
+f?invitecodes              - View your invite codes and usage
+f?invitedlist              - List members you've invited
+f?inviter [@member]        - Check who invited a member
+f?inviteleaderboard        - Server invite rankings
+f?syncinvites             - Sync invite cache (Admin)
+f?invitedocs              - View documentation
 ```
 
 ### **Fun Commands**
@@ -421,7 +426,7 @@ data/
 ├── eigen.db          # Main economy database (SQLAlchemy)
 ├── tags.db           # Tag system (aiosqlite)
 ├── starboard.db      # Starboard system (aiosqlite)
-└── highlights.db     # Highlights system (aiosqlite)
+└── invites.db        # Invite tracker system (aiosqlite)
 ```
 
 ---

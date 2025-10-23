@@ -10,10 +10,13 @@ async def test_help_cog():
     """Simulate loading the help cog."""
     print("Creating minimal bot...")
     intents = discord.Intents.default()
-    bot = commands.Bot(command_prefix="f?", intents=intents, help_command=None)
+    # Use a small subclass that declares `available_cogs` as a class attribute
+    class TestBot(commands.Bot):
+        available_cogs = []
+    bot = TestBot(command_prefix="f?", intents=intents, help_command=None)
     
-    # Add some mock cogs to available_cogs
-    bot.available_cogs = ['admin', 'economy', 'fun', 'tags', 'community']
+    # Add some mock cogs to available_cogs (set on the class so instance attribute restrictions don't apply)
+    TestBot.available_cogs = ['admin', 'economy', 'fun', 'tags', 'community']
     
     print("Loading help cog...")
     try:
