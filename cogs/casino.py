@@ -1550,14 +1550,9 @@ class Casino(commands.Cog):
             embed.set_footer(text="Casino • Keno")
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="poker", aliases=['pk', 'holdem', 'texasholdem'])
+    @commands.hybrid_command(name="poker", aliases=['pk', 'holdem', 'texasholdem'], description="Play Texas Hold'em Poker against the dealer")
     async def poker(self, ctx: commands.Context, bet: int):
-        """
-        Texas Hold'em Poker - Battle the dealer! Pre-flop, flop, turn, river. Royal flush to high card rankings. Win up to 2x!
-        
-        Args:
-            bet: Amount to bet (minimum 100 coins)
-        """
+        """Texas Hold'em Poker - Battle the dealer! Royal flush to high card rankings. Win up to 2x!"""
         # Anti-fraud check - support different anti_fraud API versions
         allowed = True
         check = getattr(anti_fraud_instance, "check_user", None)
