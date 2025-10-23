@@ -559,7 +559,8 @@ class StarboardSystem(commands.Cog):
         """Handle star reactions being added"""
         if not self.ready:
             return
-            
+        
+        print(f"🔔 Starboard: Reaction added - {reaction.emoji} by {user.name} on message {reaction.message.id}")
         await self.handle_star_reaction(reaction, user, added=True)
         
     @commands.Cog.listener()
@@ -567,7 +568,8 @@ class StarboardSystem(commands.Cog):
         """Handle star reactions being removed"""
         if not self.ready:
             return
-            
+        
+        print(f"🔔 Starboard: Reaction removed - {reaction.emoji} by {user.name} on message {reaction.message.id}")
         await self.handle_star_reaction(reaction, user, added=False)
 
     @commands.Cog.listener()
@@ -700,11 +702,17 @@ class StarboardSystem(commands.Cog):
         if not message.guild:
             return
             
-        # Skip bot messages in starboard channel to prevent loops
+        # Get starboard settings
         settings = await self.get_starboard_settings(message.guild.id)
-        if not settings or not settings['enabled']:
+        if not settings:
+            print(f"⚠️ Starboard: No settings found for guild {message.guild.id}. Please run f?starboard setup first.")
+            return
+        
+        if not settings.get('enabled', True):
+            print(f"⚠️ Starboard: Disabled for guild {message.guild.id}")
             return
             
+        # Skip bot messages in starboard channel to prevent loops
         if message.channel.id == settings.get('channel_id'):
             return
             
@@ -720,6 +728,8 @@ class StarboardSystem(commands.Cog):
         # Enforce self-starring setting: if disabled, ignore reactions by the message author
         if not settings.get('self_star', True) and user.id == message.author.id:
             return
+        
+        print(f"✅ Starboard: Processing {star_emoji} reaction on message {message.id} by {user.name} (added={added})")
             
         # Handle the star
         current_time = datetime.now(timezone.utc).isoformat()
@@ -762,6 +772,7 @@ class StarboardSystem(commands.Cog):
             if star_count >= threshold:
                 if existing:
                     # Update existing starboard message
+                    print(f"📝 Starboard: Updating message {message.id} with {star_count} stars")
                     await self.update_starboard_message(message, star_count, existing[0], settings)
                     await db.execute("""
                         UPDATE starred_messages 
@@ -770,8 +781,10 @@ class StarboardSystem(commands.Cog):
                     """, (star_count, current_time, message.id))
                 else:
                     # Create new starboard message
+                    print(f"⭐ Starboard: Creating new starboard message for {message.id} with {star_count} stars (threshold: {threshold})")
                     starboard_msg_id = await self.create_starboard_message(message, star_count, settings)
                     if starboard_msg_id:
+                        print(f"✅ Starboard: Created message {starboard_msg_id} in starboard channel")
                         await db.execute("""
                             INSERT INTO starred_messages 
                             (message_id, guild_id, channel_id, author_id, starboard_message_id, 
@@ -782,6 +795,8 @@ class StarboardSystem(commands.Cog):
                             starboard_msg_id, star_count, message.content or "", 
                             str([att.url for att in message.attachments]), current_time, current_time
                         ))
+                    else:
+                        print(f"❌ Starboard: Failed to create starboard message for {message.id}")
             else:
                 if existing and star_count < threshold:
                     # Remove from starboard if below threshold
