@@ -17,6 +17,7 @@ COG_EMOJIS = {
     "whoisalias": "🔍",
     "utilityextra": "🛠️",
     "invitetracker": "📊",
+    "casino": "🎰",
 }
 
 # Category descriptions
@@ -32,6 +33,7 @@ COG_DESCRIPTIONS = {
     "whoisalias": "User information and lookup commands",
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
     "invitetracker": "Professional invite tracking system with analytics",
+    "casino": "Professional casino with blackjack, roulette, slots, and more gambling games",
 }
 
 

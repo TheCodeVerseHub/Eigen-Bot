@@ -93,7 +93,46 @@ Entertainment and engagement features:
 - **Coin Flip**: `f?coinflip` - Heads or tails
 - **Dice Roll**: `f?roll [size] [count]` - Roll dice (supports custom sizes and counts)
 
-### � **Community Engagement**
+### 🎰 **Casino Games**
+Professional gambling system with multiple games:
+- **Blackjack**: `/blackjack <bet>` - Play 21 with interactive buttons (hit, stand, double down)
+  - Full blackjack rules with 3:2 payouts for natural blackjack
+  - Dealer plays to standard rules (hit until 17)
+  - Interactive UI with Discord buttons
+- **Roulette**: `/roulette <type> [value] <bet>` - European roulette with all bet types
+  - Number bets (0-36): 36x payout
+  - Color bets (red/black): 2x payout
+  - Odd/even bets: 2x payout
+  - Range bets (low/high): 2x payout
+- **Slot Machine**: `/slots <bet>` - Three-reel slots with symbol matching
+  - 8 unique symbols with weighted probabilities
+  - 3-of-a-kind jackpots up to 50x
+  - 2-of-a-kind small wins
+- **Coinflip**: `/coinflip <heads/tails> <bet>` - Simple 50/50 double-or-nothing
+  - Animated coin flip
+  - 2x payout on win
+- **Dice**: `/dice <prediction> <bet>` - Roll two dice and predict the outcome
+  - Over/under bets: 2x payout
+  - Lucky seven: 4x payout
+  - Exact number: 10x payout
+- **Crash**: `/crash <bet> <target>` - Cash out before the multiplier crashes
+  - Set target multiplier (1.1x to 100x)
+  - Animated multiplier climb
+  - High risk, high reward
+- **Russian Roulette**: `/russianroulette <bet>` - 1 in 6 chance to lose
+  - 5x payout if you survive
+  - Dramatic reveal animation
+  - Ultimate high-stakes game
+
+**Casino Features:**
+- Minimum/maximum bet limits
+- Anti-fraud protection
+- Cooldown management
+- Professional embeds with results
+- Balance tracking and payouts
+- Responsible gambling notices
+
+### 👥 **Community Engagement**
 Build an active, engaged community:
 - **Random Quotes**: `f?quote` - Inspirational programming quotes
 - **Random Questions**: `f?question` - Programming discussion starters

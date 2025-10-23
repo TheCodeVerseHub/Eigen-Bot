@@ -99,7 +99,8 @@ class Misc(commands.Cog):
                 "⭐ Starboard\n"
                 "🏷️ Custom Tags\n"
                 "🗳️ Elections\n"
-                "� Invite Tracker\n"
+                "📊 Invite Tracker\n"
+                "🎰 Casino Games\n"
                 "🎭 Fun Commands\n"
                 "🛠️ Utilities"
             ),
