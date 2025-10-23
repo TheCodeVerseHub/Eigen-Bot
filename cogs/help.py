@@ -23,7 +23,7 @@ COG_EMOJIS = {
 # Category descriptions
 COG_DESCRIPTIONS = {
     "admin": "Administrator commands for managing the bot and economy",
-    "economy": "Virtual currency system with wallets, banks, and income commands",
+    "economy": "Complete economy with income, crime, gambling, banking, and more",
     "fun": "Entertainment commands including jokes, trivia, and games",
     "tags": "Create and manage custom text snippets for your server",
     "communitycommands": "Engage your community with quotes, questions, and memes",

@@ -9,16 +9,39 @@ Eigen Bot is an all-in-one Discord bot designed for thriving communities. Built 
 ## Core Features
 
 ### **Economy System**
-A full-featured virtual currency system for your server:
-- **Wallet & Bank**: Secure storage for user coins with separate wallet/bank balances
-- **Income Commands**:
-  - `f?work` / `/work` - Earn coins through work (30min cooldown)
-  - `f?collect` / `/collect` - Hourly reward collection
-  - `f?daily` - Claim daily rewards
-  - `f?weekly` - Claim weekly rewards
-- **Transfers**: `f?transfer @user <amount>` - Send coins to other members
-- **Leaderboard**: `f?leaderboard` - View top 10 richest users
-- **Profile**: `f?profile [@user]` - View detailed user profile with stats
+A comprehensive virtual currency system with multiple ways to earn and spend:
+
+**💰 Income Commands:**
+- `f?work` - Earn coins through work (30min cooldown, 100-300 coins)
+- `f?collect` - Collect hourly reward (60min cooldown, 50 coins)
+- `f?daily` - Claim daily bonus (24hr cooldown, 500 coins)
+- `f?weekly` - Claim weekly bonus (7 days cooldown, 2,500 coins)
+- `f?beg` - Beg for coins (1min cooldown, 10-100 coins, 70% success)
+- `f?search` - Search random places (45s cooldown, 5-120 coins, 80% success)
+
+**💸 Risk & Reward:**
+- `f?crime` - Commit crimes for big rewards (5min cooldown, risky!)
+  - 40% success rate for 300-2,000 coins
+  - 60% chance of 200-600 coin fine
+- `f?rob @user` - Rob other users (10min cooldown, very risky!)
+  - 35% success rate to steal 10-30% of their balance (max 5,000)
+  - 65% chance to lose 200-500 coins
+- `f?gamble <amount>` - Quick gamble (30s cooldown)
+  - 45% chance to double your bet
+  - 55% chance to lose it all
+  - Min: 50 coins, Max: 10,000 coins
+
+**💳 Banking & Transfers:**
+- `f?balance [@user]` - Check wallet and bank balance
+- `f?deposit <amount|all>` - Move coins to bank (safe storage)
+- `f?withdraw <amount|all>` - Take coins from bank
+- `f?transfer @user <amount>` - Send coins to others (with anti-fraud)
+- `f?give @user <amount>` - Gift coins (no tax, min 10)
+
+**📊 Statistics & Rankings:**
+- `f?profile [@user]` - Detailed user profile with economy stats
+- `f?leaderboard` - Top 10 richest users
+- `f?richest` - Top 15 with detailed wallet/bank breakdown
 - **Transaction History**: Full audit trail of all economic activity
 - **Anti-Fraud Protection**: Built-in detection and prevention systems
 

@@ -496,6 +496,387 @@ class Economy(commands.Cog):
         embed = EmbedBuilder.leaderboard_embed(leaderboard, "🏆 Richest Players")
         await interaction.response.send_message(embed=embed)
 
+    @commands.command(name='beg')
+    @check_cooldown('beg', 60)  # 1 minute
+    async def beg(self, ctx: commands.Context):
+        """Beg for coins from strangers."""
+        import random
+        
+        # 70% chance to get coins
+        if random.random() < 0.7:
+            reward = random.randint(10, 100)
+            
+            responses = [
+                f"A kind stranger gave you {format_coins(reward)}!",
+                f"Someone felt generous and donated {format_coins(reward)}!",
+                f"You found {format_coins(reward)} someone dropped!",
+                f"A wealthy person tossed you {format_coins(reward)}!",
+                f"You begged successfully and got {format_coins(reward)}!"
+            ]
+            
+            async with self.bot.get_session() as session:
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, reward, 'beg', 'Begging reward'
+                )
+                await session.commit()
+            
+            embed = EmbedBuilder.success_embed("💰 Success!", random.choice(responses))
+            await ctx.send(embed=embed)
+        else:
+            responses = [
+                "Everyone ignored you... 😢",
+                "People walked past you without looking.",
+                "No one gave you anything today.",
+                "The streets are empty...",
+                "Someone told you to get a job!"
+            ]
+            embed = discord.Embed(
+                title="❌ No Luck",
+                description=random.choice(responses),
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
+
+    @commands.command(name='crime')
+    @check_cooldown('crime', 300)  # 5 minutes
+    async def crime(self, ctx: commands.Context):
+        """Commit a crime for big rewards (or losses)."""
+        import random
+        
+        # 40% success rate
+        success = random.random() < 0.4
+        
+        crimes = [
+            ("robbed a bank", 500, 1500),
+            ("hacked a corporation", 800, 2000),
+            ("stole a rare painting", 600, 1800),
+            ("smuggled contraband", 400, 1200),
+            ("pickpocketed tourists", 300, 800),
+        ]
+        
+        crime_desc, min_reward, max_reward = random.choice(crimes)
+        
+        if success:
+            reward = random.randint(min_reward, max_reward)
+            
+            async with self.bot.get_session() as session:
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, reward, 'crime', f'Crime: {crime_desc}'
+                )
+                await session.commit()
+            
+            embed = EmbedBuilder.success_embed(
+                "🎭 Crime Success!",
+                f"You {crime_desc} and got away with {format_coins(reward)}!"
+            )
+            await ctx.send(embed=embed)
+        else:
+            fine = random.randint(200, 600)
+            
+            async with self.bot.get_session() as session:
+                wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+                if wallet.balance >= fine:
+                    wallet.balance -= fine
+                    await session.commit()
+                    loss_msg = f"You were caught and fined {format_coins(fine)}!"
+                else:
+                    loss_msg = "You were caught but had no money to pay the fine!"
+            
+            embed = discord.Embed(
+                title="🚔 Caught!",
+                description=f"You tried to {crime_desc} but got caught!\n{loss_msg}",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
+
+    @commands.command(name='rob', aliases=['steal'])
+    @check_cooldown('rob', 600)  # 10 minutes
+    async def rob(self, ctx: commands.Context, user: discord.User):
+        """Try to rob another user (risky!)."""
+        import random
+        
+        if user == ctx.author:
+            return await ctx.send("You can't rob yourself!")
+        
+        if user.bot:
+            return await ctx.send("You can't rob bots!")
+        
+        async with self.bot.get_session() as session:
+            robber_wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            victim_wallet = await EconomyUtils.get_or_create_wallet(session, user.id)
+            
+            # Need at least 200 coins to attempt robbery
+            if robber_wallet.balance < 200:
+                return await ctx.send("You need at least 200 coins to attempt a robbery!")
+            
+            # Victim needs coins to rob
+            if victim_wallet.balance < 100:
+                return await ctx.send(f"{user.display_name} doesn't have enough coins to rob!")
+            
+            # 35% success rate
+            success = random.random() < 0.35
+            
+            if success:
+                # Rob 10-30% of victim's balance
+                rob_amount = int(victim_wallet.balance * random.uniform(0.1, 0.3))
+                rob_amount = min(rob_amount, 5000)  # Cap at 5000
+                
+                victim_wallet.balance -= rob_amount
+                robber_wallet.balance += rob_amount
+                await session.commit()
+                
+                embed = EmbedBuilder.success_embed(
+                    "💰 Robbery Success!",
+                    f"You robbed {format_coins(rob_amount)} from {user.mention}!"
+                )
+                await ctx.send(embed=embed)
+            else:
+                # Failed - lose 200-500 coins
+                fine = random.randint(200, 500)
+                fine = min(fine, robber_wallet.balance)
+                
+                robber_wallet.balance -= fine
+                victim_wallet.balance += fine // 2  # Victim gets half
+                await session.commit()
+                
+                embed = discord.Embed(
+                    title="🚔 Robbery Failed!",
+                    description=f"You were caught trying to rob {user.mention}!\n"
+                               f"You lost {format_coins(fine)} and they got {format_coins(fine // 2)}!",
+                    color=discord.Color.red()
+                )
+                await ctx.send(embed=embed)
+
+    @commands.command(name='gamble', aliases=['bet'])
+    @check_cooldown('gamble', 30)  # 30 seconds
+    async def gamble(self, ctx: commands.Context, amount: int):
+        """Gamble your coins! 45% chance to double, 55% chance to lose all."""
+        import random
+        
+        if amount < 50:
+            return await ctx.send("Minimum gamble is 50 coins!")
+        
+        if amount > 10000:
+            return await ctx.send("Maximum gamble is 10,000 coins!")
+        
+        async with self.bot.get_session() as session:
+            wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            
+            if wallet.balance < amount:
+                return await ctx.send(f"You don't have enough coins! Balance: {format_coins(wallet.balance)}")
+            
+            # Deduct bet
+            wallet.balance -= amount
+            
+            # 45% win rate
+            won = random.random() < 0.45
+            
+            if won:
+                payout = amount * 2
+                wallet.balance += payout
+                await session.commit()
+                
+                embed = discord.Embed(
+                    title="🎲 GAMBLE",
+                    description="━━━━━━━━━━━━━━━━━━━━━━",
+                    color=discord.Color.green()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value=f"```diff\n+ WIN\n```\n**Payout:** {format_coins(payout)}\n**Profit:** +{format_coins(amount)}",
+                    inline=False
+                )
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+            else:
+                await session.commit()
+                
+                embed = discord.Embed(
+                    title="🎲 GAMBLE",
+                    description="━━━━━━━━━━━━━━━━━━━━━━",
+                    color=discord.Color.red()
+                )
+                embed.add_field(
+                    name="OUTCOME",
+                    value=f"```diff\n- LOSS\n```\n**Lost:** {format_coins(amount)}",
+                    inline=False
+                )
+                embed.add_field(
+                    name="BALANCE",
+                    value=f"```\n{wallet.balance:,} coins\n```",
+                    inline=False
+                )
+            
+            embed.set_footer(text="Economy • Quick Gamble")
+            await ctx.send(embed=embed)
+
+    @commands.command(name='richest', aliases=['top10', 'baltop'])
+    async def richest(self, ctx: commands.Context):
+        """Show the top 15 richest users with detailed stats."""
+        async with self.bot.get_session() as session:
+            stmt = select(
+                Wallet.user_id,
+                Wallet.balance,
+                Wallet.bank,
+                (Wallet.balance + Wallet.bank).label('total')
+            ).order_by(desc('total')).limit(15)
+            result = await session.execute(stmt)
+            users = result.all()
+        
+        if not users:
+            return await ctx.send("No users found in the economy!")
+        
+        embed = discord.Embed(
+            title="💎 TOP 15 RICHEST PLAYERS",
+            description="━━━━━━━━━━━━━━━━━━━━━━",
+            color=discord.Color.gold()
+        )
+        
+        medals = ["🥇", "🥈", "🥉"]
+        
+        for idx, user_data in enumerate(users, 1):
+            try:
+                user = await self.bot.fetch_user(user_data.user_id)
+                name = user.display_name
+            except:
+                name = f"User {user_data.user_id}"
+            
+            medal = medals[idx - 1] if idx <= 3 else f"#{idx}"
+            
+            embed.add_field(
+                name=f"{medal} {name}",
+                value=f"```\nTotal: {user_data.total:,}\nWallet: {user_data.balance:,}\nBank: {user_data.bank:,}\n```",
+                inline=True
+            )
+        
+        embed.set_footer(text="Economy • Leaderboard")
+        await ctx.send(embed=embed)
+
+    @commands.command(name='give', aliases=['gift'])
+    async def give(self, ctx: commands.Context, user: discord.User, amount: int):
+        """Give coins to another user (no tax)."""
+        if user == ctx.author:
+            return await ctx.send("You can't give coins to yourself!")
+        
+        if user.bot:
+            return await ctx.send("You can't give coins to bots!")
+        
+        if amount <= 0:
+            return await ctx.send("Amount must be positive!")
+        
+        if amount < 10:
+            return await ctx.send("Minimum gift amount is 10 coins!")
+        
+        async with self.bot.get_session() as session:
+            sender_wallet = await EconomyUtils.get_or_create_wallet(session, ctx.author.id)
+            
+            if sender_wallet.balance < amount:
+                return await ctx.send(f"You don't have enough coins! Balance: {format_coins(sender_wallet.balance)}")
+            
+            # Transfer
+            sender_wallet.balance -= amount
+            await EconomyUtils.add_money(
+                session, user.id, amount, 'gift', f'Gift from {ctx.author.display_name}'
+            )
+            await session.commit()
+        
+        embed = EmbedBuilder.success_embed(
+            "🎁 Gift Sent!",
+            f"You gave {format_coins(amount)} to {user.mention}!"
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(name='search')
+    @check_cooldown('search', 45)  # 45 seconds
+    async def search(self, ctx: commands.Context):
+        """Search random places for coins."""
+        import random
+        
+        locations = [
+            ("couch cushions", 20, 80),
+            ("park bench", 30, 100),
+            ("parking lot", 15, 60),
+            ("vending machine", 25, 90),
+            ("library books", 10, 50),
+            ("trash bin", 5, 40),
+            ("car seats", 30, 110),
+            ("beach sand", 40, 120),
+        ]
+        
+        location, min_reward, max_reward = random.choice(locations)
+        
+        # 80% chance to find something
+        if random.random() < 0.8:
+            reward = random.randint(min_reward, max_reward)
+            
+            async with self.bot.get_session() as session:
+                await EconomyUtils.add_money(
+                    session, ctx.author.id, reward, 'search', f'Searched {location}'
+                )
+                await session.commit()
+            
+            embed = EmbedBuilder.success_embed(
+                f"🔍 Found!",
+                f"You searched the **{location}** and found {format_coins(reward)}!"
+            )
+        else:
+            embed = discord.Embed(
+                title="🔍 Nothing Found",
+                description=f"You searched the **{location}** but found nothing...",
+                color=discord.Color.orange()
+            )
+        
+        await ctx.send(embed=embed)
+
+    @commands.command(name='profile', aliases=['prof', 'stats'])
+    async def profile(self, ctx: commands.Context, user: Optional[discord.User] = None):
+        """View detailed profile and economy stats."""
+        target = user or ctx.author
+        
+        async with self.bot.get_session() as session:
+            wallet = await EconomyUtils.get_or_create_wallet(session, target.id)
+            
+            # Get transaction count
+            tx_stmt = select(func.count(Transaction.id)).where(Transaction.user_id == target.id)
+            tx_result = await session.execute(tx_stmt)
+            tx_count = tx_result.scalar() or 0
+            
+            # Get total earned
+            earn_stmt = select(func.sum(Transaction.amount)).where(
+                Transaction.user_id == target.id,
+                Transaction.amount > 0
+            )
+            earn_result = await session.execute(earn_stmt)
+            total_earned = earn_result.scalar() or 0
+        
+        total_wealth = wallet.balance + wallet.bank
+        
+        embed = discord.Embed(
+            title=f"📊 {target.display_name}'s Profile",
+            description="━━━━━━━━━━━━━━━━━━━━━━",
+            color=discord.Color.blue()
+        )
+        
+        embed.set_thumbnail(url=target.display_avatar.url)
+        
+        embed.add_field(
+            name="💰 WEALTH",
+            value=f"```\nTotal: {total_wealth:,}\nWallet: {wallet.balance:,}\nBank: {wallet.bank:,}\n```",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📈 STATISTICS",
+            value=f"```\nTransactions: {tx_count}\nTotal Earned: {total_earned:,}\n```",
+            inline=False
+        )
+        
+        embed.set_footer(text=f"Economy • User ID: {target.id}")
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     """Setup the economy cog."""
