@@ -531,10 +531,10 @@ class Casino(commands.Cog):
         
         return True, None
     
-    @commands.hybrid_command(name="blackjack", description="Play blackjack! Try to get 21 without going over.")
+    @commands.hybrid_command(name="blackjack", aliases=['bj'], description="Play blackjack! Try to get 21 without going over.")
     @app_commands.describe(bet="Amount to bet")
     async def blackjack(self, ctx: commands.Context, bet: int):
-        """Play a game of blackjack."""
+        """Play blackjack - Get 21 without busting! Has hit, stand, and double down options."""
         # Check cooldown
         if cooldown_manager.is_on_cooldown("blackjack", ctx.author.id, 10):
             remaining = cooldown_manager.get_remaining_time("blackjack", ctx.author.id, 10)
@@ -572,14 +572,14 @@ class Casino(commands.Cog):
                 if ctx.author.id in self.active_games:
                     del self.active_games[ctx.author.id]
     
-    @commands.hybrid_command(name="roulette", description="Play roulette! Bet on numbers, colors, or ranges.")
+    @commands.hybrid_command(name="roulette", aliases=['rl'], description="Play roulette! Bet on numbers, colors, or ranges.")
     @app_commands.describe(
         bet_type="Type of bet: number (0-36), red, black, odd, even, low (1-18), high (19-36)",
         value="The value to bet on (for number bets)",
         amount="Amount to bet"
     )
     async def roulette(self, ctx: commands.Context, bet_type: str, value: Optional[str], amount: int):
-        """Play roulette with various bet types."""
+        """European roulette - Bet on numbers (36x), colors (2x), odd/even (2x), or ranges (2x)."""
         async with self.bot.get_session() as session:
             # Check bet limits
             valid, error = await self.check_bet_limits(ctx.author.id, amount, session)
@@ -718,10 +718,10 @@ class Casino(commands.Cog):
             
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="slots", description="Play the slot machine! Match symbols to win big!")
+    @commands.hybrid_command(name="slots", aliases=['s', 'slot'], description="Play the slot machine! Match symbols to win big!")
     @app_commands.describe(bet="Amount to bet")
     async def slots(self, ctx: commands.Context, bet: int):
-        """Play the slot machine."""
+        """Slot machine - Match 3 symbols to win! Payouts from 3x to 50x."""
         async with self.bot.get_session() as session:
             # Check bet limits
             valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
@@ -787,12 +787,13 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="coinflip", description="Flip a coin! Heads or tails?")
+    @commands.hybrid_command(name="coinflip", aliases=['cf', 'flip'], description="Flip a coin! Heads or tails?")
     @app_commands.describe(
         choice="Choose heads or tails",
         bet="Amount to bet"
     )
     async def coinflip(self, ctx: commands.Context, choice: str, bet: int):
+        """Coinflip - 50/50 chance! Choose heads or tails, win 2x your bet."""
         """Flip a coin and bet on the outcome."""
         choice = choice.lower()
         if choice not in ['heads', 'tails', 'h', 't']:
@@ -865,13 +866,13 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="dice", description="Roll dice and bet on the outcome!")
+    @commands.hybrid_command(name="dice", aliases=['d', 'roll'], description="Roll dice and bet on the outcome!")
     @app_commands.describe(
         prediction="Predict: over (8+), under (6-), seven, or specific number (2-12)",
         bet="Amount to bet"
     )
     async def dice(self, ctx: commands.Context, prediction: str, bet: int):
-        """Roll two dice and bet on the outcome."""
+        """Dice - Roll 2 dice! Bet on over/under (2x), seven (4x), or exact number (10x)."""
         prediction = prediction.lower()
         
         async with self.bot.get_session() as session:
@@ -960,13 +961,13 @@ class Casino(commands.Cog):
             
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="crash", description="Cash out before the multiplier crashes!")
+    @commands.hybrid_command(name="crash", aliases=['cr'], description="Cash out before the multiplier crashes!")
     @app_commands.describe(
         bet="Amount to bet",
         target="Target multiplier to cash out (1.1 to 100)"
     )
     async def crash(self, ctx: commands.Context, bet: int, target: float):
-        """Bet on a crash game - cash out before it crashes!"""
+        """Crash - Set target multiplier, hope it doesn't crash before! 1.1x to 100x possible."""
         if target < 1.1 or target > 100:
             await ctx.send("❌ Target must be between 1.1x and 100x!", ephemeral=True)
             return
@@ -1043,10 +1044,10 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="russianroulette", description="Play Russian Roulette! High risk, high reward!")
+    @commands.hybrid_command(name="russianroulette", aliases=['rr', 'roulette6'], description="Play Russian Roulette! High risk, high reward!")
     @app_commands.describe(bet="Amount to bet")
     async def russian_roulette(self, ctx: commands.Context, bet: int):
-        """Play Russian Roulette - 1 in 6 chance to lose everything!"""
+        """Russian Roulette - 1 in 6 chance to lose! Survive for 5x payout. Ultimate risk!"""
         async with self.bot.get_session() as session:
             # Check bet limits
             valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
@@ -1118,10 +1119,10 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="war", description="Play War! High card wins!")
+    @commands.hybrid_command(name="war", aliases=['w'], description="Play War! High card wins!")
     @app_commands.describe(bet="Amount to bet")
     async def war(self, ctx: commands.Context, bet: int):
-        """Play the card game War."""
+        """War - Simple card battle! Higher card wins 2x, tie returns bet."""
         async with self.bot.get_session() as session:
             # Check bet limits
             valid, error = await self.check_bet_limits(ctx.author.id, bet, session)
@@ -1203,13 +1204,13 @@ class Casino(commands.Cog):
             embed.set_footer(text="Casino • War Table")
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="baccarat", description="Play Baccarat! Bet on Player, Banker, or Tie!")
+    @commands.hybrid_command(name="baccarat", aliases=['bc', 'bac'], description="Play Baccarat! Bet on Player, Banker, or Tie!")
     @app_commands.describe(
         bet_on="Bet on: player, banker, or tie",
         amount="Amount to bet"
     )
     async def baccarat(self, ctx: commands.Context, bet_on: str, amount: int):
-        """Play Baccarat."""
+        """Baccarat - Bet on Player (2x), Banker (1.95x), or Tie (8x). Closest to 9 wins!"""
         bet_on = bet_on.lower()
         if bet_on not in ['player', 'banker', 'tie']:
             await ctx.send("Invalid bet! Choose: player, banker, or tie", ephemeral=True)
@@ -1331,13 +1332,13 @@ class Casino(commands.Cog):
             embed.set_footer(text="Casino • Baccarat Table")
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="hilo", description="Guess if the next card is higher or lower!")
+    @commands.hybrid_command(name="hilo", aliases=['hl', 'highlow'], description="Guess if the next card is higher or lower!")
     @app_commands.describe(
         guess="Guess: high or low",
         bet="Amount to bet"
     )
     async def hilo(self, ctx: commands.Context, guess: str, bet: int):
-        """Play High-Low card game."""
+        """High-Low - Guess if next card is higher or lower! Win 2x, tie returns bet."""
         guess = guess.lower()
         if guess not in ['high', 'low', 'h', 'l']:
             await ctx.send("Invalid guess! Choose: high or low", ephemeral=True)
@@ -1439,13 +1440,13 @@ class Casino(commands.Cog):
             embed.set_footer(text="Casino • High-Low Table")
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="keno", description="Pick numbers and hope they match!")
+    @commands.hybrid_command(name="keno", aliases=['k', 'lotto'], description="Pick numbers and hope they match!")
     @app_commands.describe(
         numbers="Pick 5 numbers (1-80) separated by spaces",
         bet="Amount to bet"
     )
     async def keno(self, ctx: commands.Context, numbers: str, bet: int):
-        """Play Keno - lottery style number matching."""
+        """Keno - Lottery style! Pick 5 numbers (1-80). Match 5 for 50x, 4 for 10x, 3 for 3x."""
         try:
             picked = [int(n) for n in numbers.split()]
             if len(picked) != 5:
@@ -1549,10 +1550,10 @@ class Casino(commands.Cog):
             embed.set_footer(text="Casino • Keno")
             await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="poker", aliases=['holdem', 'texasholdem'])
+    @commands.hybrid_command(name="poker", aliases=['pk', 'holdem', 'texasholdem'])
     async def poker(self, ctx: commands.Context, bet: int):
         """
-        Play Texas Hold'em Poker against the dealer.
+        Texas Hold'em Poker - Battle the dealer! Pre-flop, flop, turn, river. Royal flush to high card rankings. Win up to 2x!
         
         Args:
             bet: Amount to bet (minimum 100 coins)

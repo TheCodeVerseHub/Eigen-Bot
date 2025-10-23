@@ -33,7 +33,7 @@ COG_DESCRIPTIONS = {
     "whoisalias": "User information and lookup commands",
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
     "invitetracker": "Professional invite tracking system with analytics",
-    "casino": "Professional casino with blackjack, roulette, slots, and more gambling games",
+    "casino": "🎲 12 professional casino games: Blackjack (f?bj), Poker (f?pk), Roulette (f?rl), Slots (f?s), Dice (f?d), and more! Win big or go broke!",
 }
 
 

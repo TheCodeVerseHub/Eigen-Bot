@@ -137,10 +137,10 @@ class Economy(commands.Cog):
             else:
                 await interaction.response.send_message("An error occurred while processing your collection.")
 
-    @commands.command(name='daily')
+    @commands.command(name='daily', aliases=['d'])
     @check_cooldown('daily', 86400)  # 24 hours
     async def daily(self, ctx: commands.Context):
-        """Claim daily reward."""
+        """Claim your daily reward! 24-hour cooldown for consistent income."""
         reward = self.config.daily_reward
 
         async with self.bot.get_session() as session:
@@ -179,10 +179,10 @@ class Economy(commands.Cog):
             else:
                 await interaction.response.send_message("An error occurred while processing your daily reward.")
 
-    @commands.command(name='weekly')
+    @commands.command(name='weekly', aliases=['week'])
     @check_cooldown('weekly', 604800)  # 7 days
     async def weekly(self, ctx: commands.Context):
-        """Claim weekly reward."""
+        """Claim your weekly reward! 7-day cooldown for big bonus."""
         reward = self.config.weekly_reward
 
         async with self.bot.get_session() as session:
@@ -221,9 +221,9 @@ class Economy(commands.Cog):
             else:
                 await interaction.response.send_message("An error occurred while processing your weekly reward.")
 
-    @commands.command(name='deposit')
+    @commands.command(name='deposit', aliases=['dep'])
     async def deposit(self, ctx: commands.Context, amount: str):
-        """Deposit coins from wallet to bank."""
+        """Deposit coins from wallet to bank. Keep your money safe from robbery and crime losses!"""
         try:
             if amount.lower() == 'all':
                 async with self.bot.get_session() as session:
@@ -312,9 +312,9 @@ class Economy(commands.Cog):
         )
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(name='withdraw')
+    @commands.command(name='withdraw', aliases=['wd'])
     async def withdraw(self, ctx: commands.Context, amount: str):
-        """Withdraw coins from bank to wallet."""
+        """Withdraw coins from bank to wallet. Get cash for gambling and transactions!"""
         try:
             if amount.lower() == 'all':
                 async with self.bot.get_session() as session:
@@ -496,10 +496,10 @@ class Economy(commands.Cog):
         embed = EmbedBuilder.leaderboard_embed(leaderboard, "🏆 Richest Players")
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(name='beg')
+    @commands.command(name='beg', aliases=['b'])
     @check_cooldown('beg', 60)  # 1 minute
     async def beg(self, ctx: commands.Context):
-        """Beg for coins from strangers."""
+        """Beg for coins from strangers. 70% success rate, earn 10-100 coins. 1-minute cooldown."""
         import random
         
         # 70% chance to get coins
@@ -537,10 +537,10 @@ class Economy(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.command(name='crime')
+    @commands.command(name='crime', aliases=['c'])
     @check_cooldown('crime', 300)  # 5 minutes
     async def crime(self, ctx: commands.Context):
-        """Commit a crime for big rewards (or losses)."""
+        """Commit a crime for big rewards! 40% success (300-2k coins), 60% fail (200-600 fine). 5-minute cooldown."""
         import random
         
         # 40% success rate
@@ -789,10 +789,10 @@ class Economy(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name='search')
+    @commands.command(name='search', aliases=['scavenge', 'hunt'])
     @check_cooldown('search', 45)  # 45 seconds
     async def search(self, ctx: commands.Context):
-        """Search random places for coins."""
+        """Search random places for coins. 80% success rate, earn 5-120 coins from 8 locations. 45-second cooldown."""
         import random
         
         locations = [
