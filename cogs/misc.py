@@ -113,12 +113,18 @@ class Misc(commands.Cog):
             await ctx.send(embed=embed)
             return
         
-        # Check if user has Spotify activity
+        # Check all activities - be more comprehensive
         spotify_activity = None
+        music_activity = None
+        
         for activity in target_user.activities:
+            # Check for Spotify specifically
             if isinstance(activity, discord.Spotify):
                 spotify_activity = activity
                 break
+            # Check for any listening activity (including other music apps)
+            elif activity.type == discord.ActivityType.listening:
+                music_activity = activity
         
         if spotify_activity:
             # Create rich embed for Spotify
@@ -172,15 +178,9 @@ class Misc(commands.Cog):
             
             embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
             
-        else:
-            # Check for other music activities
-            music_activity = None
-            for activity in target_user.activities:
-                if activity.type == discord.ActivityType.listening:
-                    music_activity = activity
-                    break
-            
-            if music_activity:
+        elif music_activity:
+            # Found other music activity (not Spotify)
+            if True:
                 # Generic music activity
                 embed = discord.Embed(
                     title="🎵 Now Listening",
@@ -204,28 +204,46 @@ class Misc(commands.Cog):
                     embed.add_field(name="State", value=state, inline=False)
                 
                 embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
-            else:
-                # No music activity found
-                if target_user == ctx.author:
+        else:
+            # No music activity found - show debug info
+            if target_user == ctx.author:
+                # Show what activities were detected
+                activities_list = []
+                for activity in target_user.activities:
+                    activities_list.append(f"• **{activity.name}** (Type: {activity.type.name})")
+                
+                if activities_list:
+                    debug_info = "\n".join(activities_list)
                     message = (
-                        "❌ **You are not currently listening to any music!**\n\n"
-                        "To use this command, you must:\n"
-                        "• Be listening to Spotify or another music app\n"
-                        "• Have your Discord client open and showing your activity\n"
-                        "• Have activity status enabled in Discord settings"
+                        "❌ **No music activity detected!**\n\n"
+                        f"**Your current activities:**\n{debug_info}\n\n"
+                        "**Possible solutions:**\n"
+                        "• Make sure you're listening to music on Spotify, Apple Music, YouTube Music, etc.\n"
+                        "• Enable 'Display current activity' in Discord Settings → Activity Privacy\n"
+                        "• Restart your Discord client\n"
+                        "• Make sure the music app is connected to Discord (check User Settings → Connections)"
                     )
                 else:
                     message = (
-                        f"❌ **{target_user.display_name} is not currently listening to any music!**\n\n"
-                        "They must be listening to Spotify or another music app with activity status enabled."
+                        "❌ **You are not currently listening to any music!**\n\n"
+                        "**To use this command:**\n"
+                        "• Be listening to Spotify or another music app\n"
+                        "• Enable 'Display current activity' in Discord Settings → Activity Privacy\n"
+                        "• Have your Discord client open and showing your activity\n"
+                        "• Connect your music app in Discord Settings → Connections (for Spotify)"
                     )
-                
-                embed = discord.Embed(
-                    title="🎵 No Music Playing",
-                    description=message,
-                    color=discord.Color.red()
+            else:
+                message = (
+                    f"❌ **{target_user.display_name} is not currently listening to any music!**\n\n"
+                    "They must be listening to Spotify or another music app with activity status enabled."
                 )
-                embed.set_footer(text="Tip: Make sure activity status is enabled in Discord settings!")
+            
+            embed = discord.Embed(
+                title="🎵 No Music Playing",
+                description=message,
+                color=discord.Color.red()
+            )
+            embed.set_footer(text="Tip: Check Discord Settings → Activity Privacy → Display current activity")
         
         await ctx.send(embed=embed)
 
