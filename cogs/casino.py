@@ -787,7 +787,7 @@ class Casino(commands.Cog):
             
             await message.edit(embed=embed)
     
-    @commands.hybrid_command(name="coinflip", aliases=['cf', 'flip'], description="Flip a coin! Heads or tails?")
+    @commands.hybrid_command(name="coinflip", aliases=['cf'], description="Flip a coin! Heads or tails?")
     @app_commands.describe(
         choice="Choose heads or tails",
         bet="Amount to bet"
