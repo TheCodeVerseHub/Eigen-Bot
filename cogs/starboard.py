@@ -959,40 +959,8 @@ class StarboardSystem(commands.Cog):
             """, (message.id,))
             star_users = list(await cursor.fetchall())
             
-        if star_users:
-            guild = message.guild
-            user_names = []
-            
-            # Get display names for first few users
-            for row in star_users[:8]:  # Show up to 8 users
-                user_id, _ = row
-                user = guild.get_member(user_id) if guild else None
-                if user:
-                    user_names.append(user.display_name)
-                    
-            if len(star_users) > 8:
-                remaining = len(star_users) - 8
-                user_list = f"{', '.join(user_names[:8])} +{remaining} more"
-            else:
-                user_list = ', '.join(user_names)
-                
-            # Clean timestamp formatting (be lenient with stored formats)
-            try:
-                first_starred = datetime.fromisoformat(star_users[0][1].replace('Z', '+00:00'))
-            except Exception:
-                try:
-                    # Fallback: parse without timezone
-                    first_starred = datetime.fromisoformat(star_users[0][1])
-                except Exception:
-                    first_starred = None
-
-            first_time = discord.utils.format_dt(first_starred, style='R') if first_starred else "some time ago"
-
-            embed.set_footer(
-                text=f"⭐ Starred by: {user_list} • First starred {first_time}"
-            )
-        else:
-            embed.set_footer(text=f"Message ID: {message.id}")
+        # Simple, clean footer
+        embed.set_footer(text=f"⭐ Starboard • Message ID: {message.id}")
             
         return embed
 
