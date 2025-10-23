@@ -103,6 +103,16 @@ class Misc(commands.Cog):
         """Display the current song/music that a user is listening to on Spotify or other music apps."""
         target_user = user or ctx.author
         
+        # Ensure target_user is a Member (has activities attribute)
+        if not isinstance(target_user, discord.Member):
+            embed = discord.Embed(
+                title="❌ Error",
+                description="This command only works in servers, not in DMs.",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
+            return
+        
         # Check if user has Spotify activity
         spotify_activity = None
         for activity in target_user.activities:
@@ -184,11 +194,14 @@ class Misc(commands.Cog):
                     inline=False
                 )
                 
-                if hasattr(music_activity, 'details') and music_activity.details:
-                    embed.add_field(name="Details", value=music_activity.details, inline=False)
+                # Use getattr to safely access optional attributes
+                details = getattr(music_activity, 'details', None)
+                if details:
+                    embed.add_field(name="Details", value=details, inline=False)
                 
-                if hasattr(music_activity, 'state') and music_activity.state:
-                    embed.add_field(name="State", value=music_activity.state, inline=False)
+                state = getattr(music_activity, 'state', None)
+                if state:
+                    embed.add_field(name="State", value=state, inline=False)
                 
                 embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
             else:
