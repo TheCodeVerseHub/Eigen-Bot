@@ -10,13 +10,13 @@ COG_EMOJIS = {
     "economy": "💰",
     "fun": "🎭",
     "tags": "🏷️",
-    "community": "👥",
+    "communitycommands": "👥",
     "election": "🗳️",
     "highlights": "🔔",
     "misc": "📝",
-    "starboard": "⭐",
-    "whois_alias": "🔍",
-    "utility_extra": "🛠️",
+    "starboardsystem": "⭐",
+    "whoisalias": "🔍",
+    "utilityextra": "🛠️",
 }
 
 # Category descriptions
@@ -25,13 +25,13 @@ COG_DESCRIPTIONS = {
     "economy": "Virtual currency system with wallets, banks, and income commands",
     "fun": "Entertainment commands including jokes, trivia, and games",
     "tags": "Create and manage custom text snippets for your server",
-    "community": "Engage your community with quotes, questions, and memes",
+    "communitycommands": "Engage your community with quotes, questions, and memes",
     "election": "Democratic voting system with weighted votes",
     "highlights": "Get notified when your keywords are mentioned",
     "misc": "Miscellaneous utility commands",
-    "starboard": "Highlight the best messages with stars",
-    "whois_alias": "User information and lookup commands",
-    "utility_extra": "Extra utility commands like reminders, dice, and emotes",
+    "starboardsystem": "Highlight the best messages with stars",
+    "whoisalias": "User information and lookup commands",
+    "utilityextra": "Extra utility commands like reminders, dice, and emotes",
 }
 
 
@@ -51,11 +51,10 @@ class HelpSelect(discord.ui.Select):
             )
         ]
         
-        # Add options for each loaded cog
-        available = getattr(bot, 'available_cogs', list(bot.cogs.keys()))
-        for cog_name in available:
-            cog = bot.get_cog(cog_name)
-            if cog is None or cog_name.lower() == 'help':
+        # Add options for each loaded cog (use actual cog names from bot.cogs)
+        for cog_name, cog in sorted(bot.cogs.items()):
+            # Skip help cog itself
+            if cog_name.lower() == 'helpcog':
                 continue
             
             # Get visible commands count
@@ -70,7 +69,7 @@ class HelpSelect(discord.ui.Select):
             
             options.append(
                 discord.SelectOption(
-                    label=f"{cog_name.title()}",
+                    label=f"{cog_name}",
                     value=cog_name.lower(),
                     description=f"{description[:50]}",
                     emoji=emoji
@@ -109,12 +108,11 @@ class HelpSelect(discord.ui.Select):
             color=discord.Color.blue()
         )
         
-        # Add category overview
-        available = getattr(self.bot, 'available_cogs', list(self.bot.cogs.keys()))
+        # Add category overview (use actual loaded cogs)
         categories = []
-        for cog_name in available:
-            cog = self.bot.get_cog(cog_name)
-            if cog is None or cog_name.lower() == 'help':
+        for cog_name, cog in sorted(self.bot.cogs.items()):
+            # Skip help cog
+            if cog_name.lower() == 'helpcog':
                 continue
             
             visible_count = sum(1 for cmd in cog.get_commands() 
@@ -122,7 +120,7 @@ class HelpSelect(discord.ui.Select):
             
             if visible_count > 0:
                 emoji = COG_EMOJIS.get(cog_name.lower(), "📁")
-                categories.append(f"{emoji} **{cog_name.title()}** - {visible_count} commands")
+                categories.append(f"{emoji} **{cog_name}** - {visible_count} commands")
         
         if categories:
             embed.add_field(
@@ -136,7 +134,15 @@ class HelpSelect(discord.ui.Select):
     
     def _create_category_embed(self, cog_name: str) -> discord.Embed:
         """Create embed for a specific category."""
-        cog = self.bot.get_cog(cog_name)
+        # Find the cog (case-insensitive)
+        cog = None
+        actual_cog_name = None
+        for name, c in self.bot.cogs.items():
+            if name.lower() == cog_name.lower():
+                cog = c
+                actual_cog_name = name
+                break
+        
         if cog is None:
             return discord.Embed(
                 title="❌ Category Not Found",
@@ -148,7 +154,7 @@ class HelpSelect(discord.ui.Select):
         description = COG_DESCRIPTIONS.get(cog_name.lower(), "Commands in this category")
         
         embed = discord.Embed(
-            title=f"{emoji} {cog_name.title()} Commands",
+            title=f"{emoji} {actual_cog_name} Commands",
             description=description,
             color=discord.Color.green()
         )
@@ -241,11 +247,10 @@ class HelpCog(commands.Cog):
         )
         
         # Add category overview
-        available = getattr(self.bot, 'available_cogs', list(self.bot.cogs.keys()))
         categories = []
-        for cog_name in available:
-            cog = self.bot.get_cog(cog_name)
-            if cog is None or cog_name.lower() == 'help':
+        for cog_name, cog in sorted(self.bot.cogs.items()):
+            # Skip help cog
+            if cog_name.lower() == 'helpcog':
                 continue
             
             visible_count = sum(1 for cmd in cog.get_commands() 
@@ -253,7 +258,7 @@ class HelpCog(commands.Cog):
             
             if visible_count > 0:
                 emoji = COG_EMOJIS.get(cog_name.lower(), "📁")
-                categories.append(f"{emoji} **{cog_name.title()}** - {visible_count} commands")
+                categories.append(f"{emoji} **{cog_name}** - {visible_count} commands")
         
         if categories:
             embed.add_field(
@@ -315,21 +320,21 @@ class HelpCog(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        # Try to find a cog
-        cog = self.bot.get_cog(query)
-        if cog is None:
-            # Try case-insensitive search
-            for cog_name in self.bot.cogs:
-                if cog_name.lower() == query.lower():
-                    cog = self.bot.get_cog(cog_name)
-                    break
+        # Try to find a cog (case-insensitive)
+        cog = None
+        actual_cog_name = None
+        for name, c in self.bot.cogs.items():
+            if name.lower() == query.lower():
+                cog = c
+                actual_cog_name = name
+                break
         
-        if cog:
-            emoji = COG_EMOJIS.get(cog.qualified_name.lower(), "📁")
-            description = COG_DESCRIPTIONS.get(cog.qualified_name.lower(), "Commands in this category")
+        if cog and actual_cog_name:
+            emoji = COG_EMOJIS.get(actual_cog_name.lower(), "📁")
+            description = COG_DESCRIPTIONS.get(actual_cog_name.lower(), "Commands in this category")
             
             embed = discord.Embed(
-                title=f"{emoji} {cog.qualified_name.title()} Commands",
+                title=f"{emoji} {actual_cog_name} Commands",
                 description=description,
                 color=discord.Color.green()
             )
