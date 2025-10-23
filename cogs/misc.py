@@ -98,6 +98,124 @@ class Misc(commands.Cog):
         
         await ctx.send(embed=embed)
 
+    @commands.hybrid_command(name='song', aliases=['sp', 'spotify'], description='Show what you are currently listening to on Spotify')
+    async def song(self, ctx: commands.Context, user: Optional[discord.Member] = None):
+        """Display the current song/music that a user is listening to on Spotify or other music apps."""
+        target_user = user or ctx.author
+        
+        # Check if user has Spotify activity
+        spotify_activity = None
+        for activity in target_user.activities:
+            if isinstance(activity, discord.Spotify):
+                spotify_activity = activity
+                break
+        
+        if spotify_activity:
+            # Create rich embed for Spotify
+            embed = discord.Embed(
+                title="🎵 Now Playing on Spotify",
+                description=f"**{target_user.display_name}** is listening to:",
+                color=0x1DB954  # Spotify green
+            )
+            
+            # Song details
+            embed.add_field(
+                name="🎵 Track",
+                value=f"**[{spotify_activity.title}]({spotify_activity.track_url})**",
+                inline=False
+            )
+            
+            embed.add_field(
+                name="👨‍🎤 Artist(s)",
+                value=", ".join(spotify_activity.artists),
+                inline=True
+            )
+            
+            embed.add_field(
+                name="💿 Album",
+                value=spotify_activity.album,
+                inline=True
+            )
+            
+            # Duration
+            duration = spotify_activity.duration
+            current = (discord.utils.utcnow() - spotify_activity.start).total_seconds()
+            
+            duration_str = f"{int(duration.total_seconds() // 60)}:{int(duration.total_seconds() % 60):02d}"
+            current_str = f"{int(current // 60)}:{int(current % 60):02d}"
+            
+            # Progress bar
+            progress = min(current / duration.total_seconds(), 1.0)
+            bar_length = 20
+            filled = int(bar_length * progress)
+            bar = "━" * filled + "○" + "─" * (bar_length - filled - 1)
+            
+            embed.add_field(
+                name="⏱️ Duration",
+                value=f"`{current_str}` {bar} `{duration_str}`",
+                inline=False
+            )
+            
+            # Add album art if available
+            if spotify_activity.album_cover_url:
+                embed.set_thumbnail(url=spotify_activity.album_cover_url)
+            
+            embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+            
+        else:
+            # Check for other music activities
+            music_activity = None
+            for activity in target_user.activities:
+                if activity.type == discord.ActivityType.listening:
+                    music_activity = activity
+                    break
+            
+            if music_activity:
+                # Generic music activity
+                embed = discord.Embed(
+                    title="🎵 Now Listening",
+                    description=f"**{target_user.display_name}** is listening to:",
+                    color=discord.Color.blurple()
+                )
+                
+                embed.add_field(
+                    name="Activity",
+                    value=f"**{music_activity.name}**",
+                    inline=False
+                )
+                
+                if hasattr(music_activity, 'details') and music_activity.details:
+                    embed.add_field(name="Details", value=music_activity.details, inline=False)
+                
+                if hasattr(music_activity, 'state') and music_activity.state:
+                    embed.add_field(name="State", value=music_activity.state, inline=False)
+                
+                embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+            else:
+                # No music activity found
+                if target_user == ctx.author:
+                    message = (
+                        "❌ **You are not currently listening to any music!**\n\n"
+                        "To use this command, you must:\n"
+                        "• Be listening to Spotify or another music app\n"
+                        "• Have your Discord client open and showing your activity\n"
+                        "• Have activity status enabled in Discord settings"
+                    )
+                else:
+                    message = (
+                        f"❌ **{target_user.display_name} is not currently listening to any music!**\n\n"
+                        "They must be listening to Spotify or another music app with activity status enabled."
+                    )
+                
+                embed = discord.Embed(
+                    title="🎵 No Music Playing",
+                    description=message,
+                    color=discord.Color.red()
+                )
+                embed.set_footer(text="Tip: Make sure activity status is enabled in Discord settings!")
+        
+        await ctx.send(embed=embed)
+
 
 async def setup(bot):
     """Setup the misc cog."""
