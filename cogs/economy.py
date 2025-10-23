@@ -403,7 +403,7 @@ class Economy(commands.Cog):
         )
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(name='transfer', aliases=['pay', 'give'])
+    @commands.command(name='transfer', aliases=['pay'])
     async def transfer(self, ctx: commands.Context, user: discord.User, amount: int):
         """Transfer coins to another user."""
         if user == ctx.author:
