@@ -101,6 +101,7 @@ class Fun2OoshBot(commands.Bot):
             'cogs.utility_extra',
             'cogs.invitetracker',
             'cogs.casino',
+            'cogs.afk',
         ]
 
         for ext in feature_cogs:

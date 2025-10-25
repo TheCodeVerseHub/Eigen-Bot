@@ -18,6 +18,7 @@ COG_EMOJIS = {
     "utilityextra": "🛠️",
     "invitetracker": "📊",
     "casino": "🎰",
+    "afksystem": "💤",
 }
 
 # Category descriptions
@@ -34,6 +35,7 @@ COG_DESCRIPTIONS = {
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
     "invitetracker": "Professional invite tracking system with analytics",
     "casino": "🎲 12 professional casino games: Blackjack (?bj), Poker (?pk), Roulette (?rl), Slots (?s), Dice (?d), and more! Win big or go broke!",
+    "afksystem": "💤 Away From Keyboard system - Set AFK status with custom reasons, auto-respond to mentions, and track time away",
 }
 
 
