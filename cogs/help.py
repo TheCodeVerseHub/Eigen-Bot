@@ -33,7 +33,7 @@ COG_DESCRIPTIONS = {
     "whoisalias": "User information and lookup commands",
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
     "invitetracker": "Professional invite tracking system with analytics",
-    "casino": "🎲 12 professional casino games: Blackjack (f?bj), Poker (f?pk), Roulette (f?rl), Slots (f?s), Dice (f?d), and more! Win big or go broke!",
+    "casino": "🎲 12 professional casino games: Blackjack (?bj), Poker (?pk), Roulette (?rl), Slots (?s), Dice (?d), and more! Win big or go broke!",
 }
 
 
@@ -103,7 +103,7 @@ class HelpSelect(discord.ui.Select):
             description=(
                 "Welcome to Eigen Bot! A feature-rich Discord bot with economy, games, and community features.\n\n"
                 "**How to use commands:**\n"
-                "• Prefix: `f?command` (e.g., `f?balance`)\n"
+                "• Prefix: `?command` (e.g., `?balance`)\n"
                 "• Slash: `/command` (e.g., `/balance`)\n\n"
                 "**Select a category below to view commands!**"
             ),
@@ -131,7 +131,7 @@ class HelpSelect(discord.ui.Select):
                 inline=False
             )
         
-        embed.set_footer(text="Use f?help <command> for detailed command help • Tip: Try the dropdown menu!")
+        embed.set_footer(text="Use ?helpmenu <command> for detailed command help • Tip: Try the dropdown menu!")
         return embed
     
     def _create_category_embed(self, cog_name: str) -> discord.Embed:
@@ -208,7 +208,7 @@ class HelpSelect(discord.ui.Select):
         else:
             embed.description = "No commands available in this category."
         
-        embed.set_footer(text=f"Use f?help <command> for detailed help • Select another category from the menu")
+        embed.set_footer(text=f"Use ?helpmenu <command> for detailed help • Select another category from the menu")
         return embed
 
 
@@ -225,7 +225,7 @@ class HelpView(discord.ui.View):
         """Only allow the command author to use the dropdown."""
         if interaction.user.id != self.author_id:
             await interaction.response.send_message(
-                "❌ This help menu is not for you! Use `f?help` to get your own.",
+                "❌ This help menu is not for you! Use `?helpmenu` to get your own.",
                 ephemeral=True
             )
             return False
@@ -243,15 +243,15 @@ class HelpCog(commands.Cog):
     """Interactive help command with dropdown menus.
 
     Provides a modern, user-friendly help interface with dropdown menus to browse categories.
-    Works as a hybrid command so both prefix (`f?help`) and slash (`/help`) are available.
+    Works as a hybrid command so both prefix (`?helpmenu`) and slash (`/help`) are available.
     """
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name="help", description="Show help for commands or a specific command/cog")
+    @commands.hybrid_command(name="helpmenu", description="Show help for commands or a specific command/cog")
     @app_commands.describe(query="Optional command or cog name to show detailed help for")
-    async def help(self, ctx: commands.Context, *, query: Optional[str] = None):
+    async def helpmenu(self, ctx: commands.Context, *, query: Optional[str] = None):
         """Show interactive help menu or detailed help for a specific command/category."""
         
         # If a specific command or cog name was provided, show detailed help
@@ -265,7 +265,7 @@ class HelpCog(commands.Cog):
             description=(
                 "Welcome to Eigen Bot! A feature-rich Discord bot with economy, games, and community features.\n\n"
                 "**How to use commands:**\n"
-                "• Prefix: `f?command` (e.g., `f?balance`)\n"
+                "• Prefix: `?command` (e.g., `?balance`)\n"
                 "• Slash: `/command` (e.g., `/balance`)\n\n"
                 "**Select a category below to view commands!**"
             ),
@@ -293,7 +293,7 @@ class HelpCog(commands.Cog):
                 inline=False
             )
         
-        embed.set_footer(text="Use f?help <command> for detailed command help • Tip: Try the dropdown menu!")
+        embed.set_footer(text="Use ?helpmenu <command> for detailed command help • Tip: Try the dropdown menu!")
         
         # Create view with dropdown
         view = HelpView(self.bot, ctx.author.id)
@@ -310,7 +310,7 @@ class HelpCog(commands.Cog):
             )
             
             # Add usage
-            usage = f"f?{cmd.qualified_name} {cmd.signature}".strip()
+            usage = f"?{cmd.qualified_name} {cmd.signature}".strip()
             embed.add_field(
                 name="Usage",
                 value=f"```\n{usage}\n```",
@@ -342,7 +342,7 @@ class HelpCog(commands.Cog):
                     inline=True
                 )
             
-            embed.set_footer(text="Tip: Most commands work with both f? prefix and / slash commands!")
+            embed.set_footer(text="Tip: Most commands work with both ? prefix and / slash commands!")
             await ctx.send(embed=embed)
             return
 
@@ -386,7 +386,7 @@ class HelpCog(commands.Cog):
             else:
                 embed.description = "No visible commands in this category."
 
-            embed.set_footer(text="Use f?help <command> for detailed command help")
+            embed.set_footer(text="Use ?helpmenu <command> for detailed command help")
             await ctx.send(embed=embed)
             return
 
@@ -394,7 +394,7 @@ class HelpCog(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="❌ Not Found",
-                description=f"No command or category named `{query}` was found.\n\nUse `f?help` to see all available commands.",
+                description=f"No command or category named `{query}` was found.\n\nUse `?helpmenu` to see all available commands.",
                 color=discord.Color.red()
             )
         )

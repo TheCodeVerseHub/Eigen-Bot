@@ -80,8 +80,8 @@ class Misc(commands.Cog):
         embed.add_field(
             name="💡 Getting Started",
             value=(
-                "Use `f?help` or `/help` to see all available commands!\n"
-                "Most commands work with both `f?` prefix and `/` slash commands."
+                "Use `?helpmenu` or `/help` to see all available commands!\n"
+                "Most commands work with both `?` prefix and `/` slash commands."
             ),
             inline=False
         )
