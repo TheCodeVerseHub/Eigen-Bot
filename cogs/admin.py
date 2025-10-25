@@ -23,8 +23,14 @@ class Admin(commands.Cog):
         self.config = config
 
     async def cog_check(self, ctx: commands.Context):
-        """Check if user is owner."""
-        return ctx.author.id == self.config.owner_id
+        """Allow owner or users with administrator permission."""
+        if ctx.author.id == self.config.owner_id:
+            return True
+        if ctx.guild is not None:
+            member = ctx.guild.get_member(ctx.author.id)
+            if member and member.guild_permissions.administrator:
+                return True
+        return False
 
     @commands.command(name='add_money')
     async def add_money(self, ctx: commands.Context, user: discord.User, amount: int):
@@ -44,7 +50,13 @@ class Admin(commands.Cog):
     @app_commands.describe(user='User to add money to', amount='Amount to add')
     async def add_money_slash(self, interaction: discord.Interaction, user: discord.User, amount: int):
         """Slash command for adding money."""
-        if interaction.user.id != self.config.owner_id:
+        is_owner = interaction.user.id == self.config.owner_id
+        is_admin = False
+        if interaction.guild:
+            member = interaction.guild.get_member(interaction.user.id)
+            if member and member.guild_permissions.administrator:
+                is_admin = True
+        if not (is_owner or is_admin):
             await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
             return
 
