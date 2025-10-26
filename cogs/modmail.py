@@ -17,10 +17,14 @@ class ModMail(commands.Cog):
 
     class ConfirmView(discord.ui.View):
         def __init__(self, cog, user, message_content):
-            super().__init__(timeout=300)  # 5 minutes
+            super().__init__(timeout=600)  # 10 minutes
             self.cog = cog
             self.user = user
             self.message_content = message_content
+
+        async def on_timeout(self):
+            # Reset session if no action in 10 minutes
+            self.cog.modmail_sessions[self.user.id] = None
 
         @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
         async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -36,7 +40,7 @@ class ModMail(commands.Cog):
                 embed.set_author(name=f"{self.user} ({self.user.id})", icon_url=self.user.display_avatar.url)
                 await channel.send(embed=embed)
                 await channel.send(f"User ID: `{self.user.id}`")
-            await interaction.response.send_message("Your message has been sent to the moderators. Please wait for a reply before sending anything else.", ephemeral=True)
+            await interaction.response.send_message("Message sent to moderators.", ephemeral=False)
             self.cog.modmail_sessions[self.user.id] = 'locked'
             self.stop()
 
@@ -44,7 +48,7 @@ class ModMail(commands.Cog):
         async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != self.user:
                 return
-            await interaction.response.send_message("Message not sent. Send a new message below.", ephemeral=True)
+            await interaction.response.send_message("Message not sent. Kindly send another message below if needed, or return when needed.", ephemeral=False)
             # Keep session 'open'
             self.stop()
 
