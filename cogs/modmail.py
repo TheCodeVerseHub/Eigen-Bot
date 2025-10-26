@@ -44,7 +44,7 @@ class ModMail(commands.Cog):
         async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != self.user:
                 return
-            await interaction.response.send_message("Send your new message below.", ephemeral=True)
+            await interaction.response.send_message("Message not sent. Send a new message below.", ephemeral=True)
             # Keep session 'open'
             self.stop()
 
@@ -102,7 +102,7 @@ class ModMail(commands.Cog):
                 if channel and isinstance(channel, discord.TextChannel):
                     embed = discord.Embed(
                         title="ModMail Resolved",
-                        description=f"Moderator {ctx.author.mention} has replied to {user.mention}'s modmail.",
+                        description=f"Moderator {ctx.author.mention} has replied to {user.mention}'s modmail.\n\n**Reply:** {response}",
                         color=discord.Color.green()
                     )
                     await channel.send(embed=embed)
@@ -140,7 +140,7 @@ class ModMail(commands.Cog):
                 if channel and isinstance(channel, discord.TextChannel):
                     embed = discord.Embed(
                         title="ModMail Resolved",
-                        description=f"Moderator {interaction.user.mention} has replied to {user.mention}'s modmail.",
+                        description=f"Moderator {interaction.user.mention} has replied to {user.mention}'s modmail.\n\n**Reply:** {response}",
                         color=discord.Color.green()
                     )
                     await channel.send(embed=embed)
