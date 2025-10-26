@@ -111,6 +111,13 @@ class Fun2OoshBot(commands.Bot):
             except Exception as e:
                 logger.error(f'Failed to load {ext}: {e}')
 
+        # Load modmail cog
+        try:
+            await self.load_extension('cogs.modmail')
+            logger.info('Loaded cogs.modmail')
+        except Exception as e:
+            logger.error(f'Failed to load cogs.modmail: {e}')
+
         # Clear any existing commands and force fresh sync
         if self.config.guild_id:
             guild = discord.Object(id=self.config.guild_id)
@@ -155,7 +162,7 @@ class Fun2OoshBot(commands.Bot):
 
         # Set presence
         await self.change_presence(
-            activity=discord.Game(name="Eigen Bot | f?help")
+            activity=discord.Game(name="DM for modmail | ?help")
         )
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
