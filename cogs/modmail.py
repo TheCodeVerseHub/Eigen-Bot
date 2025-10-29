@@ -90,7 +90,12 @@ class ModMail(commands.Cog):
                 embed.set_author(name=f"{self.user} ({self.user.id})", icon_url=self.user.display_avatar.url)
                 await channel.send(embed=embed)
                 await channel.send(f"User ID: `{self.user.id}`")
-            await interaction.response.send_message("Message sent to moderators.", ephemeral=False)
+            sent_embed = discord.Embed(
+                title="Message Sent",
+                description="Your message was delivered to the moderators. They will respond as soon as possible. Your session is locked for security. Please wait for a moderator to respond before sending more messages.",
+                color=discord.Color.green()
+            )
+            await interaction.response.send_message(embed=sent_embed, ephemeral=False)
             # Lock the session until a moderator replies
             self.cog.modmail_sessions[self.user.id] = {'state': 'locked', 'reset_at': None}
             try:
@@ -103,7 +108,12 @@ class ModMail(commands.Cog):
         async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != self.user:
                 return
-            await interaction.response.send_message("Message not sent. Kindly send another message below if needed, or return when needed.", ephemeral=False)
+            cancel_embed = discord.Embed(
+                title="ModMail Cancelled",
+                description="Your message was not sent and cancelled by you. You may compose a different message and try again. Your session remains open. It may reset after a period of inactivity.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=cancel_embed, ephemeral=False)
             # Keep session 'open'
             self.stop()
 
@@ -142,11 +152,26 @@ class ModMail(commands.Cog):
                 guideline = (
                     "**ModMail System**\n"
                     "Send your message to the moderators below.\n"
-                    "You have only **one message**. After you send it, modmail will be locked until a moderator replies.\n"
+                    "You have only **one message**. After you send it, Modmail will be locked until a moderator replies.\n"
                     "Please include all your questions and details in this one message.\n"
                     "Wait for a moderator to respond before sending anything else."
                 )
-                await message.author.send(guideline)
+                embed = discord.Embed(
+                    title="ModMail System",
+                    description=(
+                        "__How to use ModMail__\n"
+                        "Send your message to the moderators below. You have only **one message**. "
+                        "After you send it, modmail will be locked until a moderator replies.\n\n"
+                        "__Tips__\n"
+                        "• Include all relevant details, links, and timestamps in this message.\n"
+                        "• Do not send multiple follow-ups — wait for a moderator to reply.\n\n"
+                        "__Privacy__\n"
+                        "Moderators will see your username and ID only; do not share sensitive credentials."
+                    ),
+                    color=discord.Color.blue()
+                )
+                embed.set_footer(text="Please follow these guidelines to help moderators assist you faster")
+                await message.author.send(embed=embed)
                 self.modmail_sessions[user_id] = {'state': 'open', 'reset_at': None}
                 logger.info(f"modmail: guidelines sent to user {user_id}")
                 try:
@@ -180,7 +205,12 @@ class ModMail(commands.Cog):
 
             if session_state == 'locked':
                 try:
-                    await message.author.send("Your modmail is locked. Please wait for a moderator to reply before sending more messages.")
+                    locked_embed = discord.Embed(
+                        title="ModMail Locked",
+                        description="Your modmail is currently locked. Please wait for a moderator to reply before sending more messages.",
+                        color=discord.Color.orange()
+                    )
+                    await message.author.send(embed=locked_embed)
                 except Exception:
                     pass
                 return
@@ -194,13 +224,31 @@ class ModMail(commands.Cog):
             await ctx.send("User not found or not cached.")
             return
         try:
-            await user.send(f"**ModMail Reply:** {response}")
+            reply_embed = discord.Embed(
+                title="Moderator Reply",
+                description=response + "Your session is now resolved and open if you have any further queries. This session will reset after a short period of inactivity.",
+                color=discord.Color.green()
+            )
+            # include moderator identity
+            try:
+                avatar_url = None
+                if hasattr(ctx.author, 'display_avatar') and getattr(ctx.author, 'display_avatar'):
+                    avatar_url = ctx.author.display_avatar.url
+                reply_embed.set_author(name=ctx.author.display_name, icon_url=avatar_url)
+            except Exception:
+                pass
+            await user.send(embed=reply_embed)
             await ctx.send("Reply sent.")
             # Schedule reset in the future instead of immediately opening the session
             reset_at = (datetime.utcnow() + timedelta(seconds=self.RESET_DELAY_SECONDS)).isoformat()
             self.modmail_sessions[user_id] = {'state': 'resolved', 'reset_at': reset_at}
             logger.info(f"modmail: scheduled reset for user {user_id} at {reset_at}")
-            await user.send("You may now send another message to the moderators if needed.")
+            info_embed = discord.Embed(
+                title="You may send another message only if needed",
+                description="A Moderator has responded. If you need to send another message your session is open. This session will reset after a short period of inactivity.",
+                color=discord.Color.blue()
+            )
+            await user.send(embed=info_embed)
             try:
                 self._persist_sessions_to_file()
             except Exception:
@@ -236,15 +284,33 @@ class ModMail(commands.Cog):
         if interaction.guild:
             member = interaction.guild.get_member(interaction.user.id)
         if not (member and member.guild_permissions.manage_messages):
-            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+            await interaction.response.send_message("Bruhhh!!! You don't have permission to use this command.", ephemeral=True)
             return
         try:
-            await user.send(f"**ModMail Reply:** {response}")
+            # Send moderator reply as an embed to the user
+            reply_embed = discord.Embed(
+                title="Moderator Reply",
+                description=response,
+                color=discord.Color.green()
+            )
+            try:
+                avatar_url = None
+                if hasattr(interaction.user, 'display_avatar') and getattr(interaction.user, 'display_avatar'):
+                    avatar_url = interaction.user.display_avatar.url
+                reply_embed.set_author(name=interaction.user.display_name, icon_url=avatar_url)
+            except Exception:
+                pass
+            await user.send(embed=reply_embed)
             await interaction.response.send_message("Reply sent.", ephemeral=True)
             reset_at = (datetime.utcnow() + timedelta(seconds=self.RESET_DELAY_SECONDS)).isoformat()
             self.modmail_sessions[user.id] = {'state': 'resolved', 'reset_at': reset_at}
             logger.info(f"modmail: scheduled reset for user {user.id} at {reset_at}")
-            await user.send("You may now send another message to the moderators if needed.")
+            info_embed = discord.Embed(
+                title="You may send another message soon",
+                description="A moderator has responded. If you need to send another message, your session is open. This session will reset after a short period of inactivity.",
+                color=discord.Color.blue()
+            )
+            await user.send(embed=info_embed)
             try:
                 self._persist_sessions_to_file()
             except Exception:
