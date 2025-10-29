@@ -4,6 +4,7 @@ Similar to Dyno bot functionality with self-starring allowed
 """
 
 import discord
+import logging
 from discord.ext import commands
 from discord import app_commands
 import aiosqlite
@@ -24,6 +25,7 @@ class ReactionProxy:
         self.message = message
 
 class StarboardSystem(commands.Cog):
+    logger = logging.getLogger(__name__)
     @commands.hybrid_command(name="starboard_info", description="Show starboard usage tips and quick setup guide")
     async def starboard_info(self, ctx: commands.Context):
         """Show starboard usage tips and quick setup guide"""
@@ -567,7 +569,7 @@ class StarboardSystem(commands.Cog):
         # Quick check if it might be a star emoji before doing heavy processing
         settings = await self.get_starboard_settings(reaction.message.guild.id)
         if settings and str(reaction.emoji) == settings.get('star_emoji', '⭐'):
-            print(f"⭐ Starboard: Star reaction added by {user.name} on message {reaction.message.id}")
+            self.logger.debug(f"⭐ Starboard: Star reaction added by {user.name} on message {reaction.message.id}")
             await self.handle_star_reaction(reaction, user, added=True)
         
     @commands.Cog.listener()
@@ -583,7 +585,7 @@ class StarboardSystem(commands.Cog):
         # Quick check if it might be a star emoji before doing heavy processing
         settings = await self.get_starboard_settings(reaction.message.guild.id)
         if settings and str(reaction.emoji) == settings.get('star_emoji', '⭐'):
-            print(f"⭐ Starboard: Star reaction removed by {user.name} on message {reaction.message.id}")
+            self.logger.debug(f"⭐ Starboard: Star reaction removed by {user.name} on message {reaction.message.id}")
             await self.handle_star_reaction(reaction, user, added=False)
 
     @commands.Cog.listener()
@@ -737,10 +739,10 @@ class StarboardSystem(commands.Cog):
                         VALUES (?, ?, ?, ?)
                     """, (message.id, user.id, message.guild.id, current_time))
                     await db.commit()
-                    print(f"💫 Starboard: Star added to DB for message {message.id} by user {user.id}")
+                    self.logger.debug(f"💫 Starboard: Star added to DB for message {message.id} by user {user.id}")
                 except Exception as e:
-                    # Star already exists, ignore
-                    print(f"ℹ️ Starboard: Star already exists or error: {e}")
+                    # Star already exists, ignore (common duplicate insert)
+                    self.logger.debug(f"ℹ️ Starboard: Star already exists or error: {e}")
                     return
             else:
                 # Remove star
@@ -749,7 +751,7 @@ class StarboardSystem(commands.Cog):
                     WHERE message_id = ? AND user_id = ?
                 """, (message.id, user.id))
                 await db.commit()
-                print(f"💫 Starboard: Star removed from DB for message {message.id} by user {user.id}")
+                self.logger.debug(f"💫 Starboard: Star removed from DB for message {message.id} by user {user.id}")
             
             # Get current star count
             cursor = await db.execute("""
@@ -757,7 +759,7 @@ class StarboardSystem(commands.Cog):
             """, (message.id,))
             result = await cursor.fetchone()
             star_count = result[0] if result else 0
-            print(f"📊 Starboard: Message {message.id} now has {star_count} stars (threshold: {settings['threshold']})")
+            self.logger.debug(f"📊 Starboard: Message {message.id} now has {star_count} stars (threshold: {settings['threshold']})")
             
             # Check if message exists in starred_messages
             cursor = await db.execute("""
@@ -770,7 +772,7 @@ class StarboardSystem(commands.Cog):
             if star_count >= threshold:
                 if existing:
                     # Update existing starboard message
-                    print(f"📝 Starboard: Updating message {message.id} with {star_count} stars")
+                    self.logger.debug(f"📝 Starboard: Updating message {message.id} with {star_count} stars")
                     await self.update_starboard_message(message, star_count, existing[0], settings)
                     await db.execute("""
                         UPDATE starred_messages 
@@ -779,10 +781,10 @@ class StarboardSystem(commands.Cog):
                     """, (star_count, current_time, message.id))
                 else:
                     # Create new starboard message
-                    print(f"⭐ Starboard: Creating new starboard message for {message.id} with {star_count} stars (threshold: {threshold})")
+                    self.logger.debug(f"⭐ Starboard: Creating new starboard message for {message.id} with {star_count} stars (threshold: {threshold})")
                     starboard_msg_id = await self.create_starboard_message(message, star_count, settings)
                     if starboard_msg_id:
-                        print(f"✅ Starboard: Created message {starboard_msg_id} in starboard channel")
+                        self.logger.debug(f"✅ Starboard: Created message {starboard_msg_id} in starboard channel")
                         await db.execute("""
                             INSERT INTO starred_messages 
                             (message_id, guild_id, channel_id, author_id, starboard_message_id, 
@@ -794,7 +796,7 @@ class StarboardSystem(commands.Cog):
                             str([att.url for att in message.attachments]), current_time, current_time
                         ))
                     else:
-                        print(f"❌ Starboard: Failed to create starboard message for {message.id}")
+                        self.logger.error(f"❌ Starboard: Failed to create starboard message for {message.id}")
             else:
                 if existing and star_count < threshold:
                     # Remove from starboard if below threshold
@@ -806,25 +808,25 @@ class StarboardSystem(commands.Cog):
     async def create_starboard_message(self, message: discord.Message, star_count: int, settings: Dict) -> Optional[int]:
         """Create a new starboard message"""
         if not message.guild:
-            print(f"❌ Starboard: Message {message.id} is not in a guild")
+            self.logger.error(f"❌ Starboard: Message {message.id} is not in a guild")
             return None
-            
+
         starboard_channel = message.guild.get_channel(settings['channel_id'])
         if not starboard_channel:
-            print(f"❌ Starboard: Channel {settings['channel_id']} not found in guild {message.guild.id}")
+            self.logger.error(f"❌ Starboard: Channel {settings['channel_id']} not found in guild {message.guild.id}")
             return None
         if not isinstance(starboard_channel, discord.TextChannel):
-            print(f"❌ Starboard: Channel {settings['channel_id']} is not a text channel")
+            self.logger.error(f"❌ Starboard: Channel {settings['channel_id']} is not a text channel")
             return None
-            
+
         try:
-            print(f"📤 Starboard: Sending starboard embed to {starboard_channel.name}")
+            self.logger.debug(f"📤 Starboard: Sending starboard embed to {starboard_channel.name}")
             embed = await self.create_starboard_embed(message, star_count, settings)
             starboard_msg = await starboard_channel.send(embed=embed)
-            print(f"✅ Starboard: Successfully posted message {starboard_msg.id} to starboard")
+            self.logger.debug(f"✅ Starboard: Successfully posted message {starboard_msg.id} to starboard")
             return starboard_msg.id
-        except Exception as e:
-            print(f"❌ Starboard: Error creating starboard message: {e}")
+        except Exception:
+            self.logger.exception(f"❌ Starboard: Error creating starboard message for {message.id}")
             return None
             
     async def update_starboard_message(self, message: discord.Message, star_count: int, 
@@ -847,7 +849,7 @@ class StarboardSystem(commands.Cog):
                 await db.execute("DELETE FROM starred_messages WHERE starboard_message_id = ?", (starboard_msg_id,))
                 await db.commit()
         except Exception as e:
-            print(f" Error updating starboard message: {e}")
+            self.logger.exception(f"Error updating starboard message {starboard_msg_id} for original {message.id}")
             
     async def remove_starboard_message(self, starboard_msg_id: int, settings: Dict):
         """Remove a starboard message"""
@@ -861,107 +863,41 @@ class StarboardSystem(commands.Cog):
         except discord.NotFound:
             pass  # Already deleted
         except Exception as e:
-            print(f" Error removing starboard message: {e}")
+            self.logger.exception(f"Error removing starboard message {starboard_msg_id}")
             
     async def create_starboard_embed(self, message: discord.Message, star_count: int, settings: Dict) -> discord.Embed:
         """Create a beautiful, modern embed for starboard message"""
         star_emoji = settings.get('star_emoji', '⭐')
-        
-        # Dynamic color based on star count for visual appeal
+        # Keep the starboard embed compact: author, avatar, highlighted message, and jump link
+        # Dynamic color retained for slight visual cue
         if star_count >= 20:
-            color = 0xFFD700  # Gold
+            color = 0xFFD700
         elif star_count >= 10:
-            color = 0xFF6B6B  # Red
+            color = 0xFF6B6B
         elif star_count >= 5:
-            color = 0x4ECDC4  # Teal
+            color = 0x4ECDC4
         else:
-            color = 0xF7DC6F  # Light yellow
-        
-        # Main content with better formatting
+            color = 0xF7DC6F
+
         content = message.content or "*No text content*"
-        if len(content) > 1800:
-            content = content[:1800] + "..."
-            
+        if len(content) > 1500:
+            content = content[:1500] + "..."
+
+        # Highlight the message by using a block quote style in the description
+        description = f"> {content.replace('\n', '\n> ')}"
+
         embed = discord.Embed(
-            description=content,
-            color=color,
-            timestamp=message.created_at
+            description=description,
+            color=color
         )
-        
-        # Enhanced author section with star count prominently displayed
-        embed.set_author(
-            name=f"{message.author.display_name}",
-            icon_url=message.author.display_avatar.url
-        )
-        
-        # Add author avatar as thumbnail for better visual hierarchy
-        embed.set_thumbnail(url=message.author.display_avatar.url)
-        
-        # Star count as prominent title
-        embed.title = f"{star_emoji} {star_count} | Starred Message"
-        
-        # Message info in a compact format
-        if isinstance(message.channel, (discord.TextChannel, discord.VoiceChannel, discord.StageChannel, discord.Thread)):
-            channel_name = message.channel.mention
-        elif hasattr(message.channel, 'name'):
-            channel_name = f"#{getattr(message.channel, 'name', 'Unknown')}"
-        else:
-            channel_name = "Unknown Channel"
-            
-        # Compact info section
-        embed.add_field(
-            name=" Source",
-            value=f"{channel_name}\n[Jump to message →]({message.jump_url})",
-            inline=True
-        )
-        
-        # Add relative time info
-        time_ago = discord.utils.format_dt(message.created_at, style='R')
-        embed.add_field(
-            name=" Posted",
-            value=time_ago,
-            inline=True
-        )
-        
-        # Attachment handling with better presentation
-        if message.attachments:
-            attachment = message.attachments[0]
-            if attachment.content_type and attachment.content_type.startswith('image'):
-                embed.set_image(url=attachment.url)
-            elif attachment.content_type and attachment.content_type.startswith('video'):
-                embed.add_field(
-                    name=" Video",
-                    value=f"[{attachment.filename}]({attachment.url})",
-                    inline=False
-                )
-            else:
-                embed.add_field(
-                    name=" File",
-                    value=f"[{attachment.filename}]({attachment.url})",
-                    inline=False
-                )
-                
-        # Show additional attachments more compactly
-        if len(message.attachments) > 1:
-            other_count = len(message.attachments) - 1
-            embed.add_field(
-                name=f" +{other_count} more file{'s' if other_count > 1 else ''}",
-                value="*Click message link to view all*",
-                inline=True
-            )
-        
-        # Enhanced footer with star user info
-        async with aiosqlite.connect(self.database_path) as db:
-            cursor = await db.execute("""
-                SELECT user_id, starred_at FROM user_stars 
-                WHERE message_id = ? 
-                ORDER BY starred_at ASC
-            """, (message.id,))
-            star_users = list(await cursor.fetchall())
-            
-        # Simple, clean footer
-        embed.set_footer(text=f"⭐ Starboard • Message ID: {message.id}")
-            
+
+        # Author with avatar only
+        embed.set_author(name=f"{message.author.display_name}", icon_url=message.author.display_avatar.url)
+
+        # Minimal jump link field
+        embed.add_field(name="Jump", value=f"[Jump to message]({message.jump_url})", inline=False)
+
+        # No extra footer or timestamp to keep it compact
         return embed
 
     # ==================== ADMIN UTILITIES ====================
@@ -997,14 +933,8 @@ class StarboardSystem(commands.Cog):
         try:
             await ctx.defer()
         except Exception:
-            try:
-                # Fallback for non-interaction commands: show typing indicator in the channel
-                async with ctx.channel.typing():
-                    # small sleep to ensure the typing indicator is sent
-                    await asyncio.sleep(0)
-            except Exception:
-                pass
-                pass
+            # If we can't defer (older discord.py or missing interaction), continue silently
+            pass
         
         cleaned_count = 0
         
