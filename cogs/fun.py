@@ -181,6 +181,7 @@ class Fun(commands.Cog):
             return template_bytes
 
     @commands.hybrid_command(name="fridge", help="Send a fridge image")
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def fridge(self, ctx: commands.Context):
         """Send a fridge image (simple utility)."""
         # Generate an image locally so it always works (no external hotlinking).
@@ -402,9 +403,7 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.hybrid_command(name="absolute", help="Put your avatar on the 'absolute cinema' GIF")
-
-
-
+    @commands.cooldown(1, 15, commands.BucketType.user)
     @app_commands.describe(text="Text to replace 'cinema' with")
     async def absolute(self, ctx: commands.Context, *, text: str):
 
