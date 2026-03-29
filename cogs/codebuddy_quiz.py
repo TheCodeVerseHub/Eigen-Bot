@@ -282,10 +282,10 @@ class CodeBuddyQuizCog(commands.Cog):
             print(f"[Unexpected error in leaderboard command]: {e}")
             try:
                 if not interaction.response.is_done():
-                    await interaction.response.send_message("Error fetching leaderboard.", ephemeral=True)
+                    await interaction.response.send_message("Failed to load the leaderboard. Please try again in a moment.", ephemeral=True)
                 else:
                     try:
-                        await interaction.edit_original_response(content=" Error fetching leaderboard.")
+                        await interaction.edit_original_response(content="Failed to load the leaderboard. Please try again in a moment.")
                     except discord.NotFound:
                         pass
             except Exception:
@@ -332,7 +332,7 @@ class CodeBuddyQuizCog(commands.Cog):
 
         except Exception as e:
             print(f"[Unexpected error in codeleaderboard command]: {e}")
-            await ctx.send(" Error fetching leaderboard.")
+            await ctx.send("Failed to load the leaderboard. Please try again in a moment.")
 
     @app_commands.command(name="codestats", description="Show your personal coding quiz stats.")
     async def codestats(self, interaction: discord.Interaction):
@@ -344,7 +344,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 gap, higher_id = await get_score_gap(user_id)
             except Exception as e:
                 print(f"[Error fetching user stats]: {e}")
-                await interaction.response.send_message("Error fetching your stats.", ephemeral=True)
+                await interaction.response.send_message("Failed to load your stats. Please try again in a moment.", ephemeral=True)
                 return
 
             # Haupt-Embed
@@ -372,7 +372,7 @@ class CodeBuddyQuizCog(commands.Cog):
         except Exception as e:
             print(f"[Unexpected error in codestats command]: {e}")
             try:
-                await interaction.response.send_message("Error displaying your stats.", ephemeral=True)
+                await interaction.response.send_message("Failed to load your stats. Please try again in a moment.", ephemeral=True)
             except Exception:
                 pass
 
@@ -387,7 +387,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 gap, higher_id = await get_score_gap(user_id)
             except Exception as e:
                 print(f"[Error fetching user stats]: {e}")
-                await ctx.send("Error fetching your stats.")
+                await ctx.send("Failed to load your stats. Please try again in a moment.")
                 return
 
             # Haupt-Embed
@@ -414,7 +414,7 @@ class CodeBuddyQuizCog(commands.Cog):
 
         except Exception as e:
             print(f"[Unexpected error in codestats command]: {e}")
-            await ctx.send("Error displaying your stats.")
+            await ctx.send("Failed to load your stats. Please try again in a moment.")
 
 
 
