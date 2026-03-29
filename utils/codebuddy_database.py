@@ -75,7 +75,7 @@ async def init_db():
                 is_bad_schema = True
         
         if is_bad_schema:
-            print("Migrating weekly_leaderboard schema...")
+            print(f"[Database] Notice: Migrating 'weekly_leaderboard' to a new schema. Recreating table with a composite Primary Key (user_id, week_start) to support multi-week history.")
             await db.execute("DROP TABLE weekly_leaderboard")
             
         await db.execute("""
@@ -359,6 +359,7 @@ async def get_user_rank(user_id: int):
         )
         row = await cursor.fetchone()
         if not row:
+            print(f"[Database] Rank Query Warning: User {user_id} not found in leaderboard.")
             return None  # User existiert nicht in DB
         score = row[0]
 
