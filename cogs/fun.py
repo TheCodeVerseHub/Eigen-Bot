@@ -81,6 +81,7 @@ class Fun(commands.Cog):
     
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.question_index = 0
         self._absolute_template_cache_bytes: Optional[bytes] = None
         self._absolute_template_cache_expires_at = 0.0
         self._absolute_template_cache_lock = asyncio.Lock()
@@ -164,6 +165,17 @@ class Fun(commands.Cog):
         )
         result.seek(0)
         return result
+
+    def get_next_question(self) -> dict[str, str]:
+
+        if self.question_index >= len(TRIVIA_QUESTIONS):
+            random.shuffle(TRIVIA_QUESTIONS)
+            self.question_index = 0
+
+        question = TRIVIA_QUESTIONS[self.question_index]
+        self.question_index += 1
+
+        return question
 
     async def _get_absolute_template_bytes(self) -> bytes:
         now = time.monotonic()
@@ -268,7 +280,7 @@ class Fun(commands.Cog):
     @commands.hybrid_command(name="trivia", help="Answer a programming trivia question")
     async def trivia(self, ctx: commands.Context):
         """Start a programming trivia question."""
-        question_data = random.choice(TRIVIA_QUESTIONS)
+        question_data = self.get_next_question()
         
         embed = discord.Embed(
             title="Programming Trivia",
