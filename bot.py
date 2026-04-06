@@ -69,7 +69,7 @@ class Fun2OoshBot(commands.Bot):
             await init_db()
             logger.info("Initialized CodeBuddy database")
         except Exception as e:
-            logger.error(f"Failed to initialize CodeBuddy database: {e}")
+            logger.error(f"Database initialization failed: Unable to start CodeBuddy database. Please check configuration. Error details: {e}")
 
         # Load core cogs
         core_cogs = [
@@ -83,7 +83,7 @@ class Fun2OoshBot(commands.Bot):
                 await self.load_extension(ext)
                 logger.info(f'Loaded {ext}')
             except Exception as e:
-                logger.error(f'Failed to load {ext}: {e}')
+                logger.error(f"Extension loading failed: Could not load module '{ext}'. Please verify the file and dependencies. Error details: {e}")
 
         # Load feature cogs (new/renamed)
         feature_cogs = [
@@ -146,7 +146,7 @@ class Fun2OoshBot(commands.Bot):
                 logger.info(f"📝 Synced commands: {', '.join(command_names)}")
             
         except Exception as e:
-            logger.error(f"❌ Failed to sync slash commands: {e}")
+            logger.error(f"Slash command sync failed: Unable to synchronize commands. Please check bot permissions and configuration. Error details: {e}")
 
         # Also log commands from the tree
         tree_commands = self.tree.get_commands()
@@ -208,8 +208,8 @@ class Fun2OoshBot(commands.Bot):
         elif isinstance(error, commands.BadArgument):
             await _safe_ctx_send("Invalid argument provided.")
         else:
-            logger.error(f"Command error: {error}")
-            await _safe_ctx_send("An error occurred while processing your command.")
+            logger.error(f"Command execution failed: {error}. Please check your input and try again.")
+            await _safe_ctx_send("An error occurred while processing your command. Please try again or check your input.")
 
     async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         """Handle slash command errors."""
@@ -224,7 +224,7 @@ class Fun2OoshBot(commands.Bot):
             )
         else:
             # For other app command errors, log and try to respond once
-            logger.error(f"Slash command error: {error}")
+            logger.error(f"Slash command execution failed: {error}. Please check command usage and try again.")
             try:
                 if not interaction.response.is_done():
                     await interaction.response.send_message(
@@ -250,7 +250,7 @@ async def main():
     except KeyboardInterrupt:
         logger.info("Bot shutdown requested.")
     except Exception as e:
-        logger.error(f"Bot encountered an error: {e}")
+        logger.error(f"Runtime error: The bot encountered an unexpected issue. Error details: {e}")
     finally:
         await bot.close()
 
