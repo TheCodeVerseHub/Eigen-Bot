@@ -1907,5 +1907,1465 @@
       "SELECT TOTAL(*) FROM table;"
     ],
     "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "Which statement about `is` vs `==` in Python is correct?",
+    "options": [
+      "`is` checks object identity; `==` checks value equality",
+      "`is` checks value equality; `==` checks object identity",
+      "They are always interchangeable"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `dict.get('k')` return when `'k'` is missing and no default is provided?",
+    "options": [
+      "Raises `KeyError`",
+      "Returns `None`",
+      "Returns `False`"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "What is the time complexity of `x in some_list` for a typical Python list?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)"
+    ],
+    "correct": "c",
+    "explanation": "Membership testing in a list is a linear scan."
+  },
+  {
+    "language": "Python",
+    "question": "What does `*args` allow you to do in a function definition?",
+    "options": [
+      "Accept any number of positional arguments",
+      "Accept any number of keyword arguments",
+      "Force all arguments to be keywords"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `**kwargs` allow you to do in a function definition?",
+    "options": [
+      "Accept any number of positional arguments",
+      "Accept any number of keyword arguments",
+      "Automatically validate argument types"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint(bool([]), bool([0]))\n```",
+    "options": [
+      "True True",
+      "False True",
+      "False False"
+    ],
+    "correct": "b",
+    "explanation": "Empty containers are falsy; non-empty containers are truthy even if they contain falsy values."
+  },
+  {
+    "language": "Python",
+    "question": "Which of these creates a generator expression?",
+    "options": [
+      "(x * x for x in range(5))",
+      "[x * x for x in range(5)]",
+      "{x * x for x in range(5)}"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\na = [1, 2, 3]\nprint(a[::-1])\n```",
+    "options": [
+      "[3, 2, 1]",
+      "[1, 2, 3]",
+      "Error"
+    ],
+    "correct": "a",
+    "explanation": "A slice with step -1 returns a reversed copy."
+  },
+  {
+    "language": "Python",
+    "question": "What does `enumerate(items)` produce?",
+    "options": [
+      "Pairs of (index, value)",
+      "Only the values",
+      "Only the indices"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\na = [[0]] * 3\na[0][0] = 9\nprint(a)\n```",
+    "options": [
+      "[[9], [0], [0]]",
+      "[[9], [9], [9]]",
+      "[[0], [0], [0]]"
+    ],
+    "correct": "b",
+    "explanation": "`[[0]] * 3` repeats references to the same inner list."
+  },
+  {
+    "language": "Python",
+    "question": "Which statement about Python dictionaries (3.7+) is correct?",
+    "options": [
+      "They preserve insertion order",
+      "They are always sorted by key",
+      "They cannot store mutable values"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `list(range(3))` return?",
+    "options": [
+      "[1, 2, 3]",
+      "[0, 1, 2]",
+      "[0, 1, 2, 3]"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "Which statement creates a shallow copy of a list `a`?",
+    "options": [
+      "b = a",
+      "b = a[:]",
+      "b = copy.deepcopy(a)"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint({} == set())\n```",
+    "options": [
+      "True",
+      "False",
+      "Error"
+    ],
+    "correct": "b",
+    "explanation": "`{}` is an empty dict; `set()` is an empty set."
+  },
+  {
+    "language": "Python",
+    "question": "Which of these opens a file for appending text?",
+    "options": [
+      "open('f.txt', 'w')",
+      "open('f.txt', 'a')",
+      "open('f.txt', 'r')"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "Which keyword is used to define an asynchronous function?",
+    "options": [
+      "async",
+      "await",
+      "yield"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `await` do in async Python code?",
+    "options": [
+      "Blocks the entire interpreter",
+      "Yields control until the awaited awaitable completes",
+      "Turns a function into a generator automatically"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the value of `typeof null` in JavaScript?",
+    "options": [
+      "'null'",
+      "'object'",
+      "'undefined'"
+    ],
+    "correct": "b",
+    "explanation": "It is a long-standing JavaScript quirk."
+  },
+  {
+    "language": "JavaScript",
+    "question": "What does `Promise.all([p1, p2])` do if `p2` rejects?",
+    "options": [
+      "Resolves with the values that resolved",
+      "Rejects immediately with `p2`'s rejection reason",
+      "Waits for all promises, then resolves"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "JavaScript",
+    "question": "Which keyword declares a block-scoped variable?",
+    "options": [
+      "var",
+      "let",
+      "def"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "JavaScript",
+    "question": "Which method checks whether a value is an array?",
+    "options": [
+      "Array.isArray(value)",
+      "value.isArray()",
+      "typeof value === 'array'"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log('2' == 2)\n```",
+    "options": [
+      "true",
+      "false",
+      "throws"
+    ],
+    "correct": "a",
+    "explanation": "`==` performs type coercion; `===` does not."
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log('2' === 2)\n```",
+    "options": [
+      "true",
+      "false",
+      "undefined"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What does `Array.prototype.reduce` do?",
+    "options": [
+      "Transforms each element into a new array",
+      "Accumulates array values into a single result",
+      "Sorts the array"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "What is the correct way to compare two Java `String` values by content?",
+    "options": [
+      "Use `==`",
+      "Use `.equals()`",
+      "Use `===`"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "What does `static` mean for a method in Java?",
+    "options": [
+      "It belongs to the class rather than instances",
+      "It can only be called once",
+      "It cannot throw exceptions"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Java",
+    "question": "What is the output of `System.out.println(10 / 3);` in Java (int division)?",
+    "options": [
+      "3.333...",
+      "3",
+      "4"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "Which keyword is used to create a new object?",
+    "options": [
+      "alloc",
+      "new",
+      "make"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "C++",
+    "question": "What does RAII stand for?",
+    "options": [
+      "Resource Acquisition Is Initialization",
+      "Runtime Allocation Is Immediate",
+      "Reference Assignment Is Immutable"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "C++",
+    "question": "Why should a base class often have a virtual destructor?",
+    "options": [
+      "So derived destructors run correctly when deleting via base pointer",
+      "To make the class non-inheritable",
+      "To speed up object allocation"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "C++",
+    "question": "What does `std::move(x)` do?",
+    "options": [
+      "Moves memory immediately",
+      "Casts `x` to an rvalue reference to enable move semantics",
+      "Deep-copies `x`"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "What is the purpose of the `HAVING` clause?",
+    "options": [
+      "Filter rows before grouping",
+      "Filter groups after aggregation",
+      "Sort results"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "Which join returns all rows from the left table plus matches from the right table?",
+    "options": [
+      "INNER JOIN",
+      "LEFT JOIN",
+      "CROSS JOIN"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "How should you compare a column to NULL in SQL?",
+    "options": [
+      "`col = NULL`",
+      "`col IS NULL`",
+      "`col == NULL`"
+    ],
+    "correct": "b",
+    "explanation": "NULL represents unknown; use `IS NULL` / `IS NOT NULL`."
+  },
+  {
+    "language": "Git",
+    "question": "What is the primary difference between `git fetch` and `git pull`?",
+    "options": [
+      "`fetch` updates remote-tracking branches; `pull` fetches and merges/rebases",
+      "`fetch` deletes branches; `pull` creates branches",
+      "There is no difference"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Git",
+    "question": "What does `git revert <commit>` do?",
+    "options": [
+      "Deletes the commit from history",
+      "Creates a new commit that undoes the changes",
+      "Renames the commit"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Docker",
+    "question": "What is the main difference between a Docker image and a container?",
+    "options": [
+      "An image is a running instance; a container is a template",
+      "An image is a template; a container is a running instance",
+      "They are the same thing"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Docker",
+    "question": "What does `EXPOSE 8080` do in a Dockerfile?",
+    "options": [
+      "Publishes the port to the host automatically",
+      "Documents that the container listens on that port",
+      "Changes the host firewall rules"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Linux",
+    "question": "What does exit code `0` typically mean for a Unix command?",
+    "options": [
+      "Success",
+      "Failure",
+      "Command not found"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Bash",
+    "question": "What does the pipe operator `|` do in a shell?",
+    "options": [
+      "Sends stdout of one command to stdin of the next",
+      "Runs both commands in parallel always",
+      "Redirects stderr to stdout"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "HTTP",
+    "question": "Which HTTP status code typically represents 'Not Found'?",
+    "options": [
+      "200",
+      "404",
+      "500"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Networking",
+    "question": "What does DNS primarily do?",
+    "options": [
+      "Encrypts HTTP traffic",
+      "Translates domain names to IP addresses",
+      "Routes packets between subnets"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "System Design",
+    "question": "Which concept helps prevent duplicate processing when retrying requests?",
+    "options": [
+      "Idempotency",
+      "Denormalization",
+      "Sharding"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Data Structures",
+    "question": "Which data structure is FIFO (first-in, first-out)?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Heap"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Algorithms",
+    "question": "What is the time complexity of binary search on a sorted array?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n log n)"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Security",
+    "question": "Which technique is commonly used to prevent SQL injection?",
+    "options": [
+      "String concatenation for queries",
+      "Parameterized queries / prepared statements",
+      "Storing passwords in plaintext"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Testing",
+    "question": "What is a key goal of a unit test?",
+    "options": [
+      "Test the entire system end-to-end",
+      "Test a small unit of behavior in isolation",
+      "Replace production monitoring"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Regex",
+    "question": "In regular expressions, what does `^` typically mean?",
+    "options": [
+      "Start of string (or line)",
+      "End of string",
+      "Any digit"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "TypeScript",
+    "question": "What is the difference between `any` and `unknown` in TypeScript?",
+    "options": [
+      "`unknown` is safer because you must narrow it before use",
+      "`any` is safer because it enforces types",
+      "They are exactly the same"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\na = [3, 1, 2]\nprint(a.sort())\nprint(a)\n```",
+    "options": [
+      "[1, 2, 3] then [1, 2, 3]",
+      "None then [1, 2, 3]",
+      "None then [3, 1, 2]"
+    ],
+    "correct": "b",
+    "explanation": "`list.sort()` sorts in-place and returns None."
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint(sorted([3, 1, 2]))\n```",
+    "options": [
+      "[1, 2, 3]",
+      "None",
+      "Error"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `//` do in Python?",
+    "options": [
+      "Floating-point division",
+      "Floor division",
+      "Modulo"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "Which statement about `try/except/finally` is correct?",
+    "options": [
+      "`finally` runs only if there is an exception",
+      "`finally` runs whether or not an exception occurs",
+      "`except` runs after `finally`"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Python",
+    "question": "What does the `with` statement primarily help with?",
+    "options": [
+      "Automatic resource management via context managers",
+      "Creating threads",
+      "Compiling Python code"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint('name: %s' % 'Ada')\n```",
+    "options": [
+      "name: Ada",
+      "name: %s",
+      "Error"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint(f\\\"{2 + 3}\\\")\n```",
+    "options": [
+      "5",
+      "2 + 3",
+      "Error"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What does `@property` primarily do?",
+    "options": [
+      "Turns a method into a computed attribute",
+      "Makes a function asynchronous",
+      "Creates a static method"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Python",
+    "question": "What is the output?\n```python\nprint(len('\\n'))\n```",
+    "options": [
+      "0",
+      "1",
+      "2"
+    ],
+    "correct": "b",
+    "explanation": "The string contains one newline character."
+  },
+  {
+    "language": "Python",
+    "question": "Which statement about dataclasses is correct?",
+    "options": [
+      "They automatically generate methods like `__init__`",
+      "They replace the Python interpreter",
+      "They require C extensions"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log(Number(''))\n```",
+    "options": [
+      "0",
+      "NaN",
+      "undefined"
+    ],
+    "correct": "a",
+    "explanation": "The empty string coerces to 0 with `Number()`."
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log(NaN === NaN)\n```",
+    "options": [
+      "true",
+      "false",
+      "throws"
+    ],
+    "correct": "b",
+    "explanation": "NaN is not equal to itself with `===`."
+  },
+  {
+    "language": "JavaScript",
+    "question": "What does the nullish coalescing operator `??` do?",
+    "options": [
+      "Returns the right side only if the left is null or undefined",
+      "Returns the right side only if the left is false",
+      "Always returns the left side"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What does optional chaining `obj?.prop` do when `obj` is null?",
+    "options": [
+      "Throws a TypeError",
+      "Returns undefined",
+      "Returns null"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "JavaScript",
+    "question": "Which keyword prevents reassigning a variable binding?",
+    "options": [
+      "const",
+      "mutable",
+      "freeze"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log(JSON.stringify(undefined))\n```",
+    "options": [
+      "'undefined'",
+      "undefined",
+      "'null'"
+    ],
+    "correct": "b",
+    "explanation": "`JSON.stringify(undefined)` returns `undefined` (not a string)."
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log(Math.floor(3.9))\n```",
+    "options": [
+      "3",
+      "4",
+      "3.9"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "Which loop is commonly used to iterate values of an array?",
+    "options": [
+      "for...of",
+      "for...in",
+      "while...else"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "What is the output?\n```javascript\nconsole.log(typeof (() => {}))\n```",
+    "options": [
+      "'function'",
+      "'object'",
+      "'arrow'"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "JavaScript",
+    "question": "Which of these creates a new array containing elements that pass a test?",
+    "options": [
+      "filter()",
+      "concat()",
+      "push()"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Java",
+    "question": "Why is `StringBuilder` often used for repeated string concatenation?",
+    "options": [
+      "Strings are mutable so it is required",
+      "It is typically more efficient than creating many intermediate Strings",
+      "It enables parallel execution automatically"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "Which type of collection enforces uniqueness (no duplicates)?",
+    "options": [
+      "List",
+      "Set",
+      "Array"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "What is the entry point method signature for most Java applications?",
+    "options": [
+      "public static void main(String[] args)",
+      "public void start()",
+      "static int main()"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Java",
+    "question": "What does 'autoboxing' mean in Java?",
+    "options": [
+      "Automatic conversion between primitive and wrapper types",
+      "Automatic compression of bytecode",
+      "Automatic parallelization of loops"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Java",
+    "question": "In Java `switch`, what happens if you omit `break`?",
+    "options": [
+      "Compilation error",
+      "Fall-through to the next case",
+      "The program terminates"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Java",
+    "question": "What is a common behavior of `HashSet`?",
+    "options": [
+      "Preserves insertion order always",
+      "Allows duplicates",
+      "Stores unique elements"
+    ],
+    "correct": "c"
+  },
+
+  {
+    "language": "C++",
+    "question": "What is `nullptr` in modern C++?",
+    "options": [
+      "A macro for 0",
+      "A pointer literal representing null",
+      "A type of smart pointer"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "C++",
+    "question": "What is the main idea of `std::unique_ptr`?",
+    "options": [
+      "Shared ownership of a resource",
+      "Exclusive ownership of a resource",
+      "A pointer that can never be null"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "C++",
+    "question": "Which is a good way to pass a large object without copying (read-only)?",
+    "options": [
+      "Pass by value",
+      "Pass by const reference",
+      "Pass by raw pointer only"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "C++",
+    "question": "What is the difference between `size()` and `capacity()` for `std::vector`?",
+    "options": [
+      "They always return the same value",
+      "`size` is number of elements; `capacity` is allocated storage",
+      "`capacity` is number of elements; `size` is allocated storage"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "C++",
+    "question": "Which feature prevents multiple inclusion of a header file?",
+    "options": [
+      "Include guards or `#pragma once`",
+      "Linker flags",
+      "Namespaces"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "C++",
+    "question": "Which keyword indicates a method does not modify the object (const member function)?",
+    "options": [
+      "const",
+      "static",
+      "mutable"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "SQL",
+    "question": "Which clause removes duplicate rows from a result set?",
+    "options": [
+      "UNIQUE",
+      "DISTINCT",
+      "DEDUP"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "What is the difference between `WHERE` and `HAVING`?",
+    "options": [
+      "WHERE filters groups; HAVING filters rows",
+      "WHERE filters rows; HAVING filters groups after aggregation",
+      "They are synonyms"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "What does `COUNT(column)` do with NULLs?",
+    "options": [
+      "Counts NULLs",
+      "Ignores NULLs",
+      "Throws an error if NULLs exist"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "What does a PRIMARY KEY guarantee?",
+    "options": [
+      "Values are unique and not NULL",
+      "Values can repeat",
+      "Values are always sequential"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "SQL",
+    "question": "Which statement typically limits the number of returned rows?",
+    "options": [
+      "LIMIT",
+      "GROUP BY",
+      "OFFSET ONLY"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "SQL",
+    "question": "What does an index primarily help with?",
+    "options": [
+      "Faster reads for certain queries",
+      "Faster network latency",
+      "Faster disk formatting"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "SQL",
+    "question": "Which join returns only matching rows from both tables?",
+    "options": [
+      "LEFT JOIN",
+      "INNER JOIN",
+      "FULL OUTER JOIN"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "SQL",
+    "question": "Which statement can add a new column to an existing table?",
+    "options": [
+      "ALTER TABLE ... ADD COLUMN",
+      "UPDATE TABLE ... ADD COLUMN",
+      "INSERT COLUMN"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Git",
+    "question": "What is the staging area in Git?",
+    "options": [
+      "A place where commits are permanently stored",
+      "A place to prepare changes before committing",
+      "A remote repository"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Git",
+    "question": "What does `git stash` do?",
+    "options": [
+      "Deletes untracked files",
+      "Temporarily saves local changes without committing",
+      "Pushes commits to a remote"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Git",
+    "question": "What does `git cherry-pick <commit>` do?",
+    "options": [
+      "Applies a specific commit onto the current branch",
+      "Deletes a commit from history",
+      "Creates a new repository"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Git",
+    "question": "What does `git reset --soft HEAD~1` primarily do?",
+    "options": [
+      "Deletes the last commit and discards changes",
+      "Moves HEAD back but keeps changes staged",
+      "Moves HEAD forward"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Git",
+    "question": "What is `.gitignore` used for?",
+    "options": [
+      "Encrypting commits",
+      "Telling Git which files to ignore",
+      "Configuring merge drivers"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Git",
+    "question": "Which command commonly shows commit history in a condensed format?",
+    "options": [
+      "git log --oneline",
+      "git history --short",
+      "git show --tree"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Docker",
+    "question": "What is the main difference between `CMD` and `ENTRYPOINT` in Docker?",
+    "options": [
+      "They are identical",
+      "ENTRYPOINT defines the executable; CMD provides default args",
+      "CMD builds the image; ENTRYPOINT runs the container"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Docker",
+    "question": "What is a multi-stage build primarily used for?",
+    "options": [
+      "Reducing final image size",
+      "Running multiple containers",
+      "Increasing network bandwidth"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Docker",
+    "question": "Which command lists running containers?",
+    "options": [
+      "docker ps",
+      "docker ls",
+      "docker images"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Docker",
+    "question": "What does `docker-compose up` typically do?",
+    "options": [
+      "Builds and starts services defined in docker-compose.yml",
+      "Deletes all images",
+      "Publishes the Dockerfile"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Docker",
+    "question": "What is `.dockerignore` used for?",
+    "options": [
+      "Ignoring files from being sent to the build context",
+      "Ignoring stopped containers",
+      "Ignoring network ports"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Linux",
+    "question": "Which command searches for a pattern in files recursively?",
+    "options": [
+      "grep -r",
+      "find -p",
+      "cat -r"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Linux",
+    "question": "Which command lists running processes (common form)?",
+    "options": [
+      "ps aux",
+      "ls -p",
+      "top -l"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Linux",
+    "question": "What does `kill -9 PID` do?",
+    "options": [
+      "Sends SIGKILL (force kill)",
+      "Sends SIGTERM (graceful)",
+      "Restarts the process"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Bash",
+    "question": "What does `export VAR=value` do?",
+    "options": [
+      "Creates a local-only variable",
+      "Sets an environment variable for child processes",
+      "Deletes a variable"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Bash",
+    "question": "What does `cmd1 && cmd2` mean?",
+    "options": [
+      "Always run both commands",
+      "Run cmd2 only if cmd1 succeeds",
+      "Run cmd2 only if cmd1 fails"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Bash",
+    "question": "What does `>> file.txt` do?",
+    "options": [
+      "Overwrites file.txt",
+      "Appends stdout to file.txt",
+      "Redirects stderr to file.txt"
+    ],
+    "correct": "b"
+  },
+
+  {
+    "language": "Algorithms",
+    "question": "What is the time complexity of merge sort?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n^2)"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Algorithms",
+    "question": "Which algorithmic technique solves problems by reusing solutions to overlapping subproblems?",
+    "options": [
+      "Greedy",
+      "Dynamic programming",
+      "Backtracking only"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Algorithms",
+    "question": "What is the average-case time complexity of quicksort?",
+    "options": [
+      "O(n log n)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Algorithms",
+    "question": "Which algorithm explores a graph layer by layer?",
+    "options": [
+      "BFS",
+      "DFS",
+      "Bubble sort"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Algorithms",
+    "question": "What is a common risk of deep recursion?",
+    "options": [
+      "Stack overflow",
+      "Faster execution",
+      "Automatic memoization"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Algorithms",
+    "question": "What does a greedy algorithm typically do?",
+    "options": [
+      "Makes locally optimal choices hoping for a global optimum",
+      "Always finds the optimal solution",
+      "Only works on trees"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Data Structures",
+    "question": "What is the heap property in a max-heap?",
+    "options": [
+      "Parent is always <= children",
+      "Parent is always >= children",
+      "All nodes are sorted in-order"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Data Structures",
+    "question": "What is a trie commonly used for?",
+    "options": [
+      "Prefix-based string search",
+      "Sorting numbers",
+      "Encrypting data"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Data Structures",
+    "question": "Which representation is usually more space-efficient for sparse graphs?",
+    "options": [
+      "Adjacency matrix",
+      "Adjacency list",
+      "Full table scan"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Data Structures",
+    "question": "Which operation is typically O(1) on a stack?",
+    "options": [
+      "Push/pop",
+      "Sorting",
+      "Searching arbitrary element"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Data Structures",
+    "question": "What is a common way to resolve hash collisions?",
+    "options": [
+      "Chaining",
+      "Compilation",
+      "Inlining"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "System Design",
+    "question": "What does rate limiting primarily protect against?",
+    "options": [
+      "Too many requests overwhelming a service",
+      "Database schema changes",
+      "Compiler warnings"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "System Design",
+    "question": "Which CAP theorem pair is achievable during a network partition?",
+    "options": [
+      "Consistency and Availability",
+      "Availability and Partition tolerance",
+      "Consistency and Partition tolerance"
+    ],
+    "correct": "b",
+    "explanation": "Under partition, a system typically chooses between C and A while still being partition-tolerant."
+  },
+  {
+    "language": "System Design",
+    "question": "What is eventual consistency?",
+    "options": [
+      "All replicas become consistent over time if no new updates occur",
+      "All reads are always strongly consistent",
+      "Data is never replicated"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "System Design",
+    "question": "Why use a message queue?",
+    "options": [
+      "To tightly couple services",
+      "To decouple producers and consumers and smooth bursts",
+      "To replace databases"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "System Design",
+    "question": "What is a circuit breaker pattern used for?",
+    "options": [
+      "Preventing repeated calls to a failing dependency",
+      "Encrypting traffic",
+      "Speeding up compilation"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Security",
+    "question": "What does HTTPS use to secure HTTP traffic?",
+    "options": [
+      "TLS",
+      "FTP",
+      "SMTP"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Security",
+    "question": "What is the principle of least privilege?",
+    "options": [
+      "Give users only the permissions they need",
+      "Give users admin rights by default",
+      "Disable authentication"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Security",
+    "question": "What is the main difference between encryption and hashing?",
+    "options": [
+      "Encryption is reversible (with a key); hashing is one-way",
+      "Hashing is reversible; encryption is not",
+      "They are identical"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Security",
+    "question": "What is JWT commonly used for?",
+    "options": [
+      "Storing binary images",
+      "Stateless authentication/authorization tokens",
+      "Compiling JavaScript"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Security",
+    "question": "What is 2FA?",
+    "options": [
+      "Two-factor authentication",
+      "Two-file allocation",
+      "Two-function abstraction"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Regex",
+    "question": "In regex, what does `?` mean after a token?",
+    "options": [
+      "Zero or one occurrence",
+      "One or more occurrences",
+      "Exactly two occurrences"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Regex",
+    "question": "What does a character class like `[a-z]` match?",
+    "options": [
+      "Any lowercase letter",
+      "The exact string 'a-z'",
+      "Only the character 'z'"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Regex",
+    "question": "In regex, how do you match a literal dot character `.`?",
+    "options": [
+      "Use `.`",
+      "Use `\\.`",
+      "Use `dot`"
+    ],
+    "correct": "b"
+  },
+
+  {
+    "language": "TypeScript",
+    "question": "Which is generally true about `interface` vs `type` in TypeScript?",
+    "options": [
+      "Interfaces can be merged via declaration merging",
+      "Types can be merged but interfaces cannot",
+      "Neither can describe object shapes"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "TypeScript",
+    "question": "What does `readonly` do on a property?",
+    "options": [
+      "Prevents assignment to the property after initialization",
+      "Makes the property private",
+      "Makes the property always undefined"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "TypeScript",
+    "question": "What are generics used for in TypeScript?",
+    "options": [
+      "Writing functions/types that work with multiple types safely",
+      "Compiling TypeScript faster",
+      "Replacing interfaces"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "TypeScript",
+    "question": "What does the `never` type represent?",
+    "options": [
+      "A value that is always null",
+      "A type for values that never occur (e.g., function never returns)",
+      "A synonym for any"
+    ],
+    "correct": "b"
+  },
+
+  {
+    "language": "Web Dev",
+    "question": "Which HTTP method is typically used for retrieving data without side effects?",
+    "options": [
+      "GET",
+      "POST",
+      "PATCH"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Web Dev",
+    "question": "What does the `HttpOnly` flag on a cookie help prevent?",
+    "options": [
+      "JavaScript access to the cookie (mitigates some XSS impact)",
+      "Network sniffing",
+      "SQL injection"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Web Dev",
+    "question": "What is a key difference between localStorage and sessionStorage?",
+    "options": [
+      "sessionStorage is cleared when the tab/window is closed",
+      "localStorage is cleared when the tab/window is closed",
+      "They are identical"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Web Dev",
+    "question": "What is the same-origin policy?",
+    "options": [
+      "A browser security rule restricting cross-origin reads by default",
+      "A database replication strategy",
+      "A Git branching model"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Web Dev",
+    "question": "What does CSP (Content Security Policy) primarily help with?",
+    "options": [
+      "Mitigating XSS by restricting allowed sources",
+      "Speeding up CSS rendering",
+      "Encrypting database backups"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Go",
+    "question": "What is a goroutine in Go?",
+    "options": [
+      "A lightweight concurrent function execution",
+      "A garbage collector setting",
+      "A package manager"
+    ],
+    "correct": "a"
+  },
+  {
+    "language": "Go",
+    "question": "What are channels primarily used for in Go?",
+    "options": [
+      "Communicating between goroutines",
+      "Storing files",
+      "Generating code"
+    ],
+    "correct": "a"
+  },
+
+  {
+    "language": "Rust",
+    "question": "What is the difference between `&T` and `&mut T` in Rust?",
+    "options": [
+      "`&T` is mutable; `&mut T` is immutable",
+      "`&T` is an immutable borrow; `&mut T` is a mutable borrow",
+      "They are the same"
+    ],
+    "correct": "b"
+  },
+  {
+    "language": "Rust",
+    "question": "What does `Option<T>` represent in Rust?",
+    "options": [
+      "A value that may be present (`Some`) or absent (`None)`",
+      "A global variable",
+      "A thread"
+    ],
+    "correct": "a"
   }
 ]
