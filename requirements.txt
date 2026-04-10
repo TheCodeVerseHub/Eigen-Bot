@@ -13,3 +13,4 @@ Pillow>=10.4.0
 edge-tts>=7.2.7
 PyNaCl>=1.5.0
 davey>=0.1.3
+better_profanity>=0.7.0

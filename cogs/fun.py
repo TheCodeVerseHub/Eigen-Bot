@@ -63,6 +63,7 @@ class Fun(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.question_index = 0
         self._absolute_template_cache_bytes: Optional[bytes] = None
         self._absolute_template_cache_expires_at = 0.0
         self._absolute_template_cache_lock = asyncio.Lock()
@@ -153,6 +154,17 @@ class Fun(commands.Cog):
         result.seek(0)
         return result
 
+    def get_next_question(self) -> dict[str, str]:
+
+        if self.question_index >= len(TRIVIA_QUESTIONS):
+            random.shuffle(TRIVIA_QUESTIONS)
+            self.question_index = 0
+
+        question = TRIVIA_QUESTIONS[self.question_index]
+        self.question_index += 1
+
+        return question
+
     async def _get_absolute_template_bytes(self) -> bytes:
         now = time.monotonic()
         if (
@@ -179,6 +191,7 @@ class Fun(commands.Cog):
             return template_bytes
 
     @commands.hybrid_command(name="fridge", help="Send a fridge image")
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def fridge(self, ctx: commands.Context):
         """Send a fridge image (simple utility)."""
         # Generate an image locally so it always works (no external hotlinking).
@@ -348,10 +361,6 @@ class Fun(commands.Cog):
         )
         embed.set_footer(text="CodeVerse Bot | Decision Helper")
         await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.hybrid_command(
-        name="absolute", help="Put your avatar on the 'absolute cinema' GIF"
-    )
     @app_commands.describe(text="Text to replace 'cinema' with")
     async def absolute(self, ctx: commands.Context, *, text: str):
 

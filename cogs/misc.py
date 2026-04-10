@@ -8,6 +8,7 @@ from discord.ext import commands
 from typing import Optional, Any, Union
 from datetime import datetime, timezone, timedelta
 import calendar
+from better_profanity import profanity
 
 from utils.config import Config
 
@@ -190,19 +191,19 @@ class Misc(commands.Cog):
             # Song details
             embed.add_field(
                 name="Track",
-                value=f"**[{spotify_activity.title}]({spotify_activity.track_url})**",
+                value=f"**[{profanity.censor(spotify_activity.title)}]({spotify_activity.track_url})**",
                 inline=False
             )
             
             embed.add_field(
                 name="Artist",
-                value=", ".join(spotify_activity.artists),
+                value=profanity.censor(", ".join(spotify_activity.artists)),
                 inline=True
             )
             
             embed.add_field(
                 name="Album",
-                value=spotify_activity.album,
+                value=profanity.censor(spotify_activity.album),
                 inline=True
             )
             
@@ -242,18 +243,18 @@ class Misc(commands.Cog):
             
             embed.add_field(
                 name="Activity",
-                value=f"**{music_activity.name}**",
+                value=f"**{profanity.censor(music_activity.name)}**",
                 inline=False
             )
             
             # Use getattr to safely access optional attributes
             details = getattr(music_activity, 'details', None)
             if details:
-                embed.add_field(name="Details", value=details, inline=False)
+                embed.add_field(name="Details", value=profanity.censor(details), inline=False)
             
             state = getattr(music_activity, 'state', None)
             if state:
-                embed.add_field(name="State", value=state, inline=False)
+                embed.add_field(name="State", value=profanity.censor(state), inline=False)
             
             embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
         else:
