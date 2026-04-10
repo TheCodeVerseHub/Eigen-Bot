@@ -3,17 +3,18 @@ Professional Fun Commands - Programming-themed entertainment
 Clean, emoji-free implementation optimized for bot-hosting.net
 """
 
-import discord
-from discord.ext import commands
-from discord import app_commands
-import random
 import asyncio
 import io
 import logging
+import random
 import time
 import urllib.request
 from datetime import datetime, timezone
 from typing import Optional, Union
+
+import discord
+from discord import app_commands
+from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont, ImageSequence
 
 # Professional data sets without emojis
@@ -24,7 +25,7 @@ COMPLIMENTS = [
     "You handle debugging challenges efficiently.",
     "Your code architecture is well-structured.",
     "You write maintainable and readable code.",
-    "Your attention to detail is commendable."
+    "Your attention to detail is commendable.",
 ]
 
 PROGRAMMING_JOKES = [
@@ -34,7 +35,7 @@ PROGRAMMING_JOKES = [
     "How many programmers does it take to change a light bulb? None, that's a hardware problem.",
     "Why did the programmer quit his job? He didn't get arrays!",
     "What's a programmer's favorite hangout place? Foo Bar!",
-    "Why do programmers prefer dark mode? Because light attracts bugs!"
+    "Why do programmers prefer dark mode? Because light attracts bugs!",
 ]
 
 FORTUNE_MESSAGES = [
@@ -44,41 +45,22 @@ FORTUNE_MESSAGES = [
     "An elegant algorithm will present itself today.",
     "Your debugging session will be shorter than expected.",
     "Your code will compile successfully on the first attempt.",
-    "A mentor will share valuable programming wisdom with you."
+    "A mentor will share valuable programming wisdom with you.",
 ]
 
-TRIVIA_QUESTIONS = [
-    {
-        "question": "What does CPU stand for?",
-        "answer": "Central Processing Unit",
-        "category": "Hardware"
-    },
-    {
-        "question": "Which programming language is known for its snake logo?",
-        "answer": "Python",
-        "category": "Programming"
-    },
-    {
-        "question": "What does HTML stand for?",
-        "answer": "HyperText Markup Language",
-        "category": "Web Development"
-    },
-    {
-        "question": "Who created the Linux operating system?",
-        "answer": "Linus Torvalds",
-        "category": "Operating Systems"
-    }
-]
 
-ABSOLUTE_TEMPLATE_GIF_URL = "https://media1.tenor.com/m/9zeYdsiRscoAAAAd/absolute-cinema.gif"
+ABSOLUTE_TEMPLATE_GIF_URL = (
+    "https://media1.tenor.com/m/9zeYdsiRscoAAAAd/absolute-cinema.gif"
+)
 max_absol_text_len = 24
 ABSOLUTE_TEMPLATE_CACHE_TTL_SECONDS = 1800
 
 logger = logging.getLogger(__name__)
 
+
 class Fun(commands.Cog):
     """Professional fun commands for programming communities."""
-    
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._absolute_template_cache_bytes: Optional[bytes] = None
@@ -101,7 +83,9 @@ class Fun(commands.Cog):
         return ImageFont.load_default()
 
     @classmethod
-    def _build_absolute_gif(cls, template_bytes: bytes, avatar_bytes: bytes, text: str) -> io.BytesIO:
+    def _build_absolute_gif(
+        cls, template_bytes: bytes, avatar_bytes: bytes, text: str
+    ) -> io.BytesIO:
         template = Image.open(io.BytesIO(template_bytes))
         avatar = Image.open(io.BytesIO(avatar_bytes)).convert("RGBA")
 
@@ -111,7 +95,9 @@ class Fun(commands.Cog):
         width, height = template.size
 
         avatar_size = max(56, int(min(width, height) * 0.22))
-        resized_avatar = avatar.resize((avatar_size, avatar_size), Image.Resampling.LANCZOS)
+        resized_avatar = avatar.resize(
+            (avatar_size, avatar_size), Image.Resampling.LANCZOS
+        )
         avatar_mask = Image.new("L", (avatar_size, avatar_size), 0)
         ImageDraw.Draw(avatar_mask).ellipse((0, 0, avatar_size, avatar_size), fill=255)
         circular_avatar = Image.new("RGBA", (avatar_size, avatar_size), (0, 0, 0, 0))
@@ -129,7 +115,9 @@ class Fun(commands.Cog):
 
             draw = ImageDraw.Draw(base)
 
-            text_bbox = draw.textbbox((0, 0), caption, font=font, stroke_width=stroke_width)
+            text_bbox = draw.textbbox(
+                (0, 0), caption, font=font, stroke_width=stroke_width
+            )
             text_width = text_bbox[2] - text_bbox[0]
             text_height = text_bbox[3] - text_bbox[1]
 
@@ -146,7 +134,7 @@ class Fun(commands.Cog):
                 font=font,
                 fill=(255, 255, 255, 255),
                 stroke_width=stroke_width,
-                stroke_fill=(0, 0, 0, 255)
+                stroke_fill=(0, 0, 0, 255),
             )
 
             output_frames.append(base.convert("P", palette=Image.Palette.ADAPTIVE))
@@ -160,24 +148,34 @@ class Fun(commands.Cog):
             append_images=output_frames[1:],
             duration=frame_durations,
             loop=0,
-            disposal=2
+            disposal=2,
         )
         result.seek(0)
         return result
 
     async def _get_absolute_template_bytes(self) -> bytes:
         now = time.monotonic()
-        if self._absolute_template_cache_bytes and now < self._absolute_template_cache_expires_at:
+        if (
+            self._absolute_template_cache_bytes
+            and now < self._absolute_template_cache_expires_at
+        ):
             return self._absolute_template_cache_bytes
 
         async with self._absolute_template_cache_lock:
             now = time.monotonic()
-            if self._absolute_template_cache_bytes and now < self._absolute_template_cache_expires_at:
+            if (
+                self._absolute_template_cache_bytes
+                and now < self._absolute_template_cache_expires_at
+            ):
                 return self._absolute_template_cache_bytes
 
-            template_bytes = await asyncio.to_thread(self._download_bytes, ABSOLUTE_TEMPLATE_GIF_URL)
+            template_bytes = await asyncio.to_thread(
+                self._download_bytes, ABSOLUTE_TEMPLATE_GIF_URL
+            )
             self._absolute_template_cache_bytes = template_bytes
-            self._absolute_template_cache_expires_at = now + ABSOLUTE_TEMPLATE_CACHE_TTL_SECONDS
+            self._absolute_template_cache_expires_at = (
+                now + ABSOLUTE_TEMPLATE_CACHE_TTL_SECONDS
+            )
             return template_bytes
 
     @commands.hybrid_command(name="fridge", help="Send a fridge image")
@@ -201,7 +199,11 @@ class Fun(commands.Cog):
 
         # Door split
         split_y = 250
-        draw.line((body_left + 10, split_y, body_right - 10, split_y), fill=(120, 140, 160), width=6)
+        draw.line(
+            (body_left + 10, split_y, body_right - 10, split_y),
+            fill=(120, 140, 160),
+            width=6,
+        )
 
         # Handles
         draw.rounded_rectangle((330, 110, 346, 190), radius=8, fill=(120, 140, 160))
@@ -217,21 +219,28 @@ class Fun(commands.Cog):
         buf.seek(0)
 
         file = discord.File(buf, filename="fridge.png")
-        embed = discord.Embed(title="Fridge", color=0x3498DB, timestamp=datetime.now(timezone.utc))
+        embed = discord.Embed(
+            title="Fridge", color=0x3498DB, timestamp=datetime.now(timezone.utc)
+        )
         embed.set_image(url="attachment://fridge.png")
         await ctx.reply(embed=embed, file=file, mention_author=False)
-    @commands.hybrid_command(name="compliment", help="Receive a professional programming compliment")
-    async def compliment(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+
+    @commands.hybrid_command(
+        name="compliment", help="Receive a professional programming compliment"
+    )
+    async def compliment(
+        self, ctx: commands.Context, member: Optional[discord.Member] = None
+    ):
         """Give a professional compliment to yourself or another member."""
         """Give a professional compliment to yourself or another member."""
         target = member or ctx.author
         compliment = random.choice(COMPLIMENTS)
-        
+
         embed = discord.Embed(
             title="Professional Recognition",
             description=f"{target.mention}, {compliment}",
             color=0x2ECC71,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Professional Development")
         await ctx.reply(embed=embed, mention_author=False)
@@ -240,12 +249,12 @@ class Fun(commands.Cog):
     async def joke(self, ctx: commands.Context):
         """Share a clean programming joke."""
         joke = random.choice(PROGRAMMING_JOKES)
-        
+
         embed = discord.Embed(
             title="Programming Humor",
             description=joke,
             color=0xF39C12,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Community Fun")
         await ctx.reply(embed=embed, mention_author=False)
@@ -254,175 +263,113 @@ class Fun(commands.Cog):
     async def fortune(self, ctx: commands.Context):
         """Receive a programming-themed fortune message."""
         fortune = random.choice(FORTUNE_MESSAGES)
-        
+
         embed = discord.Embed(
             title="Programming Fortune",
             description=fortune,
             color=0x9B59B6,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Daily Inspiration")
         await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.hybrid_command(name="trivia", help="Answer a programming trivia question")
-    async def trivia(self, ctx: commands.Context):
-        """Start a programming trivia question."""
-        question_data = random.choice(TRIVIA_QUESTIONS)
-        
-        embed = discord.Embed(
-            title="Programming Trivia",
-            description=f"**Category:** {question_data['category']}\n\n**Question:** {question_data['question']}",
-            color=0x3498DB,
-            timestamp=datetime.now(timezone.utc)
-        )
-        embed.set_footer(text="You have 30 seconds to answer!")
-        
-        message = await ctx.reply(embed=embed, mention_author=False)
-        
-        # Function to check if answer is correct
-        def check(m):
-            if m.author != ctx.author or m.channel != ctx.channel:
-                return False
-            
-            # Normalize both strings: lowercase, remove ALL spaces, punctuation, and special chars
-            import re
-            user_answer = re.sub(r'[^a-z0-9]', '', m.content.lower())
-            correct_answer = re.sub(r'[^a-z0-9]', '', question_data['answer'].lower())
-            
-            return user_answer == correct_answer
-        
-        try:
-            # Wait for correct answer or timeout
-            response = await self.bot.wait_for('message', timeout=30.0, check=check)
-            
-            # User answered correctly!
-            success_embed = discord.Embed(
-                title="Correct Answer!",
-                description=f"{ctx.author.mention} answered correctly!\n\n**Question:** {question_data['question']}\n**Answer:** {question_data['answer']}",
-                color=0x2ECC71,
-                timestamp=datetime.now(timezone.utc)
-            )
-            success_embed.set_footer(text="CodeVerse Bot | Programming Knowledge")
-            
-            try:
-                await response.add_reaction("✅")
-            except:
-                pass
-            
-            try:
-                await message.edit(embed=success_embed)
-            except:
-                await ctx.send(embed=success_embed)
-                
-        except asyncio.TimeoutError:
-            # Time's up, reveal answer
-            answer_embed = discord.Embed(
-                title="Time's Up!",
-                description=f"**Question:** {question_data['question']}\n**Answer:** {question_data['answer']}",
-                color=0xE74C3C,
-                timestamp=datetime.now(timezone.utc)
-            )
-            answer_embed.set_footer(text="CodeVerse Bot | Better luck next time!")
-            
-            try:
-                await message.edit(embed=answer_embed)
-            except:
-                await ctx.send(embed=answer_embed)
 
     @commands.hybrid_command(name="flip", help="Flip a coin")
     async def flip(self, ctx: commands.Context):
         """Flip a virtual coin."""
         result = random.choice(["Heads", "Tails"])
-        
+
         embed = discord.Embed(
             title="Coin Flip",
             description=f"Result: **{result}**",
             color=0x95A5A6,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Random Utilities")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name="singledice", help="Roll a single die (basic). For multi-dice use ?roll")
+    @commands.command(
+        name="singledice", help="Roll a single die (basic). For multi-dice use ?roll"
+    )
     async def single_dice(self, ctx: commands.Context, sides: int = 6):
         """Roll a single die (basic variant). Advanced multi-dice available via /roll."""
         if sides < 2 or sides > 100:
             embed = discord.Embed(
                 title="Invalid Dice",
                 description="Dice must have between 2 and 100 sides.",
-                color=0xE74C3C
+                color=0xE74C3C,
             )
             await ctx.reply(embed=embed, mention_author=False)
             return
-        
+
         result = random.randint(1, sides)
-        
+
         embed = discord.Embed(
             title=f"Dice Roll (d{sides})",
             description=f"Result: **{result}**",
             color=0x3498DB,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Random Utilities")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="choose", help="Choose randomly from a list of options")
+    @commands.hybrid_command(
+        name="choose", help="Choose randomly from a list of options"
+    )
     @app_commands.describe(choices="Comma-separated list of choices")
     async def choose(self, ctx: commands.Context, *, choices: str):
         """Randomly choose from a list of options."""
-        options = [choice.strip() for choice in choices.split(',') if choice.strip()]
-        
+        options = [choice.strip() for choice in choices.split(",") if choice.strip()]
+
         if len(options) < 2:
             embed = discord.Embed(
                 title="Insufficient Options",
                 description="Please provide at least 2 comma-separated choices.",
-                color=0xE74C3C
+                color=0xE74C3C,
             )
             await ctx.reply(embed=embed, mention_author=False)
             return
-        
+
         if len(options) > 20:
             embed = discord.Embed(
                 title="Too Many Options",
                 description="Please provide no more than 20 choices.",
-                color=0xE74C3C
+                color=0xE74C3C,
             )
             await ctx.reply(embed=embed, mention_author=False)
             return
-        
+
         choice = random.choice(options)
-        
+
         embed = discord.Embed(
             title="Random Choice",
             description=f"**Options:** {', '.join(options)}\n\n**Selected:** {choice}",
             color=0x9B59B6,
-            timestamp=datetime.now(timezone.utc)
+            timestamp=datetime.now(timezone.utc),
         )
         embed.set_footer(text="CodeVerse Bot | Decision Helper")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="absolute", help="Put your avatar on the 'absolute cinema' GIF")
-
-
-
+    @commands.hybrid_command(
+        name="absolute", help="Put your avatar on the 'absolute cinema' GIF"
+    )
     @app_commands.describe(text="Text to replace 'cinema' with")
     async def absolute(self, ctx: commands.Context, *, text: str):
 
-        
         clean_text = " ".join(text.split())
 
         if not clean_text:
-            await ctx.reply("Please provide text. Example: `/absolute text: coding`", mention_author=False)
+            await ctx.reply(
+                "Please provide text. Example: `/absolute text: coding`",
+                mention_author=False,
+            )
             return
-
 
         if len(clean_text) > max_absol_text_len:
             await ctx.reply(
                 f"Text must be {max_absol_text_len} characters or less.",
-                mention_author=False
+                mention_author=False,
             )
             return
-
 
         try:
             await ctx.defer()
@@ -439,25 +386,19 @@ class Fun(commands.Cog):
             avatar_bytes = await avatar_asset.read()
             template_bytes = await self._get_absolute_template_bytes()
             gif_bytes = await asyncio.to_thread(
-                self._build_absolute_gif,
-                template_bytes,
-                avatar_bytes,
-                clean_text
+                self._build_absolute_gif, template_bytes, avatar_bytes, clean_text
             )
         except Exception:
             logger.exception("Failed to generate /absolute GIF")
             await ctx.reply(
                 "Couldn't generate the GIF right now. Try again later.",
-                mention_author=False
+                mention_author=False,
             )
             return
 
-
-        await ctx.reply(file=discord.File(gif_bytes, filename="absolute.gif"), mention_author=False)
-
-
-
-
+        await ctx.reply(
+            file=discord.File(gif_bytes, filename="absolute.gif"), mention_author=False
+        )
 
 
 async def setup(bot: commands.Bot):
