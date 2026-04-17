@@ -708,7 +708,7 @@ class Misc(commands.Cog):
             ephemeral=True
         )
 
-    @commands.command(name='dm', description='Explains why you should not DM members for help')
+    @commands.command(name='dm', help='Explains why you should not DM members for help')
     async def dm_command(self, ctx: commands.Context):
         """Explains why questions should be asked in the server instead of DMs."""
         message = (

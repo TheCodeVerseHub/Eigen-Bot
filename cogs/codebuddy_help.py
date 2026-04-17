@@ -95,7 +95,7 @@ class CodeBuddyHelpCog(commands.Cog):
         # Edit the original response with the help embed
         await interaction.edit_original_response(content=None, embed=embed, view=view)
 
-    @commands.command(name="quizhelp")
+    @commands.command(name="quizhelp", help="Get help and information about CodeBuddy bot commands")
     async def quizhelp_prefix(self, ctx):
         """Displays help information about all available commands."""
         

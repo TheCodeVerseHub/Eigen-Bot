@@ -41,7 +41,7 @@ class Tags(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send("Use /tags list or /tag <name>")
 
-    @commands.hybrid_command(name="tag", help="Get a tag by name.")
+    @commands.hybrid_command(name="tag", description="Get a tag by name.", help="Get a tag by name.")
     @app_commands.describe(name="Tag name to fetch")
     @commands.guild_only()
     async def tag(self, ctx: commands.Context, name: str):

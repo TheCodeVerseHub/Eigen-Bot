@@ -90,11 +90,11 @@ class TOD(commands.Cog):
     async def tod_command(self, ctx: commands.Context):
         await self.send_tod_message(ctx, "random")
 
-    @commands.command(name="truth")
+    @commands.command(name="truth", help="Get a random truth question")
     async def truth_command(self, ctx: commands.Context):
         await self.send_tod_message(ctx, "truth")
 
-    @commands.command(name="dare")
+    @commands.command(name="dare", help="Get a random dare question")
     async def dare_command(self, ctx: commands.Context):
         await self.send_tod_message(ctx, "dare")
 

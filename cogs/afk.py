@@ -147,6 +147,7 @@ class AFKSystem(commands.Cog):
 
     @commands.hybrid_command(
         name="afk",
+        description="Set yourself as AFK with an optional reason",
         help="Set yourself as AFK with an optional reason",
         usage="afk [reason]"
     )
@@ -229,6 +230,7 @@ class AFKSystem(commands.Cog):
 
     @commands.hybrid_command(
         name="afklist",
+        description="List all currently AFK users in the server",
         help="List all currently AFK users in the server",
         aliases=["afkstatus", "whoafk"]
     )

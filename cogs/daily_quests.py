@@ -20,7 +20,7 @@ class DailyQuestsCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
     
-    @commands.command(name="dailyquest", aliases=["dq", "quests", "quest", "daily", "checklist"])
+    @commands.command(name="dailyquest", aliases=["dq", "quests", "quest", "daily", "checklist"], help="View your daily quest progress and rewards")
     async def daily_quest(self, ctx: commands.Context):
         """
         View your daily quest progress and rewards.
@@ -80,7 +80,7 @@ class DailyQuestsCog(commands.Cog):
             print(f"[Error in daily_quest command]: {e}")
             await ctx.send("An error occurred while fetching your quest progress.", ephemeral=True)
     
-    @commands.command(name="inventory", aliases=["inv", "rewards"])
+    @commands.command(name="inventory", aliases=["inv", "rewards"], help="View your quest rewards inventory")
     async def inventory(self, ctx: commands.Context):
         """View your quest rewards inventory."""
         user_id = ctx.author.id

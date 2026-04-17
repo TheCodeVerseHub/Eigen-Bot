@@ -491,7 +491,7 @@ class HelpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.command(name="helpmenu", description="Show help for commands or a specific command/cog")
+    @commands.command(name="helpmenu", help="Show help for commands or a specific command/cog")
     async def helpmenu(self, ctx: commands.Context, *, query: Optional[str] = None):
         """Show interactive help menu or detailed help for a specific command/category."""
         await self._show_help(ctx, query)
