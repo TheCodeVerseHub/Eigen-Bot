@@ -274,6 +274,36 @@ class Counting(commands.Cog):
             ast.USub: operator.neg
         }
 
+        constants = {
+            "e": math.e,
+            "pi": math.pi,
+            "tau": math.tau,
+        }
+
+        functions = {
+            "log": math.log,
+            "log10": math.log10,
+            "sqrt": math.sqrt,
+            "factorial": math.factorial,
+            "ceil": math.ceil,
+            "floor": math.floor,
+            "trunc": math.trunc,
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "asin": math.asin,
+            "acos": math.acos
+            "atan": math.atan,
+            "degrees": math.degrees,
+            "radians": math.radians,
+            "sinh": math.sinh,
+            "cosh": math.cosh",
+            "tanh": math.tanh,
+            "asinh": math.asinh,
+            "acosh": math.acosh,
+            "atanh": math.atanh,
+        }
+
         def eval_node(node):
             if isinstance(node, ast.Constant):
                 if isinstance(node.value, (int, float)):
@@ -294,13 +324,14 @@ class Counting(commands.Cog):
                     return operators[op](eval_node(node.operand))
             elif isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name):
-                    if node.func.id == "log":
+                    if node.func.id in functions:
                         args = [eval_node(a) for a in node.args]
-                        return math.log(*args)
-                    if node.func.id == "log10":
-                        return math.log10(eval_node(node.args[0]))
-                    if node.func.id == "sqrt":
-                        return math.sqrt(eval_node(node.args[0]))
+                        return functions[node.func.id](*args)
+                    
+            elif isinstance(node, ast.Name):
+                if node.id in constants:
+                    return constants[node.id]
+                raise TypeError(f"Unknown identifier {node.id}")
             raise TypeError("Unsupported type")
 
         try:
