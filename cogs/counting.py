@@ -13,6 +13,7 @@ from utils.codebuddy_database import (
 )
 import ast
 import operator
+import math
 import asyncio
 import time
 from typing import Optional
@@ -291,6 +292,15 @@ class Counting(commands.Cog):
                 op = type(node.op)
                 if op in operators:
                     return operators[op](eval_node(node.operand))
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    if node.func.id == "log":
+                        args = [eval_node(a) for a in node.args]
+                        return math.log(*args)
+                    if node.func.id == "log10":
+                        return math.log10(eval_node(node.args[0]))
+                    if node.func.id == "sqrt":
+                        return math.sqrt(eval_node(node.args[0]))
             raise TypeError("Unsupported type")
 
         try:
