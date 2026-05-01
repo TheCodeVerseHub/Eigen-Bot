@@ -297,7 +297,7 @@ class Counting(commands.Cog):
             "degrees": math.degrees,
             "radians": math.radians,
             "sinh": math.sinh,
-            "cosh": math.cosh",
+            "cosh": math.cosh,
             "tanh": math.tanh,
             "asinh": math.asinh,
             "acosh": math.acosh,
