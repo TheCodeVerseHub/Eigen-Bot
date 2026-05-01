@@ -617,7 +617,7 @@ class Counting(commands.Cog):
             await self._clear_highscore_marker_if_any(guild_id, message.channel)
 
 
-    @commands.command(name="donateguild", aliases=["dg"], help="Donate 1 personal save to the guild pool")
+    @commands.command(name="donateguild", aliases=["dg"], help="Donate 0.5 personal save to the guild pool")
     async def donate_guild(self, ctx: commands.Context):
         """Donate 1 personal save to the guild pool (guild receives 0.5 save)."""
         if not ctx.guild:
