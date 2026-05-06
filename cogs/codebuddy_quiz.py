@@ -398,7 +398,7 @@ class CodeBuddyQuizCog(commands.Cog):
             except Exception:
                 pass
 
-    @commands.command(name="codeleaderboard", aliases=["clb"])
+    @commands.command(name="codeleaderboard", aliases=["clb"], help="Show the top players with the most correct answers")
     async def codeleaderboard_prefix(self, ctx: commands.Context):
         """Show the top players with the most correct answers."""
         try:
@@ -498,7 +498,7 @@ class CodeBuddyQuizCog(commands.Cog):
             except Exception:
                 pass
 
-    @commands.command(name="codestats", aliases=["cst"])
+    @commands.command(name="codestats", aliases=["cst"], help="Show your personal coding quiz stats")
     async def codestats_prefix(self, ctx: commands.Context):
         """Show your personal coding quiz stats."""
         try:

@@ -506,7 +506,7 @@ class StaffApplications(commands.Cog):
         except Exception as e:
             logger.error(f"Failed to load persistent views: {e}")
 
-    @commands.hybrid_command(name="panel", description="Post the staff application panel")
+    @commands.hybrid_command(name="panel", description="Post the staff application panel", help="Post the staff application panel")
     @commands.has_permissions(administrator=True)
     async def panel(self, ctx):
         embed = discord.Embed(

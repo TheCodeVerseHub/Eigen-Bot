@@ -941,7 +941,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             print(f"[Tickets] Failed to send log: {e}")
     
-    @commands.hybrid_command(name="ticketpanel")
+    @commands.hybrid_command(name="ticketpanel", description="Create a ticket panel with a button to open tickets", help="Create a ticket panel with a button to open tickets")
     @commands.has_permissions(administrator=True)
     @app_commands.describe(
         channel="Channel to send the ticket panel to",
@@ -1067,7 +1067,7 @@ class Tickets(commands.Cog):
             ephemeral=True
         )
     
-    @commands.hybrid_command(name="ticketlog")
+    @commands.hybrid_command(name="ticketlog", description="Set up or view the ticket log channel", help="Set up or view the ticket log channel")
     @commands.has_permissions(administrator=True)
     @app_commands.describe(
         channel="The channel to use for ticket logs (leave empty to view current setting)"
@@ -1191,7 +1191,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketlog-disable")
+    @commands.hybrid_command(name="ticketlog-disable", description="Disable ticket logging for this server", help="Disable ticket logging for this server")
     @commands.has_permissions(administrator=True)
     async def ticket_log_disable(self, ctx):
         """Disable ticket logging for this server"""
@@ -1243,7 +1243,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketsupport")
+    @commands.hybrid_command(name="ticketsupport", description="Set up or view the support role for ticket notifications", help="Set up or view the support role for ticket notifications")
     @commands.has_permissions(administrator=True)
     @app_commands.describe(
         role="The role to ping when new tickets are created (leave empty to view current setting)"
@@ -1332,7 +1332,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketsupport-disable")
+    @commands.hybrid_command(name="ticketsupport-disable", description="Disable the custom support role for tickets", help="Disable the custom support role for tickets")
     @commands.has_permissions(administrator=True)
     async def ticket_support_role_disable(self, ctx):
         """Disable the custom support role for tickets"""
@@ -1384,7 +1384,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="tickets")
+    @commands.hybrid_command(name="tickets", description="View all tickets, filterable by status or user", help="View all tickets, filterable by status or user")
     @commands.has_permissions(manage_messages=True)
     @app_commands.describe(
         status="Filter tickets by status (open, closed, all)",
@@ -1462,7 +1462,7 @@ class Tickets(commands.Cog):
         
         await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="ticketstats")
+    @commands.hybrid_command(name="ticketstats", description="View ticket statistics for this server", help="View ticket statistics for this server")
     @commands.has_permissions(manage_messages=True)
     async def ticket_stats(self, ctx):
         """View ticket statistics"""
@@ -1512,7 +1512,7 @@ class Tickets(commands.Cog):
         
         await ctx.send(embed=embed)
     
-    @commands.hybrid_command(name="forceclose")
+    @commands.hybrid_command(name="forceclose", description="Force close a ticket by its ID (Staff only)", help="Force close a ticket by its ID (Staff only)")
     @commands.has_permissions(manage_messages=True)
     @app_commands.describe(
         ticket_id="The ID of the ticket to force close",
@@ -1646,7 +1646,7 @@ class Tickets(commands.Cog):
         
         print(f"[Tickets] 🔒 Ticket #{ticket_id} force closed by {ctx.author} - Reason: {reason}")
     
-    @commands.hybrid_command(name="ticketreport")
+    @commands.hybrid_command(name="ticketreport", description="Set up or view the report role for report ticket notifications", help="Set up or view the report role for report ticket notifications")
     @commands.has_permissions(administrator=True)
     @app_commands.describe(
         role="The role to ping when report tickets are created (leave empty to view current setting)"
@@ -1738,7 +1738,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketreport-disable")
+    @commands.hybrid_command(name="ticketreport-disable", description="Disable the custom report role for tickets", help="Disable the custom report role for tickets")
     @commands.has_permissions(administrator=True)
     async def ticket_report_role_disable(self, ctx):
         """Disable the custom report role for tickets"""
@@ -1785,7 +1785,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketpartner")
+    @commands.hybrid_command(name="ticketpartner", description="Set up or view the partner role for partnership ticket notifications", help="Set up or view the partner role for partnership ticket notifications")
     @commands.has_permissions(administrator=True)
     @app_commands.describe(
         role="The role to ping when partnership tickets are created (leave empty to view current setting)"
@@ -1877,7 +1877,7 @@ class Tickets(commands.Cog):
                 ephemeral=True
             )
     
-    @commands.hybrid_command(name="ticketpartner-disable")
+    @commands.hybrid_command(name="ticketpartner-disable", description="Disable the custom partner role for tickets", help="Disable the custom partner role for tickets")
     @commands.has_permissions(administrator=True)
     async def ticket_partner_role_disable(self, ctx):
         """Disable the custom partner role for tickets"""

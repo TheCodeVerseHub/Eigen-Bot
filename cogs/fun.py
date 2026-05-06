@@ -178,7 +178,7 @@ class Fun(commands.Cog):
             )
             return template_bytes
 
-    @commands.hybrid_command(name="fridge", help="Send a fridge image")
+    @commands.hybrid_command(name="fridge", description="Send a fridge image", help="Send a fridge image")
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def fridge(self, ctx: commands.Context):
         """Send a fridge image (simple utility)."""
@@ -227,7 +227,7 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed, file=file, mention_author=False)
 
     @commands.hybrid_command(
-        name="compliment", help="Receive a professional programming compliment"
+        name="compliment", description="Receive a professional programming compliment", help="Receive a professional programming compliment"
     )
     async def compliment(
         self, ctx: commands.Context, member: Optional[discord.Member] = None
@@ -246,7 +246,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Professional Development")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="joke", help="Get a programming-related joke")
+    @commands.hybrid_command(name="joke", description="Get a programming-related joke", help="Get a programming-related joke")
     async def joke(self, ctx: commands.Context):
         """Share a clean programming joke."""
         joke = random.choice(PROGRAMMING_JOKES)
@@ -260,7 +260,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Community Fun")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="fortune", help="Get a programming fortune")
+    @commands.hybrid_command(name="fortune", description="Get a programming fortune", help="Get a programming fortune")
     async def fortune(self, ctx: commands.Context):
         """Receive a programming-themed fortune message."""
         fortune = random.choice(FORTUNE_MESSAGES)
@@ -274,7 +274,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Daily Inspiration")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="flip", help="Flip a coin")
+    @commands.hybrid_command(name="flip", description="Flip a coin", help="Flip a coin")
     async def flip(self, ctx: commands.Context):
         """Flip a virtual coin."""
         result = random.choice(["Heads", "Tails"])
@@ -314,7 +314,7 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.hybrid_command(
-        name="choose", help="Choose randomly from a list of options"
+        name="choose", description="Choose randomly from a list of options", help="Choose randomly from a list of options"
     )
     @app_commands.describe(choices="Comma-separated list of choices")
     async def choose(self, ctx: commands.Context, *, choices: str):
@@ -349,6 +349,7 @@ class Fun(commands.Cog):
         )
         embed.set_footer(text="CodeVerse Bot | Decision Helper")
         await ctx.reply(embed=embed, mention_author=False)
+    @commands.hybrid_command(name="absolute", description="Generate an 'ABSOLUTE cinema' GIF with your text", help="Generate an 'ABSOLUTE cinema' GIF with your text")
     @app_commands.describe(text="Text to replace 'cinema' with")
     async def absolute(self, ctx: commands.Context, *, text: str):
 

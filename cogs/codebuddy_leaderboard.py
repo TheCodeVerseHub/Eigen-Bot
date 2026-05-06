@@ -122,7 +122,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
             except Exception:
                 pass
 
-    @commands.command(name="codeweek", aliases=["cw", "cwlb"])
+    @commands.command(name="codeweek", aliases=["cw", "cwlb"], help="Show the weekly coding leaderboard")
     async def codeweek_prefix(self, ctx):
         """Display the weekly leaderboard."""
         try:
@@ -301,7 +301,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
             except Exception:
                 pass
 
-    @commands.command(name="codestreak", aliases=["cs", "cslb"])
+    @commands.command(name="codestreak", aliases=["cs", "cslb"], help="Show the coding streak leaderboard")
     async def codestreak_prefix(self, ctx):
         """Display the streak leaderboard."""
         try:

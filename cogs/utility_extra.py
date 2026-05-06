@@ -44,7 +44,7 @@ class UtilityExtra(commands.Cog):
         return total if total > 0 else None
 
     # ============ COMMANDS ============
-    @commands.hybrid_command(name="emotes", help="Get a list of server emojis. Optional search.")
+    @commands.hybrid_command(name="emotes", description="Get a list of server emojis. Optional search.", help="Get a list of server emojis. Optional search.")
     @app_commands.describe(search="Optional search text")
     @commands.guild_only()
     async def emotes(self, ctx: commands.Context, *, search: Optional[str] = None):
@@ -59,7 +59,7 @@ class UtilityExtra(commands.Cog):
         display = " ".join(str(e) for e in emojis[:100])  # limit to avoid overflow
         await ctx.reply(f"Emojis ({len(emojis)}):\n{display}")
 
-    @commands.hybrid_command(name="membercount", help="Get the member count of the current server.")
+    @commands.hybrid_command(name="membercount", description="Get the member count of the current server.", help="Get the member count of the current server.")
     @commands.guild_only()
     @app_commands.guild_only()
     async def membercount(self, ctx: commands.Context):
@@ -67,7 +67,7 @@ class UtilityExtra(commands.Cog):
             return await ctx.reply("This command can only be used in a server.")
         await ctx.reply(f"Member Count: {ctx.guild.member_count}")
 
-    @commands.hybrid_command(name="randomcolor", help="Generate a random hex color.")
+    @commands.hybrid_command(name="randomcolor", description="Generate a random hex color.", help="Generate a random hex color.")
     async def randomcolor(self, ctx: commands.Context):
         value = random.randint(0, 0xFFFFFF)
         hex_code = f"#{value:06X}"
@@ -85,7 +85,7 @@ class UtilityExtra(commands.Cog):
         total = sum(rolls)
         await ctx.reply(f"Rolled {count}d{size}: {', '.join(map(str, rolls))} (Total: {total})")
 
-    @commands.hybrid_command(name="remindme", help="Set a reminder. Example: /remindme 10m Submit report")
+    @commands.hybrid_command(name="remindme", description="Set a reminder. Example: /remindme 10m Submit report", help="Set a reminder. Example: /remindme 10m Submit report")
     @app_commands.describe(time="Time span like 10m, 2h, 1d", reminder="Reminder text")
     async def remindme(self, ctx: commands.Context, time: str, *, reminder: str):
         seconds = self.parse_time(time)
@@ -140,7 +140,7 @@ class UtilityExtra(commands.Cog):
             embed.add_field(name="Expires", value=f"<t:{int(invite.expires_at.timestamp())}:R>", inline=True)
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name="avatar", help="Get a user's avatar.")
+    @commands.hybrid_command(name="avatar", description="Get a user's avatar.", help="Get a user's avatar.")
     @app_commands.describe(user="The user to get the avatar of")
     async def avatar(self, ctx: commands.Context, user: Optional[Union[discord.Member, discord.User]] = None):
         target = user or ctx.author
@@ -148,7 +148,7 @@ class UtilityExtra(commands.Cog):
         embed.set_image(url=target.display_avatar.url)
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name="serverinfo", help="Get server info/stats.")
+    @commands.hybrid_command(name="serverinfo", description="Get server info/stats.", help="Get server info/stats.")
     @commands.guild_only()
     async def serverinfo(self, ctx: commands.Context):
         if ctx.guild is None:
@@ -168,7 +168,7 @@ class UtilityExtra(commands.Cog):
         
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name="color", help="Show a color using hex.")
+    @commands.hybrid_command(name="color", description="Show a color using hex.", help="Show a color using hex.")
     @app_commands.describe(hex_code="Hex color code (e.g., #FF0000)")
     async def color(self, ctx: commands.Context, hex_code: str):
         hex_code = hex_code.strip('#')

@@ -691,7 +691,7 @@ class BumpLeaderboard(commands.Cog):
     # Prefix-only commands (requested aliases)
     # ----------------------------
 
-    @commands.command(name="mybumps")
+    @commands.command(name="mybumps", help="Show your personal bump stats")
     async def mybumps(self, ctx: commands.Context):
         """Prefix-only: show your bump stats."""
         if ctx.guild is None:
@@ -705,17 +705,17 @@ class BumpLeaderboard(commands.Cog):
         embed.add_field(name="Last bump", value=self._format_full_time(entry.last_bump_time), inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command(name="blb")
+    @commands.command(name="blb", help="Show the bump leaderboard (alias for bumplb)")
     async def blb(self, ctx: commands.Context):
         """Prefix-only alias for bump leaderboard."""
         await self.bumplb(ctx)  # reuse hybrid handler
 
-    @commands.command(name="bst")
+    @commands.command(name="bst", help="Show total bumps and the most recent bumper (alias for bumpstats)")
     async def bst(self, ctx: commands.Context):
         """Prefix-only alias for bump stats."""
         await self.bumpstats(ctx)
 
-    @commands.command(name="topbump")
+    @commands.command(name="topbump", help="Show the top 3 bumpers in the server")
     async def topbump(self, ctx: commands.Context):
         """Prefix-only: show top 3 bumpers."""
         if ctx.guild is None:

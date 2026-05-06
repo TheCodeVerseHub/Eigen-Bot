@@ -658,7 +658,7 @@ class Counting(commands.Cog):
             await self._clear_highscore_marker_if_any(guild_id, message.channel)
 
 
-    @commands.command(name="donateguild", aliases=["dg"])
+    @commands.command(name="donateguild", aliases=["dg"], help="Donate 0.5 personal save to the guild pool")
     async def donate_guild(self, ctx: commands.Context):
         """Donate 1 personal save to the guild pool (guild receives 0.5 save)."""
         if not ctx.guild:
@@ -690,7 +690,7 @@ class Counting(commands.Cog):
         )
 
 
-    @commands.command(name="guildsaves", aliases=["gsaves", "serversaves", "ssaves"])
+    @commands.command(name="guildsaves", aliases=["gsaves", "serversaves", "ssaves"], help="Show the server save pool used to protect counting mistakes")
     async def guild_saves(self, ctx: commands.Context):
         """Show the server save pool used to protect counting mistakes."""
         if not ctx.guild:
@@ -702,7 +702,7 @@ class Counting(commands.Cog):
             "(Needs **1.0** server save to protect a ruined count.)"
         )
 
-    @commands.hybrid_command(name="highscoretable", aliases=["highscores"], help="Show recent counting highscores")
+    @commands.hybrid_command(name="highscoretable", aliases=["highscores"], description="Show recent counting highscores", help="Show recent counting highscores")
     async def highscore_table(self, ctx: commands.Context):
         if not ctx.guild:
             return await ctx.send("Server only command.")
@@ -744,7 +744,7 @@ class Counting(commands.Cog):
         embed.description = "\n".join(lines)
         await ctx.send(embed=embed)
 
-    @commands.command(name="mcl", aliases=["tc"])
+    @commands.command(name="mcl", aliases=["tc"], help="Leaderboard of users with the most correct counts")
     async def most_count_leaderboard(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
             async with db.execute("""
@@ -767,7 +767,7 @@ class Counting(commands.Cog):
         embed.description = description
         await ctx.send(embed=embed)
 
-    @commands.command(name="mrl")
+    @commands.command(name="mrl", help="Leaderboard of users who ruined the count the most")
     async def most_ruined_leaderboard(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
             async with db.execute("""
@@ -790,7 +790,7 @@ class Counting(commands.Cog):
         embed.description = description
         await ctx.send(embed=embed)
 
-    @commands.command(name="scs")
+    @commands.command(name="scs", help="Show current count and high score for this server")
     async def server_count_stats(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
             async with db.execute("SELECT current_count, high_score FROM counting_config WHERE guild_id = ?", (ctx.guild.id,)) as cursor:
