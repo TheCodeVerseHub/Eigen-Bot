@@ -1,7 +1,7 @@
 import os
 import random
-from typing import Optional, cast
-
+from typing import Optional, cast, TypedDict
+import time
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -23,6 +23,11 @@ from utils.codingquestions import (
 )
 
 
+class _PracticeSession(TypedDict):
+    created_at: float
+    correct: str
+
+
 class CodeBuddyQuizCog(commands.Cog):
     def __init__(self, bot: commands.Bot, question_channel_id: int):
         self.bot = bot
@@ -39,7 +44,7 @@ class CodeBuddyQuizCog(commands.Cog):
 
         # Practice question sessions ("knowledge mode") for /question.
         # Keyed by (user_id, channel_id) and validated on the user's next a/b/c message.
-        self._practice_sessions: dict[tuple[int, int], dict[str, object]] = {}
+        self._practice_sessions: dict[tuple[int, int], _PracticeSession] = {}
         self._practice_timeout_seconds = 120
 
     def _cleanup_practice_sessions(self) -> None:
@@ -47,7 +52,7 @@ class CodeBuddyQuizCog(commands.Cog):
         expired_keys = [
             key
             for key, data in self._practice_sessions.items()
-            if now - float(data.get("created_at", 0.0)) > self._practice_timeout_seconds
+            if now - data.get("created_at", 0.0) > self._practice_timeout_seconds
         ]
         for key in expired_keys:
             self._practice_sessions.pop(key, None)
@@ -286,12 +291,12 @@ class CodeBuddyQuizCog(commands.Cog):
             if not session:
                 return
 
-            created_at = float(session.get("created_at", 0.0))
+            created_at = session.get("created_at", 0.0)
             if time.monotonic() - created_at > self._practice_timeout_seconds:
                 self._practice_sessions.pop(session_key, None)
                 return
 
-            correct = str(session.get("correct", "")).lower().strip()
+            correct = session.get("correct", "").lower().strip()
             try:
                 if content == correct:
                     await message.add_reaction("✅")
@@ -371,7 +376,7 @@ class CodeBuddyQuizCog(commands.Cog):
     )
     async def frequency(self, interaction: discord.Interaction, minutes: int):
         try:
-            if not interaction.user.guild_permissions.manage_guild:
+            if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_guild:
                 await interaction.response.send_message(
                     "You need `Manage Server` permission to change quiz frequency.",
                     ephemeral=True,
