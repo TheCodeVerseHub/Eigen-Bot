@@ -91,6 +91,18 @@ DM-based application system with admin review channels.
 - `?remindme`
 - `/timestamp`
 
+### Admin utilities
+- `/say` — Make the bot send a message.
+- `/edit` — Edit a bot message sent via `/say` (by message ID; opens a modal).
+- `/react` — Add a reaction as the bot (emoji + optional message link; defaults to last message in the channel).
+
+### Moderation
+- `?chowkidar` (alias: `?ch`) — Start tracking a user (staff only).
+- `?lc` (alias: `?listchowki`) — List currently tracked users (staff only).
+
+### CodeBuddy practice
+- `/question <category>` — Sends a practice MCQ; reply with `a`/`b`/`c` in that channel to get ✅/❌ feedback (no points).
+
 ### Social
 - `?quote`
 - `?meme`
