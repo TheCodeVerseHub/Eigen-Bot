@@ -292,7 +292,7 @@ class Counting(commands.Cog):
             "cos": math.cos,
             "tan": math.tan,
             "asin": math.asin,
-            "acos": math.acos
+            "acos": math.acos,
             "atan": math.atan,
             "degrees": math.degrees,
             "radians": math.radians,
