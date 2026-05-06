@@ -301,7 +301,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
             except Exception:
                 pass
 
-    @commands.command(name="codestreak", aliases=["cs", "cslb"])
+    @commands.command(name="codestreak", aliases=["csl", "cslb"])
     async def codestreak_prefix(self, ctx):
         """Display the streak leaderboard."""
         try:

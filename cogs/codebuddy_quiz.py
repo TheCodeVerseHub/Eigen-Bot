@@ -1,7 +1,7 @@
 import os
 import random
-from typing import Optional, cast
-
+from typing import Optional, cast, TypedDict
+import time
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -23,6 +23,11 @@ from utils.codingquestions import (
 )
 
 
+class _PracticeSession(TypedDict):
+    created_at: float
+    correct: str
+
+
 class CodeBuddyQuizCog(commands.Cog):
     def __init__(self, bot: commands.Bot, question_channel_id: int):
         self.bot = bot
@@ -36,6 +41,21 @@ class CodeBuddyQuizCog(commands.Cog):
         self.bonus_active = False
 
         self.frequency_minutes = 25
+
+        # Practice question sessions ("knowledge mode") for /question.
+        # Keyed by (user_id, channel_id) and validated on the user's next a/b/c message.
+        self._practice_sessions: dict[tuple[int, int], _PracticeSession] = {}
+        self._practice_timeout_seconds = 120
+
+    def _cleanup_practice_sessions(self) -> None:
+        now = time.monotonic()
+        expired_keys = [
+            key
+            for key, data in self._practice_sessions.items()
+            if now - data.get("created_at", 0.0) > self._practice_timeout_seconds
+        ]
+        for key in expired_keys:
+            self._practice_sessions.pop(key, None)
 
     async def cog_load(self):
         self.post_question_loop.change_interval(minutes=self.frequency_minutes)
@@ -124,141 +144,179 @@ class CodeBuddyQuizCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         try:
-            if (
-                message.author.bot
-                or not self.question_active
-                or message.channel.id != self.channel_id
-            ):
+            if message.author.bot:
                 return
 
-            user_id = message.author.id
-            content = message.content.lower().strip()
+            # 1) Main scheduled quiz answer checking (points/streaks) in the quiz channel.
+            if self.question_active and message.channel.id == self.channel_id:
+                user_id = message.author.id
+                content = message.content.lower().strip()
 
-            if content not in ["a", "b", "c"]:
-                return
+                if content not in ["a", "b", "c"]:
+                    return
 
-            if user_id in self.ignored_users:
-                return
+                if user_id in self.ignored_users:
+                    return
 
-            if content == self.current_answer:
-                try:
-                    await message.add_reaction("✅")
-                except Exception:
-                    pass
+                if content == self.current_answer:
+                    try:
+                        await message.add_reaction("✅")
+                    except Exception:
+                        pass
 
-                points = 2 if self.bonus_active else 1
-                extra_bonus = 0
+                    points = 2 if self.bonus_active else 1
+                    extra_bonus = 0
 
-                try:
-                    await increment_user_score(user_id, points)
-                except Exception as e:
-                    print(f"[Error incrementing user score]: {e}")
+                    try:
+                        await increment_user_score(user_id, points)
+                    except Exception as e:
+                        print(f"[Error incrementing user score]: {e}")
 
-                try:
-                    quest_completed = await increment_quest_quiz_count(user_id)
-                    if quest_completed:
+                    try:
+                        quest_completed = await increment_quest_quiz_count(user_id)
+                        if quest_completed:
+                            try:
+                                quest_embed = discord.Embed(
+                                    title="Quest Completed!",
+                                    description=(
+                                        f"{message.author.mention} You completed the **Quiz** quest!\n\n"
+                                        "**Rewards Earned:**\n"
+                                        "• **0.2** Streak Freeze\n"
+                                        "• **0.5** Save\n\n"
+                                        "Use `?inventory` to check your items!"
+                                    ),
+                                    color=0x000000,
+                                )
+                                await message.channel.send(embed=quest_embed)
+                            except Exception as e:
+                                print(f"[Error sending quest completion message]: {e}")
+                    except Exception as e:
+                        print(f"[Error updating quest progress]: {e}")
+
+                    try:
+                        lb = await get_leaderboard(100)
+                    except Exception as e:
+                        print(f"[Error fetching leaderboard]: {e}")
+                        lb = []
+
+                    streak = 0
+                    for uid, score, s, best in lb:
+                        if uid == user_id:
+                            streak = s
+                            try:
+                                if streak == 3:
+                                    extra_bonus = 1
+                                    await increment_user_score(user_id, extra_bonus)
+                                elif streak == 5:
+                                    extra_bonus = 2
+                                    await increment_user_score(user_id, extra_bonus)
+                            except Exception as e:
+                                print(f"[Error applying streak bonus]: {e}")
+                            break
+
+                    total_points = points + extra_bonus
+                    title = f"{streak}x Streak!"
+                    embed = discord.Embed(
+                        title=title,
+                        description=f"{message.author.mention} answered correctly and earned **{total_points} point(s)**!",
+                        color=discord.Color.green(),
+                    )
+                    if extra_bonus > 0:
+                        embed.add_field(
+                            name="Streak Bonus", value=f"+{extra_bonus}", inline=True
+                        )
+                    if self.bonus_active:
+                        embed.set_footer(text="Bonus Question!")
+                    try:
+                        await message.channel.send(embed=embed)
+                    except Exception as e:
+                        print(f"[Error sending success embed]: {e}")
+
+                    self._reset_question_state()
+                else:
+                    self.ignored_users.add(user_id)
+
+                    try:
+                        await message.add_reaction("❌")
+                    except Exception:
+                        pass
+
+                    freeze_used = False
+                    try:
+                        freeze_used = await use_streak_freeze(user_id)
+                    except Exception as e:
+                        print(f"[Error checking streak freeze]: {e}")
+
+                    if freeze_used:
                         try:
-                            quest_embed = discord.Embed(
-                                title="Quest Completed!",
+                            freeze_embed = discord.Embed(
+                                title="Streak Freeze Activated!",
                                 description=(
-                                    f"{message.author.mention} You completed the **Quiz** quest!\n\n"
-                                    "**Rewards Earned:**\n"
-                                    "• **0.2** Streak Freeze\n"
-                                    "• **0.5** Save\n\n"
-                                    "Use `?inventory` to check your items!"
+                                    f"{message.author.mention} Wrong answer, but your **Streak Freeze** protected your streak!\n\n"
+                                    "Your streak remains intact."
                                 ),
                                 color=0x000000,
                             )
-                            await message.channel.send(embed=quest_embed)
+                            freeze_embed.set_footer(
+                                text="Earn more freezes by completing daily quests!"
+                            )
+                            await message.channel.send(embed=freeze_embed)
                         except Exception as e:
-                            print(f"[Error sending quest completion message]: {e}")
-                except Exception as e:
-                    print(f"[Error updating quest progress]: {e}")
-
-                try:
-                    lb = await get_leaderboard(100)
-                except Exception as e:
-                    print(f"[Error fetching leaderboard]: {e}")
-                    lb = []
-
-                streak = 0
-                for uid, score, s, best in lb:
-                    if uid == user_id:
-                        streak = s
+                            print(f"[Error sending freeze message]: {e}")
+                    else:
                         try:
-                            if streak == 3:
-                                extra_bonus = 1
-                                await increment_user_score(user_id, extra_bonus)
-                            elif streak == 5:
-                                extra_bonus = 2
-                                await increment_user_score(user_id, extra_bonus)
+                            await reset_user_streak(user_id)
                         except Exception as e:
-                            print(f"[Error applying streak bonus]: {e}")
-                        break
+                            print(f"[Error resetting user streak]: {e}")
 
-                total_points = points + extra_bonus
-                title = f"{streak}x Streak!"
-                embed = discord.Embed(
-                    title=title,
-                    description=f"{message.author.mention} answered correctly and earned **{total_points} point(s)**!",
-                    color=discord.Color.green(),
-                )
-                if extra_bonus > 0:
-                    embed.add_field(
-                        name="Streak Bonus", value=f"+{extra_bonus}", inline=True
+                        try:
+                            await message.channel.send(
+                                f"{message.author.mention} Wrong answer! Streak reset to 0."
+                            )
+                        except discord.Forbidden:
+                            pass
+                        except Exception as e:
+                            print(f"[Error sending wrong answer message]: {e}")
+
+                return
+
+            # 2) Practice question answer checking (no points) in any channel.
+            self._cleanup_practice_sessions()
+            content = message.content.lower().strip()
+            if content not in ["a", "b", "c"]:
+                return
+
+            session_key = (message.author.id, message.channel.id)
+            session = self._practice_sessions.get(session_key)
+            if not session:
+                return
+
+            created_at = session.get("created_at", 0.0)
+            if time.monotonic() - created_at > self._practice_timeout_seconds:
+                self._practice_sessions.pop(session_key, None)
+                return
+
+            correct = session.get("correct", "").lower().strip()
+            try:
+                if content == correct:
+                    await message.add_reaction("✅")
+                    await message.channel.send(
+                        f"{message.author.mention} Correct! ✅",
+                        allowed_mentions=discord.AllowedMentions(users=True),
+                        delete_after=10,
                     )
-                if self.bonus_active:
-                    embed.set_footer(text="Bonus Question!")
-                try:
-                    await message.channel.send(embed=embed)
-                except Exception as e:
-                    print(f"[Error sending success embed]: {e}")
-
-                self._reset_question_state()
-            else:
-                self.ignored_users.add(user_id)
-
-                try:
-                    await message.add_reaction("❌")
-                except Exception:
-                    pass
-
-                freeze_used = False
-                try:
-                    freeze_used = await use_streak_freeze(user_id)
-                except Exception as e:
-                    print(f"[Error checking streak freeze]: {e}")
-
-                if freeze_used:
-                    try:
-                        freeze_embed = discord.Embed(
-                            title="Streak Freeze Activated!",
-                            description=(
-                                f"{message.author.mention} Wrong answer, but your **Streak Freeze** protected your streak!\n\n"
-                                "Your streak remains intact."
-                            ),
-                            color=0x000000,
-                        )
-                        freeze_embed.set_footer(
-                            text="Earn more freezes by completing daily quests!"
-                        )
-                        await message.channel.send(embed=freeze_embed)
-                    except Exception as e:
-                        print(f"[Error sending freeze message]: {e}")
                 else:
-                    try:
-                        await reset_user_streak(user_id)
-                    except Exception as e:
-                        print(f"[Error resetting user streak]: {e}")
-
-                    try:
-                        await message.channel.send(
-                            f"{message.author.mention} Wrong answer! Streak reset to 0."
-                        )
-                    except discord.Forbidden:
-                        pass
-                    except Exception as e:
-                        print(f"[Error sending wrong answer message]: {e}")
+                    await message.add_reaction("❌")
+                    await message.channel.send(
+                        f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
+                        allowed_mentions=discord.AllowedMentions(users=True),
+                        delete_after=12,
+                    )
+            except Exception:
+                pass
+            finally:
+                # One attempt per practice question.
+                self._practice_sessions.pop(session_key, None)
 
         except Exception as e:
             print(f"[Unexpected error in on_message]: {e}")
@@ -287,6 +345,20 @@ class CodeBuddyQuizCog(commands.Cog):
             )
             await interaction.response.send_message(embed=embed)
 
+            # Store correct answer for this user's next a/b/c message in this channel.
+            # (Practice questions are not tied to the scheduled quiz channel.)
+            try:
+                msg = await interaction.original_response()
+                channel_id = msg.channel.id
+            except Exception:
+                channel_id = interaction.channel_id
+
+            if channel_id is not None:
+                self._practice_sessions[(interaction.user.id, int(channel_id))] = {
+                    "created_at": time.monotonic(),
+                    "correct": str(q.get("correct", "")).lower().strip(),
+                }
+
         except Exception as e:
             print(f"[Unexpected error in /question]: {e}")
             if not interaction.response.is_done():
@@ -304,7 +376,7 @@ class CodeBuddyQuizCog(commands.Cog):
     )
     async def frequency(self, interaction: discord.Interaction, minutes: int):
         try:
-            if not interaction.user.guild_permissions.manage_guild:
+            if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.manage_guild:
                 await interaction.response.send_message(
                     "You need `Manage Server` permission to change quiz frequency.",
                     ephemeral=True,

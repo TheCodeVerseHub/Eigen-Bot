@@ -33,7 +33,7 @@ COG_DESCRIPTIONS = {
     "tags": "Create and manage custom text snippets for your server",
     "communitycommands": "Engage your community with quotes and memes",
     "election": "Democratic voting system with weighted votes",
-    "misc": "Support commands, bug reports, feedback, timestamps, and more",
+    "misc": "Support commands, timestamps, admin utilities (/say, /edit, /react), and more",
     "starboardsystem": "Highlight the best messages with stars",
     "utilityextra": "Extra utility commands like reminders, dice, and emotes",
     "afksystem": "Away From Keyboard system - Set AFK status with custom reasons, auto-respond to mentions, and track time away",
@@ -47,6 +47,7 @@ COG_DESCRIPTIONS = {
     "staffapplications": "Staff application panel, review buttons, and admin config",
     "suggestions": "Submit suggestions with voting reactions + discussion threads",
     "bumpleaderboard": "Track Disboard /bump activity with leaderboards and stats",
+    "chowkidar": "Watchlist / tracking: track a user and log their actions (staff only)",
 }
 
 

@@ -587,11 +587,54 @@ class Counting(commands.Cog):
         except Exception:
             used_personal = False
 
+        # Only spend a server save with explicit confirmation.
         if not used_personal:
+            guild_units = 0
             try:
-                used_guild = await try_use_guild_save(guild_id)
+                guild_units = await get_guild_save_units(guild_id)
             except Exception:
-                used_guild = False
+                guild_units = 0
+
+            if guild_units >= 10:
+                prompt_msg: Optional[discord.Message] = None
+                try:
+                    prompt_msg = await message.channel.send(
+                        f"{message.author.mention} do you want to waste a server save for your foolish ruin?"
+                    )
+                except Exception:
+                    prompt_msg = None
+
+                if prompt_msg is not None:
+                    try:
+                        await prompt_msg.add_reaction("✅")
+                        await prompt_msg.add_reaction("❌")
+                    except Exception:
+                        pass
+
+                    def _check(reaction: discord.Reaction, user: discord.abc.User) -> bool:
+                        if user.bot:
+                            return False
+                        if user.id != message.author.id:
+                            return False
+                        if reaction.message.id != prompt_msg.id:
+                            return False
+                        return str(reaction.emoji) in {"✅", "❌"}
+
+                    try:
+                        reaction, _user = await self.bot.wait_for(
+                            "reaction_add", timeout=20.0, check=_check
+                        )
+                        if str(reaction.emoji) == "✅":
+                            try:
+                                used_guild = await try_use_guild_save(guild_id)
+                            except Exception:
+                                used_guild = False
+                        else:
+                            used_guild = False
+                    except asyncio.TimeoutError:
+                        used_guild = False
+                    except Exception:
+                        used_guild = False
 
         if used_personal or used_guild:
             try:

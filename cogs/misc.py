@@ -8,9 +8,52 @@ from discord.ext import commands
 from typing import Optional, Any, Union
 from datetime import datetime, timezone, timedelta
 import calendar
+import re
+import aiosqlite
 from better_profanity import profanity
 
 from utils.config import Config
+from utils.codebuddy_database import DB_PATH
+
+
+class _EditSayModal(discord.ui.Modal, title="Edit Bot Message"):
+    def __init__(self, *, target_message: discord.Message):
+        super().__init__(timeout=300)
+        self._target_message = target_message
+        default_text = (target_message.content or "")[:2000]
+        self.message_text = discord.ui.TextInput(
+            label="Message",
+            style=discord.TextStyle.paragraph,
+            required=True,
+            max_length=2000,
+            default=default_text,
+        )
+        self.add_item(self.message_text)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        new_text = str(self.message_text.value).strip()
+        if not new_text:
+            await interaction.response.send_message(
+                "❌ Message cannot be empty.",
+                ephemeral=True,
+            )
+            return
+        try:
+            await self._target_message.edit(content=new_text)
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "❌ I don't have permission to edit that message.",
+                ephemeral=True,
+            )
+            return
+        except Exception as e:
+            await interaction.response.send_message(
+                f"❌ Could not edit message: {e}",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message("✅ Message edited!", ephemeral=True)
 
 
 class Misc(commands.Cog):
@@ -19,6 +62,74 @@ class Misc(commands.Cog):
     def __init__(self, bot: commands.Bot, config: Config):
         self.bot = bot
         self.config = config
+
+    async def cog_load(self):
+        # Track which messages were created via /say so only those are editable via /edit.
+        try:
+            async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS say_messages (
+                        message_id INTEGER PRIMARY KEY,
+                        guild_id INTEGER NOT NULL,
+                        channel_id INTEGER NOT NULL,
+                        author_id INTEGER NOT NULL,
+                        created_at INTEGER NOT NULL
+                    )
+                    """
+                )
+                await db.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_say_messages_guild ON say_messages (guild_id)"
+                )
+                await db.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_say_messages_channel ON say_messages (channel_id)"
+                )
+                await db.commit()
+        except Exception as e:
+            print(f"[Misc] Error ensuring say_messages table: {e}")
+
+    async def _is_say_message(self, guild_id: int, message_id: int) -> Optional[tuple[int, int]]:
+        """Return (guild_id, channel_id) if message is tracked as /say."""
+        try:
+            async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT guild_id, channel_id FROM say_messages WHERE message_id = ?",
+                    (message_id,),
+                ) as cursor:
+                    row = await cursor.fetchone()
+            if not row:
+                return None
+            if int(row[0]) != int(guild_id):
+                return None
+            return int(row[0]), int(row[1])
+        except Exception:
+            return None
+
+    async def _record_say_message(
+        self,
+        guild_id: int,
+        channel_id: int,
+        message_id: int,
+        author_id: int,
+    ) -> None:
+        try:
+            async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    INSERT OR REPLACE INTO say_messages (message_id, guild_id, channel_id, author_id, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        int(message_id),
+                        int(guild_id),
+                        int(channel_id),
+                        int(author_id),
+                        int(datetime.now(timezone.utc).timestamp()),
+                    ),
+                )
+                await db.commit()
+        except Exception as e:
+            print(f"[Misc] Error recording /say message: {e}")
 
     @commands.hybrid_command(name='join-vc', description='Join your voice channel for fun')
     async def join_vc(self, ctx: commands.Context):
@@ -700,13 +811,214 @@ class Misc(commands.Cog):
              return
 
         # Send the text in the channel
-        await interaction.channel.send(text)
+        sent = await interaction.channel.send(text)
+
+        # Track this message so it can be edited later via /edit.
+        try:
+            await self._record_say_message(
+                interaction.guild.id,
+                sent.channel.id,
+                sent.id,
+                interaction.user.id,
+            )
+        except Exception:
+            pass
         
         # Confirm to admin (ephemeral so only they see it)
         await interaction.response.send_message(
             "✅ Message sent!",
             ephemeral=True
         )
+
+    @app_commands.command(
+        name="edit",
+        description="Edit a bot message sent via /say (Admin only).",
+    )
+    @app_commands.describe(message_id="Message ID of the /say message to edit")
+    @app_commands.default_permissions(administrator=True)
+    async def edit(self, interaction: discord.Interaction, message_id: str):
+        """Open a modal to edit an existing /say message by ID."""
+        if not interaction.guild:
+            await interaction.response.send_message(
+                "❌ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ This command is restricted to administrators only.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            mid = int(str(message_id).strip())
+        except Exception:
+            await interaction.response.send_message(
+                "❌ Invalid message ID.",
+                ephemeral=True,
+            )
+            return
+
+        say_row = await self._is_say_message(interaction.guild.id, mid)
+        if not say_row:
+            await interaction.response.send_message(
+                "❌ Only messages sent using /say are editable with /edit.",
+                ephemeral=True,
+            )
+            return
+
+        _guild_id, channel_id = say_row
+        channel = interaction.guild.get_channel(channel_id) or self.bot.get_channel(channel_id)
+        if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+            await interaction.response.send_message(
+                "❌ Could not find the channel for that message.",
+                ephemeral=True,
+            )
+            return
+
+        try:
+            target_message = await channel.fetch_message(mid)
+        except discord.NotFound:
+            await interaction.response.send_message(
+                "❌ Message not found (it may have been deleted).",
+                ephemeral=True,
+            )
+            return
+        except Exception as e:
+            await interaction.response.send_message(
+                f"❌ Could not fetch message: {e}",
+                ephemeral=True,
+            )
+            return
+
+        if self.bot.user is None or target_message.author.id != self.bot.user.id:
+            await interaction.response.send_message(
+                "❌ That message wasn't sent by me.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_modal(_EditSayModal(target_message=target_message))
+
+    @app_commands.command(
+        name="react",
+        description="React to a message as the bot (Admin only).",
+    )
+    @app_commands.describe(
+        emoji="Emoji to react with (unicode or custom emoji like <:name:id>)",
+        message_link="Optional message link to react to; if omitted, reacts to the last message in this channel",
+    )
+    @app_commands.default_permissions(administrator=True)
+    async def react(
+        self,
+        interaction: discord.Interaction,
+        emoji: str,
+        message_link: Optional[str] = None,
+    ):
+        if not interaction.guild:
+            await interaction.response.send_message(
+                "❌ This command can only be used in a server.",
+                ephemeral=True,
+            )
+            return
+
+        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "❌ This command is restricted to administrators only.",
+                ephemeral=True,
+            )
+            return
+
+        if not isinstance(interaction.channel, discord.abc.Messageable):
+            await interaction.response.send_message(
+                "❌ Cannot use this command in this channel type.",
+                ephemeral=True,
+            )
+            return
+
+        target_channel: Optional[discord.abc.Messageable] = interaction.channel
+        target_message: Optional[discord.Message] = None
+
+        if message_link:
+            raw = message_link.strip().lstrip("<").rstrip(">")
+            match = re.search(r"channels/(\d+)/(\d+)/(\d+)", raw)
+            if match:
+                guild_id = int(match.group(1))
+                channel_id = int(match.group(2))
+                message_id = int(match.group(3))
+                if guild_id != interaction.guild.id:
+                    await interaction.response.send_message(
+                        "❌ That message link is from a different server.",
+                        ephemeral=True,
+                    )
+                    return
+                ch = interaction.guild.get_channel(channel_id) or self.bot.get_channel(channel_id)
+                if not isinstance(ch, (discord.TextChannel, discord.Thread)):
+                    await interaction.response.send_message(
+                        "❌ Could not access that channel.",
+                        ephemeral=True,
+                    )
+                    return
+                target_channel = ch
+                try:
+                    target_message = await ch.fetch_message(message_id)
+                except Exception:
+                    target_message = None
+            else:
+                # Allow providing just a message ID for the current channel.
+                try:
+                    message_id = int(raw)
+                    if isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):
+                        target_message = await interaction.channel.fetch_message(message_id)
+                except Exception:
+                    target_message = None
+
+            if target_message is None:
+                await interaction.response.send_message(
+                    "❌ Could not find that message.",
+                    ephemeral=True,
+                )
+                return
+        else:
+            # React to the last message in this channel.
+            try:
+                async for m in interaction.channel.history(limit=1):
+                    target_message = m
+                    break
+            except Exception:
+                target_message = None
+
+            if target_message is None:
+                await interaction.response.send_message(
+                    "❌ No messages found in this channel.",
+                    ephemeral=True,
+                )
+                return
+
+        try:
+            await target_message.add_reaction(emoji)
+        except discord.Forbidden:
+            await interaction.response.send_message(
+                "❌ I don't have permission to add reactions here.",
+                ephemeral=True,
+            )
+            return
+        except discord.HTTPException:
+            await interaction.response.send_message(
+                "❌ Failed to add that reaction (invalid emoji or missing access).",
+                ephemeral=True,
+            )
+            return
+        except Exception as e:
+            await interaction.response.send_message(
+                f"❌ Failed to react: {e}",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message("✅ Reaction added!", ephemeral=True)
 
     @commands.command(name='dm', description='Explains why you should not DM members for help')
     async def dm_command(self, ctx: commands.Context):

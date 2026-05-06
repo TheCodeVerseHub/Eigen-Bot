@@ -52,7 +52,7 @@ class Chowkidar(commands.Cog):
         
         await ctx.send(embed=EmbedBuilder.success_embed("Channel Configured", f"Watchlog channel has been set to {ctx.channel.mention}."))
 
-    @commands.hybrid_command(name="chowkidar", description="Start tracking a user.")
+    @commands.hybrid_command(name="chowkidar", description="Start tracking a user.", aliases=["ch"])
     @is_staff()
     async def chowkidar(self, ctx, user: discord.Member):
         if user.id == self.bot.user.id:
@@ -69,6 +69,57 @@ class Chowkidar(commands.Cog):
             await db.commit()
 
         await ctx.send(embed=EmbedBuilder.success_embed("Tracking Initiated", f"Now tracking actions for {user.mention}."))
+
+    @commands.command(name="lc", aliases=["listchowki"])
+    @is_staff()
+    async def list_chowki(self, ctx: commands.Context):
+        """List all users currently tracked by Chowkidar."""
+        if not ctx.guild:
+            await ctx.send(
+                embed=EmbedBuilder.error_embed(
+                    "Server Only",
+                    "This command can only be used in a server.",
+                )
+            )
+            return
+
+        if not self.watched_users:
+            await ctx.send(
+                embed=EmbedBuilder.error_embed(
+                    "No Tracked Users",
+                    "No one is currently being tracked.",
+                )
+            )
+            return
+
+        lines: list[str] = []
+        for user_id in sorted(self.watched_users):
+            member = ctx.guild.get_member(user_id)
+            if member is not None:
+                display = f"{member}"
+            else:
+                user = self.bot.get_user(user_id)
+                display = f"{user}" if user is not None else "Unknown User"
+            lines.append(f"- {display} • {user_id}")
+
+        # Discord message limit safety. Keep the output concise.
+        chunks: list[str] = []
+        current = ""
+        for line in lines:
+            if len(current) + len(line) + 1 > 3500:
+                chunks.append(current)
+                current = ""
+            current += ("\n" if current else "") + line
+        if current:
+            chunks.append(current)
+
+        for i, chunk in enumerate(chunks, 1):
+            embed = discord.Embed(
+                title="Chowkidar Tracked Users" if len(chunks) == 1 else f"Chowkidar Tracked Users ({i}/{len(chunks)})",
+                description=chunk,
+                color=discord.Color.blurple(),
+            )
+            await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="endwl", description="Stop tracking a user.")
     @is_staff()
