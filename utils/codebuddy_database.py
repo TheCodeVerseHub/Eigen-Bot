@@ -175,8 +175,18 @@ async def init_db():
                 count INTEGER NOT NULL DEFAULT 0
             )
         """)
+        # Ensure awarded_units column exists for tracking whether a daily award has been
+        # given and the save pool size at the time of award. This allows reset if the
+        # server spends the save (i.e., pool drops below the recorded value).
+        cursor = await db.execute("PRAGMA table_info(counting_guild_daily)")
+        cg_columns = [row[1] async for row in cursor]
+        if "awarded_units" not in cg_columns:
+            await db.execute(
+                "ALTER TABLE counting_guild_daily ADD COLUMN awarded_units INTEGER NOT NULL DEFAULT 0"
+            )
 
         # Truth or Dare table
+
         await db.execute("""
             CREATE TABLE IF NOT EXISTS tod_questions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -856,21 +866,47 @@ async def get_guild_save_units(guild_id: int) -> int:
 
 
 async def add_guild_save_units(guild_id: int, units: int) -> int:
+    """Add units to the guild save pool but never exceed MAX_SAVE_UNITS.
+
+    This implementation only increases the stored units up to MAX_SAVE_UNITS and
+    ensures that further additions when already at the cap do not push the value
+    beyond the limit. Returns the resulting save_units after the operation.
+    """
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            """
-            INSERT INTO counting_guild_saves (guild_id, save_units)
-            VALUES (?, ?)
-            ON CONFLICT(guild_id) DO UPDATE SET save_units = save_units + excluded.save_units
-            """,
-            (guild_id, int(units)),
+        # Read current value (0 if missing).
+        cursor = await db.execute(
+            "SELECT save_units FROM counting_guild_saves WHERE guild_id = ?",
+            (guild_id,),
         )
-        await db.commit()
+        row = await cursor.fetchone()
+        prev_units = int(row[0] or 0) if row else 0
+
+        # Compute how many units we can actually add without exceeding the max.
+        to_add = max(0, min(int(units), MAX_SAVE_UNITS - prev_units))
+        if to_add > 0:
+            if not row:
+                await db.execute(
+                    "INSERT INTO counting_guild_saves (guild_id, save_units) VALUES (?, ?)",
+                    (guild_id, to_add),
+                )
+            else:
+                await db.execute(
+                    "UPDATE counting_guild_saves SET save_units = save_units + ? WHERE guild_id = ?",
+                    (to_add, guild_id),
+                )
+            await db.commit()
+
+        # Return the (possibly unchanged) current units.
         return await get_guild_save_units(guild_id)
 
 
 async def try_use_guild_save(guild_id: int) -> bool:
-    """Consume 1.0 guild save if available."""
+    """Consume 1.0 guild save if available.
+
+    Additionally, if consuming the save reduces the guild's save pool below the
+    `awarded_units` recorded in `counting_guild_daily`, clear that awarded flag so
+    the daily award may be granted again later the same day.
+    """
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT save_units FROM counting_guild_saves WHERE guild_id = ?",
@@ -880,11 +916,33 @@ async def try_use_guild_save(guild_id: int) -> bool:
         units = int(row[0] or 0) if row else 0
         if units < USE_ITEM_UNITS:
             return False
+        # Perform the consumption
         await db.execute(
             "UPDATE counting_guild_saves SET save_units = save_units - ? WHERE guild_id = ?",
             (USE_ITEM_UNITS, guild_id),
         )
         await db.commit()
+
+        # Compute new stored units after consumption
+        new_units = max(0, units - USE_ITEM_UNITS)
+
+        # If the daily tracker recorded an awarded_units value greater than the
+        # current pool, clear that marker so the guild can receive another daily
+        # award later when it reaches the threshold again.
+        cursor = await db.execute(
+            "SELECT awarded_units FROM counting_guild_daily WHERE guild_id = ?",
+            (guild_id,),
+        )
+        row2 = await cursor.fetchone()
+        if row2:
+            awarded_units = int(row2[0] or 0)
+            if awarded_units > 0 and new_units < awarded_units:
+                await db.execute(
+                    "UPDATE counting_guild_daily SET awarded_units = 0 WHERE guild_id = ?",
+                    (guild_id,),
+                )
+                await db.commit()
+
         return True
 
 
@@ -908,44 +966,75 @@ async def get_guild_daily_count(guild_id: int) -> int:
         return row_count
 
 
+async def get_guild_daily_award_info(guild_id: int):
+    """Return a tuple (awarded_units:int, count:int, date:datetime.date) for the guild's daily tracker.
+
+    - `awarded_units` is the stored awarded_units (0 if no award has been given today).
+    - `count` is the daily count value (0 if none).
+    - `date` is the date recorded for the row (or today's date if missing).
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT awarded_units, count, date FROM counting_guild_daily WHERE guild_id = ?",
+            (guild_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return 0, 0, datetime.date.today()
+        awarded_units = int(row[0] or 0)
+        count = int(row[1] or 0)
+        row_date = _coerce_date(row[2])
+        # If stored date is older than today, treat as no award for today
+        if row_date < datetime.date.today():
+            return 0, 0, row_date
+        return awarded_units, count, row_date
+
+
 async def increment_guild_daily_count(guild_id: int):
     """
     Increment the daily count for the given guild by 1.
 
     Returns a tuple (awarded_save: bool, new_count: int):
-      - awarded_save is True if this increment caused the guild to reach a multiple of 10 counts
-        for the day and a 1.0 save (10 units) was awarded to the guild.
+      - awarded_save is True if this increment caused the guild to reach the daily threshold
+        (first time reaching 10 counts in the current day) and a 1.0 save (10 units) was awarded.
       - new_count is the updated count for today after this increment.
 
     Notes:
       - This uses the counting_guild_daily table to track per-guild daily counts and will reset
         the counter automatically when the stored date is older than today.
-      - When a multiple of 10 is reached (10, 20, 30, ...), the guild is awarded 10 units
-        (i.e., 1.0 save) via add_guild_save_units.
+      - A guild can only be awarded one save per day regardless of how many subsequent tens are reached.
     """
     today = datetime.date.today()
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
-            "SELECT count, date FROM counting_guild_daily WHERE guild_id = ?",
+            "SELECT count, date, awarded_units FROM counting_guild_daily WHERE guild_id = ?",
             (guild_id,),
         )
         row = await cursor.fetchone()
+
+        # Track previous count for today's window (0 if no row or row is older than today)
+        prev_for_today = 0
+        row_awarded_units = 0
         if not row:
             new_count = 1
             await db.execute(
-                "INSERT INTO counting_guild_daily (guild_id, date, count) VALUES (?, ?, ?)",
-                (guild_id, today, new_count),
+                "INSERT INTO counting_guild_daily (guild_id, date, count, awarded_units) VALUES (?, ?, ?, ?)",
+                (guild_id, today, new_count, 0),
             )
         else:
             row_count = int(row[0] or 0)
             row_date = _coerce_date(row[1])
+            row_awarded_units = int(row[2] or 0)
             if row_date < today:
+                # previous data is stale -> reset for today (clear awarded flag)
                 new_count = 1
                 await db.execute(
-                    "UPDATE counting_guild_daily SET date = ?, count = ? WHERE guild_id = ?",
-                    (today, new_count, guild_id),
+                    "UPDATE counting_guild_daily SET date = ?, count = ?, awarded_units = ? WHERE guild_id = ?",
+                    (today, new_count, 0, guild_id),
                 )
+                row_awarded_units = 0
             else:
+                prev_for_today = row_count
                 new_count = row_count + 1
                 await db.execute(
                     "UPDATE counting_guild_daily SET count = ? WHERE guild_id = ?",
@@ -955,9 +1044,61 @@ async def increment_guild_daily_count(guild_id: int):
         await db.commit()
 
     awarded = False
-    if new_count % 10 == 0:
-        # Award 1.0 guild save (10 units).
-        await add_guild_save_units(guild_id, 10)
-        awarded = True
+    reason = None
 
-    return awarded, new_count
+    # If the guild previously received a daily award but the server's save pool dropped
+    # below the stored awarded_units (e.g. the save was spent or pool emptied), clear the
+    # awarded flag so a new award can be granted later in the same day.
+    try:
+        current_units = await get_guild_save_units(guild_id)
+    except Exception:
+        current_units = 0
+
+    if row_awarded_units > 0 and current_units < row_awarded_units:
+        # Clear the awarded flag in the daily table.
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(
+                "UPDATE counting_guild_daily SET awarded_units = 0 WHERE guild_id = ?",
+                (guild_id,),
+            )
+            await db.commit()
+        # Also clear the local marker so the award path can run below.
+        row_awarded_units = 0
+
+    # Attempt awarding when we hit a multiple of 10 and there is no active awarded_units.
+    # This allows re-award if the previously-awarded save was consumed (awarded_units cleared).
+    if row_awarded_units == 0 and (new_count % 10) == 0:
+        # Try to give 10 units atomically (add_guild_save_units enforces MAX_SAVE_UNITS).
+        prev_units = current_units
+        new_units = await add_guild_save_units(guild_id, 10)
+        if new_units > prev_units:
+            awarded = True
+            reason = "awarded"
+            # Persist the awarded_units (store the pool size after award)
+            async with aiosqlite.connect(DB_PATH) as db:
+                await db.execute(
+                    "UPDATE counting_guild_daily SET awarded_units = ? WHERE guild_id = ?",
+                    (new_units, guild_id),
+                )
+                await db.commit()
+        else:
+            if prev_units >= MAX_SAVE_UNITS:
+                reason = "at_cap"
+            else:
+                reason = "transient_failure"
+    else:
+        # No award attempted now. Explain why in caller-facing reason codes.
+        if row_awarded_units > 0:
+            reason = "already_awarded"
+        elif prev_for_today >= 10:
+            # The guild reached the threshold earlier today. If the guild currently has no
+            # saves, we should not block further awarding — so don't set the threshold reason.
+            if current_units == 0:
+                reason = None
+            else:
+                reason = "threshold_already_reached"
+        else:
+            # Not enough counts yet to reach the first 10 for today.
+            reason = None
+
+    return awarded, new_count, reason

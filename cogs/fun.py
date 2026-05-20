@@ -295,6 +295,179 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Random Utilities")
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="topic", help="Get a random chat topic (prefix-only).")
+    async def topic(self, ctx: commands.Context):
+        """Send a random discussion topic from a curated list (prefix-only)."""
+        topics = [
+            "What programming language should everyone try at least once?",
+            "Tabs or spaces?",
+            "What was your first coding project?",
+            "Which tech trend is overrated right now?",
+            "Linux or Windows for development?",
+            "What game got you addicted instantly?",
+            "What is your dream setup?",
+            "Which framework do you hate working with?",
+            "Frontend or backend?",
+            "What coding mistake taught you the most?",
+            "What app do you use every single day?",
+            "What technology will dominate in 10 years?",
+            "Which programming meme is the most accurate?",
+            "What is the hardest bug you ever fixed?",
+            "What was your first PC or laptop?",
+            "Dark mode or light mode?",
+            "Which company has the best developer tools?",
+            "What coding project are you proud of?",
+            "Which OS looks the cleanest?",
+            "If you could master one skill instantly what would it be?",
+            "What keyboard switch sounds the best?",
+            "Which tech YouTuber do you watch most?",
+            "What is your favorite open source project?",
+            "What coding language feels the most satisfying?",
+            "What is your dream job in tech?",
+            "What is the worst programming language syntax?",
+            "What motivates you to keep learning?",
+            "Which anime has the best story?",
+            "What game has the best soundtrack?",
+            "Which editor or IDE do you use daily?",
+            "What was your biggest coding fail?",
+            "What technology scared you at first?",
+            "What is your favorite Linux distro?",
+            "Which browser do you trust most?",
+            "AI replacing developers soon or not?",
+            "Which social media app is declining fastest?",
+            "What coding project idea should beginners make first?",
+            "What is your favorite keyboard shortcut?",
+            "Which programming language should schools teach first?",
+            "What tech purchase was 100 percent worth it?",
+            "Which programming language has the best community?",
+            "What is your favorite command line tool?",
+            "Which startup idea would you build if money was unlimited?",
+            "What movie has the best visual effects?",
+            "Which coding habit improved your skills most?",
+            "What is your favorite API?",
+            "Which game has the best graphics?",
+            "What website design looks the cleanest?",
+            "What skill will be most valuable in future tech?",
+            "Which programming language is hardest to learn?",
+            "What is your favorite terminal theme?",
+            "Which app has the worst UI?",
+            "What was your most useful coding resource?",
+            "Which fictional technology do you want real?",
+            "What coding language would survive longest?",
+            "Which company makes the best hardware?",
+            "What is your favorite productivity trick?",
+            "What project are you currently building?",
+            "Which coding project took longest to finish?",
+            "What is your favorite game genre?",
+            "Which tech myth annoys you most?",
+            "What browser extension can you not live without?",
+            "Which programming language deserves more attention?",
+            "What was your first experience with Linux?",
+            "Which coding project idea sounds fun right now?",
+            "What feature should Discord add next?",
+            "Which device do you use most daily?",
+            "What was your first coding language?",
+            "Which operating system is most underrated?",
+            "What tech opinion would start an argument instantly?",
+            "Which programming language has best documentation?",
+            "What game world would you live in?",
+            "What coding skill is hardest to master?",
+            "Which old technology do you still use?",
+            "What motivates you during difficult projects?",
+            "Which app wastes most of your time?",
+            "What is your favorite coding font?",
+            "Which console generation was best?",
+            "What is your dream programming project?",
+            "Which tech company fell off hardest?",
+            "What was your biggest learning breakthrough?",
+            "Which Linux command feels most powerful?",
+            "What coding advice do beginners ignore too much?",
+            "Which movie predicted technology best?",
+            "What is your favorite coding snack?",
+            "Which programming language has coolest logo?",
+            "What tech skill should everyone learn?",
+            "Which software has the cleanest UI?",
+            "What coding project would you restart differently?",
+            "Which mobile app deserves a desktop version?",
+            "What futuristic gadget do you want most?",
+            "Which tech career seems most exciting?",
+            "What coding workflow works best for you?",
+            "Which app update ruined the app?",
+            "What programming concept took longest to understand?",
+            "Which game deserves a remake?",
+            "What is your favorite open source alternative?",
+            "Which website do you visit most often?",
+            "What coding language has best naming style?",
+            "Which piece of tech do you regret buying?",
+            "What project idea sounds impossible but cool?",
+            "Which software should become open source?",
+            "What was your favorite school subject?",
+            "Which programming language feels fastest?",
+            "What tech trend are you most excited for?",
+            "Which coding project improved your skills most?",
+            "What device would you upgrade right now?",
+            "Which app icon looks best?",
+            "What is the cleanest programming syntax ever?",
+            "Which developer tool saved you most time?",
+            "What technology from movies became real?",
+            "Which coding project idea should become a startup?",
+            "What is your favorite Discord server type?",
+            "Which website has the worst ads?",
+            "What coding topic should more people learn?",
+            "Which gadget feels most futuristic?",
+            "What is your favorite tech wallpaper style?",
+            "Which programming meme is painfully true?",
+            "What was your most satisfying coding moment?",
+            "Which game had the best multiplayer experience?",
+        ]
+        topic = random.choice(topics)
+
+        embed = discord.Embed(
+            title="Discussion Topic",
+            description=topic,
+            color=0x3498DB,
+            timestamp=datetime.now(timezone.utc),
+        )
+        embed.set_footer(text="Use ?topic to get another idea")
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="gif", help="Send a gif matching a query (prefix-only).")
+    async def gif(self, ctx: commands.Context, *, query: Optional[str] = None):
+        """Return a gif URL from a fixed list matching the query or random if none."""
+        gifs = [
+            "https://tenor.com/view/patrick-spongebob-spongebob-meme-patrick-meme-dumb-patrick-gif-9974665538168463324",
+            "https://images-ext-2.discordapp.net/external/CXNcMebjeujg_gGvrp1Ymgjg9ei_fTQRybF8rymUh2s/https/cdn.weeb.sh/images/SyFkekYwW.gif",
+            "https://tenor.com/view/i-ain%E2%80%99t-reading-all-that-happy-for-u-tho-happy-for-you-tho-sorry-that-happened-too-long-didn%E2%80%99t-read-gif-9353839682789985827",
+            "https://tenor.com/view/tuff-tuff-minion-tuff-minoin-hoverboard-gif-17512699728490497347",
+            "https://cdn.discordapp.com/attachments/1203665076997849139/1506339325464285264/ragebait.gif",
+            "https://klipy.com/gifs/breaking-bad-126--k01KRGZC3DEFA1MMB9RF30TE2XX",
+        ]
+
+        # Simple keyword matching to pick a gif; lower-case query.
+        if query:
+            q = query.lower()
+            # mapping of keywords to gif URLs (first match wins)
+            mapping = {
+                "patrick": gifs[0],
+                "spongebob": gifs[0],
+                "weeb": gifs[1],
+                "i ain't reading": gifs[2],
+                "reading": gifs[2],
+                "minion": gifs[3],
+                "tuff": gifs[3],
+                "rage": gifs[4],
+                "breaking": gifs[5],
+                "bad": gifs[5],
+            }
+
+            for k, url in mapping.items():
+                if k in q:
+                    await ctx.send(url)
+                    return
+
+        # No query or no keyword matched: random gif
+        await ctx.send(random.choice(gifs))
+
     @commands.command(
         name="singledice", help="Roll a single die (basic). For multi-dice use ?roll"
     )
