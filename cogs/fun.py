@@ -230,9 +230,8 @@ class Fun(commands.Cog):
     async def pat(self, ctx: commands.Context):
         """Send a wholesome pat gif (prefix-only)."""
         gif_url = "https://tenor.com/bQSNq.gif"
-        embed = discord.Embed(color=0xFFB6C1)
-        embed.set_image(url=gif_url)
-        await ctx.reply(embed=embed, mention_author=False)
+        # Send as a plain message with the GIF URL (not embedded)
+        await ctx.reply(gif_url, mention_author=False)
 
     @commands.hybrid_command(
         name="compliment", help="Receive a professional programming compliment"
