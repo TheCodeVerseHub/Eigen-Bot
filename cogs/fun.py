@@ -431,6 +431,43 @@ class Fun(commands.Cog):
         embed.set_footer(text="Use ?topic to get another idea")
         await ctx.reply(embed=embed, mention_author=False)
 
+    @commands.command(name="gif", help="Send a gif matching a query (prefix-only).")
+    async def gif(self, ctx: commands.Context, *, query: Optional[str] = None):
+        """Return a gif URL from a fixed list matching the query or random if none."""
+        gifs = [
+            "https://tenor.com/view/patrick-spongebob-spongebob-meme-patrick-meme-dumb-patrick-gif-9974665538168463324",
+            "https://images-ext-2.discordapp.net/external/CXNcMebjeujg_gGvrp1Ymgjg9ei_fTQRybF8rymUh2s/https/cdn.weeb.sh/images/SyFkekYwW.gif",
+            "https://tenor.com/view/i-ain%E2%80%99t-reading-all-that-happy-for-u-tho-happy-for-you-tho-sorry-that-happened-too-long-didn%E2%80%99t-read-gif-9353839682789985827",
+            "https://tenor.com/view/tuff-tuff-minion-tuff-minoin-hoverboard-gif-17512699728490497347",
+            "https://cdn.discordapp.com/attachments/1203665076997849139/1506339325464285264/ragebait.gif",
+            "https://klipy.com/gifs/breaking-bad-126--k01KRGZC3DEFA1MMB9RF30TE2XX",
+        ]
+
+        # Simple keyword matching to pick a gif; lower-case query.
+        if query:
+            q = query.lower()
+            # mapping of keywords to gif URLs (first match wins)
+            mapping = {
+                "patrick": gifs[0],
+                "spongebob": gifs[0],
+                "weeb": gifs[1],
+                "i ain't reading": gifs[2],
+                "reading": gifs[2],
+                "minion": gifs[3],
+                "tuff": gifs[3],
+                "rage": gifs[4],
+                "breaking": gifs[5],
+                "bad": gifs[5],
+            }
+
+            for k, url in mapping.items():
+                if k in q:
+                    await ctx.send(url)
+                    return
+
+        # No query or no keyword matched: random gif
+        await ctx.send(random.choice(gifs))
+
     @commands.command(
         name="singledice", help="Roll a single die (basic). For multi-dice use ?roll"
     )
