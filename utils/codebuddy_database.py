@@ -1,14 +1,16 @@
-import aiosqlite
 import datetime
 
+import aiosqlite
+
 DB_PATH = "botdata.db"
+
 
 async def init_db():
     """Initialisiert die Datenbank und erstellt die Tabelle, falls sie nicht existiert."""
     async with aiosqlite.connect(DB_PATH) as db:
         # Enable Write-Ahead Logging for better concurrency
         await db.execute("PRAGMA journal_mode=WAL")
-        
+
         await db.execute("""
             CREATE TABLE IF NOT EXISTS leaderboard (
                 user_id INTEGER PRIMARY KEY,
@@ -18,7 +20,7 @@ async def init_db():
                 last_activity DATE
             )
         """)
-        
+
         # Daily quests table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS daily_quests (
@@ -32,14 +34,16 @@ async def init_db():
                 saves REAL NOT NULL DEFAULT 0
             )
         """)
-        
+
         # Check for missing columns in daily_quests (lightweight migrations)
         cursor = await db.execute("PRAGMA table_info(daily_quests)")
         dq_columns = [row[1] async for row in cursor]
 
         # Very old DBs may miss the legacy `saves` column.
         if "saves" not in dq_columns:
-            await db.execute("ALTER TABLE daily_quests ADD COLUMN saves REAL NOT NULL DEFAULT 0")
+            await db.execute(
+                "ALTER TABLE daily_quests ADD COLUMN saves REAL NOT NULL DEFAULT 0"
+            )
             dq_columns.append("saves")
 
         # Inventory balances stored as integer tenths to avoid float drift.
@@ -81,46 +85,46 @@ async def init_db():
 
         # Keep the old columns around for backward compatibility (streak_freezes/saves),
         # but new code reads/writes *_units.
-        
+
         # Weekly leaderboard table
         # Note: user_id is NOT a primary key here because we might want to store history,
         # or at least we need (user_id, week_start) to be unique.
         # Since we can't easily alter PK in sqlite, we'll just create it correctly if not exists.
         # If it exists with wrong schema, we might need to drop it.
-        
+
         # Check if table exists and has correct schema (simple check)
         cursor = await db.execute("PRAGMA table_info(weekly_leaderboard)")
         columns = await cursor.fetchall()
-        
+
         # If table exists but user_id is the single PK, we should probably recreate it.
         # For now, let's just try to create it if not exists with a composite PK.
         # But since the user likely already has the wrong table, we will DROP it if it exists
         # to ensure the schema is correct. This is a one-time migration for this integration.
-        
+
         # We will check if we need to migrate by checking if we can insert a duplicate user_id
         # or just by checking the PK definition.
         # Simplest way for this context: Drop and recreate if it's the old schema.
-        
+
         # Let's just use INSERT OR REPLACE in update_weekly_score instead of relying on complex schema changes
         # if we want to avoid dropping data. But dropping is cleaner for "integration".
-        
+
         # Let's try to create with composite primary key.
         # If the table was created by the previous run with `user_id INTEGER PRIMARY KEY`,
         # we should drop it to fix the schema.
-        
+
         # Check if user_id is the only PK
         is_bad_schema = False
         if columns:
             # columns is list of (cid, name, type, notnull, dflt_value, pk)
             # pk > 0 means it is part of primary key.
             pk_cols = [c[1] for c in columns if c[5] > 0]
-            if len(pk_cols) == 1 and pk_cols[0] == 'user_id':
+            if len(pk_cols) == 1 and pk_cols[0] == "user_id":
                 is_bad_schema = True
-        
+
         if is_bad_schema:
             print("Migrating weekly_leaderboard schema...")
             await db.execute("DROP TABLE weekly_leaderboard")
-            
+
         await db.execute("""
             CREATE TABLE IF NOT EXISTS weekly_leaderboard (
                 user_id INTEGER,
@@ -161,6 +165,17 @@ async def init_db():
             )
         """)
 
+        # Per-guild daily counting tracker.
+        # Tracks how many valid counting numbers have been posted in a guild for the current day.
+        # When a guild reaches every 10 counts in a single day, the guild is awarded 1.0 save (10 units).
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS counting_guild_daily (
+                guild_id INTEGER PRIMARY KEY,
+                date DATE NOT NULL,
+                count INTEGER NOT NULL DEFAULT 0
+            )
+        """)
+
         # Truth or Dare table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS tod_questions (
@@ -170,22 +185,22 @@ async def init_db():
                 rating TEXT DEFAULT 'PG'
             )
         """)
-        
+
         # Check if TOD table is empty, if so populate it
         async with db.execute("SELECT COUNT(*) FROM tod_questions") as cursor:
             count = await cursor.fetchone()
             if count and count[0] == 0:
                 await populate_tod_questions(db)
-        
+
         await db.commit()
         await migrate_leaderboard()  # Prüft und fügt fehlende Spalten hinzu
 
 
 MAX_STREAK_FREEZE_UNITS = 20  # 2.0
-MAX_SAVE_UNITS = 40          # 4.0
-USE_ITEM_UNITS = 10          # 1.0
+MAX_SAVE_UNITS = 40  # 4.0
+USE_ITEM_UNITS = 10  # 1.0
 QUEST_REWARD_FREEZE_UNITS = 2  # 0.2
-QUEST_REWARD_SAVE_UNITS = 5    # 0.5
+QUEST_REWARD_SAVE_UNITS = 5  # 0.5
 
 
 def _coerce_date(value: object) -> datetime.date:
@@ -276,9 +291,9 @@ async def populate_tod_questions(db):
         "Have you ever peed in a pool?",
         "Have you ever broken a bone?",
         "Have you ever been to another country?",
-        "Have you ever met a celebrity?"
+        "Have you ever met a celebrity?",
     ]
-    
+
     dares = [
         "Do 10 pushups.",
         "Sing a song.",
@@ -299,14 +314,19 @@ async def populate_tod_questions(db):
         "Touch your toes.",
         "Lick your elbow.",
         "Wiggle your ears.",
-        "Raise one eyebrow."
+        "Raise one eyebrow.",
     ]
-    
+
     for t in truths:
-        await db.execute("INSERT INTO tod_questions (type, question) VALUES (?, ?)", ("truth", t))
-    
+        await db.execute(
+            "INSERT INTO tod_questions (type, question) VALUES (?, ?)", ("truth", t)
+        )
+
     for d in dares:
-        await db.execute("INSERT INTO tod_questions (type, question) VALUES (?, ?)", ("dare", d))
+        await db.execute(
+            "INSERT INTO tod_questions (type, question) VALUES (?, ?)", ("dare", d)
+        )
+
 
 async def migrate_leaderboard():
     """Fügt fehlende Spalten hinzu, falls die Tabelle schon existierte ohne diese Spalten."""
@@ -315,12 +335,17 @@ async def migrate_leaderboard():
         columns = [row[1] async for row in cursor]
 
         if "streak" not in columns:
-            await db.execute("ALTER TABLE leaderboard ADD COLUMN streak INTEGER NOT NULL DEFAULT 0")
+            await db.execute(
+                "ALTER TABLE leaderboard ADD COLUMN streak INTEGER NOT NULL DEFAULT 0"
+            )
         if "best_streak" not in columns:
-            await db.execute("ALTER TABLE leaderboard ADD COLUMN best_streak INTEGER NOT NULL DEFAULT 0")
+            await db.execute(
+                "ALTER TABLE leaderboard ADD COLUMN best_streak INTEGER NOT NULL DEFAULT 0"
+            )
         if "last_activity" not in columns:
             await db.execute("ALTER TABLE leaderboard ADD COLUMN last_activity DATE")
         await db.commit()
+
 
 def get_current_week():
     """Returns the start and end date of the current week (Monday to Sunday)."""
@@ -330,55 +355,58 @@ def get_current_week():
     week_end = week_start + datetime.timedelta(days=6)
     return week_start, week_end
 
+
 async def update_weekly_score(user_id: int, points: int = 1):
     """Updates weekly score for a user."""
     week_start, week_end = get_current_week()
-    
+
     async with aiosqlite.connect(DB_PATH) as db:
         # Check if user has entry for current week
         cursor = await db.execute(
             "SELECT weekly_score FROM weekly_leaderboard WHERE user_id = ? AND week_start = ?",
-            (user_id, week_start)
+            (user_id, week_start),
         )
         row = await cursor.fetchone()
-        
+
         if row:
             # Update existing weekly score
             new_score = row[0] + points
             await db.execute(
                 "UPDATE weekly_leaderboard SET weekly_score = ? WHERE user_id = ? AND week_start = ?",
-                (new_score, user_id, week_start)
+                (new_score, user_id, week_start),
             )
         else:
             # Create new weekly entry
             await db.execute(
                 "INSERT INTO weekly_leaderboard (user_id, weekly_score, week_start, week_end) VALUES (?, ?, ?, ?)",
-                (user_id, points, week_start, week_end)
+                (user_id, points, week_start, week_end),
             )
         await db.commit()
+
 
 async def reset_weekly_leaderboard():
     """Resets weekly leaderboard for new week."""
     week_start, week_end = get_current_week()
-    
+
     async with aiosqlite.connect(DB_PATH) as db:
         # Delete old weekly entries (older than current week)
         await db.execute(
-            "DELETE FROM weekly_leaderboard WHERE week_start < ?",
-            (week_start,)
+            "DELETE FROM weekly_leaderboard WHERE week_start < ?", (week_start,)
         )
         await db.commit()
+
 
 async def get_weekly_leaderboard(limit=10):
     """Gets current weekly leaderboard."""
     week_start, week_end = get_current_week()
-    
+
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT user_id, weekly_score FROM weekly_leaderboard WHERE week_start = ? ORDER BY weekly_score DESC LIMIT ?",
-            (week_start, limit)
+            (week_start, limit),
         )
         return await cursor.fetchall()
+
 
 async def get_streak_leaderboard(limit=10):
     """Gets leaderboard sorted by current streak."""
@@ -386,67 +414,75 @@ async def get_streak_leaderboard(limit=10):
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT user_id, streak, best_streak FROM leaderboard WHERE streak > 0 ORDER BY streak DESC, best_streak DESC LIMIT ?",
-            (limit,)
+            (limit,),
         )
         return await cursor.fetchall()
+
 
 async def update_user_activity(user_id: int):
     """Updates last activity date for streak tracking."""
     today = datetime.date.today()
-    
+
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
             "UPDATE leaderboard SET last_activity = ? WHERE user_id = ?",
-            (today, user_id)
+            (today, user_id),
         )
         await db.commit()
 
-async def increment_user_score(user_id: int, points: int = 1, reset_streak: bool = False):
+
+async def increment_user_score(
+    user_id: int, points: int = 1, reset_streak: bool = False
+):
     """Erhöht den Score eines Users und aktualisiert Streaks."""
     # await migrate_leaderboard()
     today = datetime.date.today()
-    
+
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
-            "SELECT correct_answers, streak, best_streak, last_activity FROM leaderboard WHERE user_id = ?", 
-            (user_id,)
+            "SELECT correct_answers, streak, best_streak, last_activity FROM leaderboard WHERE user_id = ?",
+            (user_id,),
         )
         row = await cursor.fetchone()
         if row:
             current_score, current_streak, best_streak, last_activity = row
-            
+
             # Check if streak should be reset due to missed days
             if last_activity:
                 last_date = datetime.datetime.strptime(last_activity, "%Y-%m-%d").date()
                 days_diff = (today - last_date).days
                 if days_diff > 1:  # More than 1 day gap resets streak
                     reset_streak = True
-            
+
             new_streak = 1 if reset_streak else current_streak + 1
             best_streak = max(best_streak, new_streak)
             new_score = current_score + points
             await db.execute(
                 "UPDATE leaderboard SET correct_answers = ?, streak = ?, best_streak = ?, last_activity = ? WHERE user_id = ?",
-                (new_score, new_streak, best_streak, today, user_id)
+                (new_score, new_streak, best_streak, today, user_id),
             )
         else:
             streak = 1 if reset_streak else 1
             best_streak = streak
             await db.execute(
                 "INSERT INTO leaderboard (user_id, correct_answers, streak, best_streak, last_activity) VALUES (?, ?, ?, ?, ?)",
-                (user_id, points, streak, best_streak, today)
+                (user_id, points, streak, best_streak, today),
             )
         await db.commit()
-    
+
     # Also update weekly score
     await update_weekly_score(user_id, points)
+
 
 async def reset_user_streak(user_id: int):
     """Setzt die aktuelle Streak eines Users auf 0 zurück."""
     # await migrate_leaderboard()
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("UPDATE leaderboard SET streak = 0 WHERE user_id = ?", (user_id,))
+        await db.execute(
+            "UPDATE leaderboard SET streak = 0 WHERE user_id = ?", (user_id,)
+        )
         await db.commit()
+
 
 async def get_leaderboard(limit=10):
     """Gibt die Top-N User nach korrekt beantworteten Fragen zurück."""
@@ -454,17 +490,18 @@ async def get_leaderboard(limit=10):
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT user_id, correct_answers, streak, best_streak FROM leaderboard ORDER BY correct_answers DESC LIMIT ?",
-            (limit,)
+            (limit,),
         )
         return await cursor.fetchall()
-    
+
+
 async def get_user_stats(user_id: int):
     """Gibt die Stats (score, streak, best_streak) für einen bestimmten User zurück."""
     # await migrate_leaderboard()
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             "SELECT correct_answers, streak, best_streak FROM leaderboard WHERE user_id = ?",
-            (user_id,)
+            (user_id,),
         )
         row = await cursor.fetchone()
         if row:
@@ -480,8 +517,7 @@ async def get_user_rank(user_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
         # Zuerst Score holen
         cursor = await db.execute(
-            "SELECT correct_answers FROM leaderboard WHERE user_id = ?",
-            (user_id,)
+            "SELECT correct_answers FROM leaderboard WHERE user_id = ?", (user_id,)
         )
         row = await cursor.fetchone()
         if not row:
@@ -490,12 +526,12 @@ async def get_user_rank(user_id: int):
 
         # Rang berechnen: alle User zählen, die mehr Punkte haben
         cursor = await db.execute(
-            "SELECT COUNT(*) FROM leaderboard WHERE correct_answers > ?",
-            (score,)
+            "SELECT COUNT(*) FROM leaderboard WHERE correct_answers > ?", (score,)
         )
         row = await cursor.fetchone()
         higher_count = row[0] if row is not None else 0
         return higher_count + 1
+
 
 async def get_score_gap(user_id: int):
     """
@@ -506,8 +542,7 @@ async def get_score_gap(user_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
         # Eigenen Score holen
         cursor = await db.execute(
-            "SELECT correct_answers FROM leaderboard WHERE user_id = ?",
-            (user_id,)
+            "SELECT correct_answers FROM leaderboard WHERE user_id = ?", (user_id,)
         )
         row = await cursor.fetchone()
         if not row:
@@ -517,7 +552,7 @@ async def get_score_gap(user_id: int):
         # Nächsthöheren Score + User-ID finden
         cursor = await db.execute(
             "SELECT user_id, correct_answers FROM leaderboard WHERE correct_answers > ? ORDER BY correct_answers ASC LIMIT 1",
-            (score,)
+            (score,),
         )
         higher = await cursor.fetchone()
         if higher:
@@ -528,6 +563,7 @@ async def get_score_gap(user_id: int):
 
 
 # ========== Daily Quests Functions ==========
+
 
 async def get_daily_quest_progress(user_id: int):
     """
@@ -566,7 +602,16 @@ async def get_daily_quest_progress(user_id: int):
         freeze_units = int(row[5] or 0)
         save_units = int(row[6] or 0)
 
-        return (quest_date, quizzes, counting_numbers, quiz_done, counting_done, freeze_units, save_units)
+        return (
+            quest_date,
+            quizzes,
+            counting_numbers,
+            quiz_done,
+            counting_done,
+            freeze_units,
+            save_units,
+        )
+
 
 async def increment_quest_quiz_count(user_id: int):
     """
@@ -600,8 +645,12 @@ async def increment_quest_quiz_count(user_id: int):
         quest_complete = new_quizzes >= 5
 
         if quest_complete:
-            new_freeze_units = _clamp_int(freeze_units + QUEST_REWARD_FREEZE_UNITS, 0, MAX_STREAK_FREEZE_UNITS)
-            new_save_units = _clamp_int(save_units + QUEST_REWARD_SAVE_UNITS, 0, MAX_SAVE_UNITS)
+            new_freeze_units = _clamp_int(
+                freeze_units + QUEST_REWARD_FREEZE_UNITS, 0, MAX_STREAK_FREEZE_UNITS
+            )
+            new_save_units = _clamp_int(
+                save_units + QUEST_REWARD_SAVE_UNITS, 0, MAX_SAVE_UNITS
+            )
             await db.execute(
                 """
                 UPDATE daily_quests
@@ -655,8 +704,12 @@ async def increment_quest_counting_count(user_id: int):
         quest_complete = new_counted >= 5
 
         if quest_complete:
-            new_freeze_units = _clamp_int(freeze_units + QUEST_REWARD_FREEZE_UNITS, 0, MAX_STREAK_FREEZE_UNITS)
-            new_save_units = _clamp_int(save_units + QUEST_REWARD_SAVE_UNITS, 0, MAX_SAVE_UNITS)
+            new_freeze_units = _clamp_int(
+                freeze_units + QUEST_REWARD_FREEZE_UNITS, 0, MAX_STREAK_FREEZE_UNITS
+            )
+            new_save_units = _clamp_int(
+                save_units + QUEST_REWARD_SAVE_UNITS, 0, MAX_SAVE_UNITS
+            )
             await db.execute(
                 """
                 UPDATE daily_quests
@@ -677,6 +730,7 @@ async def increment_quest_counting_count(user_id: int):
         await db.commit()
         return quest_complete
 
+
 async def mark_quest_voted(user_id: int):
     """
     Mark that the user has voted today.
@@ -694,6 +748,7 @@ async def mark_quest_voted(user_id: int):
         )
         await db.commit()
         return False
+
 
 async def use_streak_freeze(user_id: int):
     """
@@ -720,6 +775,7 @@ async def use_streak_freeze(user_id: int):
         await db.commit()
         return True
 
+
 async def use_bonus_hint(user_id: int):
     """
     Use a bonus hint for a quiz.
@@ -727,21 +783,21 @@ async def use_bonus_hint(user_id: int):
     """
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
-            "SELECT bonus_hints FROM daily_quests WHERE user_id = ?",
-            (user_id,)
+            "SELECT bonus_hints FROM daily_quests WHERE user_id = ?", (user_id,)
         )
         row = await cursor.fetchone()
-        
+
         if not row or row[0] <= 0:
             return False
-        
+
         # Use one hint
         await db.execute(
             "UPDATE daily_quests SET bonus_hints = bonus_hints - 1 WHERE user_id = ?",
-            (user_id,)
+            (user_id,),
         )
         await db.commit()
         return True
+
 
 async def get_quest_rewards(user_id: int):
     """
@@ -763,7 +819,9 @@ async def get_quest_rewards(user_id: int):
 async def get_user_save_units(user_id: int) -> int:
     async with aiosqlite.connect(DB_PATH) as db:
         await _ensure_daily_quest_row(db, user_id)
-        cursor = await db.execute("SELECT save_units FROM daily_quests WHERE user_id = ?", (user_id,))
+        cursor = await db.execute(
+            "SELECT save_units FROM daily_quests WHERE user_id = ?", (user_id,)
+        )
         row = await cursor.fetchone()
         return int(row[0] or 0) if row else 0
 
@@ -772,7 +830,9 @@ async def try_use_user_save(user_id: int) -> bool:
     """Consume 1.0 personal save if available."""
     async with aiosqlite.connect(DB_PATH) as db:
         await _ensure_daily_quest_row(db, user_id)
-        cursor = await db.execute("SELECT save_units FROM daily_quests WHERE user_id = ?", (user_id,))
+        cursor = await db.execute(
+            "SELECT save_units FROM daily_quests WHERE user_id = ?", (user_id,)
+        )
         row = await cursor.fetchone()
         units = int(row[0] or 0) if row else 0
         if units < USE_ITEM_UNITS:
@@ -827,3 +887,77 @@ async def try_use_guild_save(guild_id: int) -> bool:
         await db.commit()
         return True
 
+
+async def get_guild_daily_count(guild_id: int) -> int:
+    """
+    Return the number of valid counting numbers recorded for the given guild for today.
+    If no row exists or the stored date is older than today, returns 0.
+    """
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT count, date FROM counting_guild_daily WHERE guild_id = ?",
+            (guild_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return 0
+        row_count = int(row[0] or 0)
+        row_date = _coerce_date(row[1])
+        if row_date < datetime.date.today():
+            return 0
+        return row_count
+
+
+async def increment_guild_daily_count(guild_id: int):
+    """
+    Increment the daily count for the given guild by 1.
+
+    Returns a tuple (awarded_save: bool, new_count: int):
+      - awarded_save is True if this increment caused the guild to reach a multiple of 10 counts
+        for the day and a 1.0 save (10 units) was awarded to the guild.
+      - new_count is the updated count for today after this increment.
+
+    Notes:
+      - This uses the counting_guild_daily table to track per-guild daily counts and will reset
+        the counter automatically when the stored date is older than today.
+      - When a multiple of 10 is reached (10, 20, 30, ...), the guild is awarded 10 units
+        (i.e., 1.0 save) via add_guild_save_units.
+    """
+    today = datetime.date.today()
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            "SELECT count, date FROM counting_guild_daily WHERE guild_id = ?",
+            (guild_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            new_count = 1
+            await db.execute(
+                "INSERT INTO counting_guild_daily (guild_id, date, count) VALUES (?, ?, ?)",
+                (guild_id, today, new_count),
+            )
+        else:
+            row_count = int(row[0] or 0)
+            row_date = _coerce_date(row[1])
+            if row_date < today:
+                new_count = 1
+                await db.execute(
+                    "UPDATE counting_guild_daily SET date = ?, count = ? WHERE guild_id = ?",
+                    (today, new_count, guild_id),
+                )
+            else:
+                new_count = row_count + 1
+                await db.execute(
+                    "UPDATE counting_guild_daily SET count = ? WHERE guild_id = ?",
+                    (new_count, guild_id),
+                )
+
+        await db.commit()
+
+    awarded = False
+    if new_count % 10 == 0:
+        # Award 1.0 guild save (10 units).
+        await add_guild_save_units(guild_id, 10)
+        awarded = True
+
+    return awarded, new_count

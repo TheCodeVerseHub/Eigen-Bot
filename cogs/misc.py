@@ -2,18 +2,34 @@
 Misc commands cog.
 """
 
+import calendar
+import re
+from datetime import datetime, timedelta, timezone
+from typing import Any, Optional, Union
+
+import aiosqlite
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional, Any, Union
-from datetime import datetime, timezone, timedelta
-import calendar
-import re
-import aiosqlite
-from better_profanity import profanity
 
-from utils.config import Config
+# better_profanity is optional. If it's not installed, provide a no-op fallback so the cog can still load.
+try:
+    from better_profanity import profanity
+except Exception:
+
+    class _DummyProfanity:
+        @staticmethod
+        def censor(text):
+            try:
+                # Keep behavior safe for non-str inputs
+                return str(text)
+            except Exception:
+                return text
+
+    profanity = _DummyProfanity()
+
 from utils.codebuddy_database import DB_PATH
+from utils.config import Config
 
 
 class _EditSayModal(discord.ui.Modal, title="Edit Bot Message"):
@@ -88,7 +104,9 @@ class Misc(commands.Cog):
         except Exception as e:
             print(f"[Misc] Error ensuring say_messages table: {e}")
 
-    async def _is_say_message(self, guild_id: int, message_id: int) -> Optional[tuple[int, int]]:
+    async def _is_say_message(
+        self, guild_id: int, message_id: int
+    ) -> Optional[tuple[int, int]]:
         """Return (guild_id, channel_id) if message is tracked as /say."""
         try:
             async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
@@ -131,7 +149,9 @@ class Misc(commands.Cog):
         except Exception as e:
             print(f"[Misc] Error recording /say message: {e}")
 
-    @commands.hybrid_command(name='join-vc', description='Join your voice channel for fun')
+    @commands.hybrid_command(
+        name="join-vc", description="Join your voice channel for fun"
+    )
     async def join_vc(self, ctx: commands.Context):
         """Join the invoker's voice channel (only if it is not empty)."""
         if ctx.guild is None:
@@ -153,7 +173,9 @@ class Misc(commands.Cog):
         try:
             if isinstance(vc, discord.VoiceClient) and vc.is_connected():
                 if vc.is_playing() or vc.is_paused():
-                    return await ctx.send("I am currently playing audio in a voice channel.")
+                    return await ctx.send(
+                        "I am currently playing audio in a voice channel."
+                    )
 
                 if vc.channel == channel:
                     return await ctx.send("I am already in your voice channel.")
@@ -163,7 +185,9 @@ class Misc(commands.Cog):
                 await channel.connect()
 
         except discord.Forbidden:
-            return await ctx.send("I do not have permission to join that voice channel.")
+            return await ctx.send(
+                "I do not have permission to join that voice channel."
+            )
         except discord.ClientException:
             return await ctx.send("I could not connect to that voice channel.")
 
@@ -180,8 +204,12 @@ class Misc(commands.Cog):
         if member.bot:
             return
 
-        vc = getattr(member.guild, 'voice_client', None)
-        if not isinstance(vc, discord.VoiceClient) or not vc.is_connected() or not vc.channel:
+        vc = getattr(member.guild, "voice_client", None)
+        if (
+            not isinstance(vc, discord.VoiceClient)
+            or not vc.is_connected()
+            or not vc.channel
+        ):
             return
 
         # Only react to events involving the channel we're currently in.
@@ -201,7 +229,7 @@ class Misc(commands.Cog):
         except Exception:
             return
 
-    @commands.hybrid_command(name='about', description='Learn about Eigen Bot')
+    @commands.hybrid_command(name="about", description="Learn about Eigen Bot")
     async def about(self, ctx: commands.Context):
         """Show information about the bot."""
         embed = discord.Embed(
@@ -210,14 +238,16 @@ class Misc(commands.Cog):
                 "Feature-rich Discord bot for community engagement, "
                 "support tickets, and utilities. Built with discord.py."
             ),
-            color=0x000000
+            color=0x000000,
         )
-        
+
         # Add bot stats
         total_guilds = len(self.bot.guilds)
-        total_users = sum(guild.member_count for guild in self.bot.guilds if guild.member_count)
+        total_users = sum(
+            guild.member_count for guild in self.bot.guilds if guild.member_count
+        )
         total_commands = len(self.bot.tree.get_commands())
-        
+
         embed.add_field(
             name="Statistics",
             value=(
@@ -225,9 +255,9 @@ class Misc(commands.Cog):
                 f"Users: **{total_users:,}**\n"
                 f"Commands: **{total_commands}**"
             ),
-            inline=True
+            inline=True,
         )
-        
+
         embed.add_field(
             name="Features",
             value=(
@@ -240,9 +270,9 @@ class Misc(commands.Cog):
                 "Fun Commands\n"
                 "Utilities"
             ),
-            inline=True
+            inline=True,
         )
-        
+
         embed.add_field(
             name="Links",
             value=(
@@ -250,38 +280,40 @@ class Misc(commands.Cog):
                 "[Invite](https://discord.com/api/oauth2/authorize) · "
                 "[Support](https://discord.gg/4TkQYz7qea)"
             ),
-            inline=False
+            inline=False,
         )
-        
-        embed.set_footer(
-            text=f"discord.py {discord.__version__} · TheCodeVerseHub"
-        )
-        
+
+        embed.set_footer(text=f"discord.py {discord.__version__} · TheCodeVerseHub")
+
         # Set bot thumbnail
         if self.bot.user and self.bot.user.avatar:
             embed.set_thumbnail(url=self.bot.user.avatar.url)
-        
+
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='song', aliases=['sp', 'spotify'], description='Show what you are currently listening to on Spotify')
+    @commands.hybrid_command(
+        name="song",
+        aliases=["sp", "spotify"],
+        description="Show what you are currently listening to on Spotify",
+    )
     async def song(self, ctx: commands.Context, user: Optional[discord.Member] = None):
         """Display the current song/music that a user is listening to on Spotify or other music apps."""
         target_user = user or ctx.author
-        
+
         # Ensure target_user is a Member (has activities attribute)
         if not isinstance(target_user, discord.Member):
             embed = discord.Embed(
                 title="❌ Error",
                 description="This command only works in servers, not in DMs.",
-                color=discord.Color.red()
+                color=discord.Color.red(),
             )
             await ctx.send(embed=embed)
             return
-        
+
         # Check all activities - be more comprehensive
         spotify_activity = None
         music_activity = None
-        
+
         for activity in target_user.activities:
             # Check for Spotify specifically
             if isinstance(activity, discord.Spotify):
@@ -290,92 +322,101 @@ class Misc(commands.Cog):
             # Check for any listening activity (including other music apps)
             elif activity.type == discord.ActivityType.listening:
                 music_activity = activity
-        
+
         if spotify_activity:
             # Create rich embed for Spotify
             embed = discord.Embed(
                 title="Now Playing · Spotify",
                 description=f"{target_user.display_name}",
-                color=0x000000
+                color=0x000000,
             )
-            
+
             # Song details
             embed.add_field(
                 name="Track",
                 value=f"**[{profanity.censor(spotify_activity.title)}]({spotify_activity.track_url})**",
-                inline=False
+                inline=False,
             )
-            
+
             embed.add_field(
                 name="Artist",
                 value=profanity.censor(", ".join(spotify_activity.artists)),
-                inline=True
+                inline=True,
             )
-            
+
             embed.add_field(
                 name="Album",
                 value=profanity.censor(spotify_activity.album),
-                inline=True
+                inline=True,
             )
-            
+
             # Duration
             duration = spotify_activity.duration
             current = (discord.utils.utcnow() - spotify_activity.start).total_seconds()
-            
+
             duration_str = f"{int(duration.total_seconds() // 60)}:{int(duration.total_seconds() % 60):02d}"
             current_str = f"{int(current // 60)}:{int(current % 60):02d}"
-            
+
             # Progress bar
             progress = min(current / duration.total_seconds(), 1.0)
             bar_length = 20
             filled = int(bar_length * progress)
             bar = "━" * filled + "○" + "─" * (bar_length - filled - 1)
-            
+
             embed.add_field(
                 name="Duration",
                 value=f"`{current_str}` {bar} `{duration_str}`",
-                inline=False
+                inline=False,
             )
-            
+
             # Add album art if available
             if spotify_activity.album_cover_url:
                 embed.set_thumbnail(url=spotify_activity.album_cover_url)
-            
+
             embed.set_footer(text=f"Requested by {ctx.author.display_name}")
-            
+
         elif music_activity:
             # Found other music activity (not Spotify)
             # Generic music activity
             embed = discord.Embed(
                 title="Now Listening",
                 description=f"{target_user.display_name}",
-                color=0x000000
+                color=0x000000,
             )
-            
+
             embed.add_field(
                 name="Activity",
                 value=f"**{profanity.censor(music_activity.name)}**",
-                inline=False
+                inline=False,
             )
-            
+
             # Use getattr to safely access optional attributes
-            details = getattr(music_activity, 'details', None)
+            details = getattr(music_activity, "details", None)
             if details:
-                embed.add_field(name="Details", value=profanity.censor(details), inline=False)
-            
-            state = getattr(music_activity, 'state', None)
+                embed.add_field(
+                    name="Details", value=profanity.censor(details), inline=False
+                )
+
+            state = getattr(music_activity, "state", None)
             if state:
-                embed.add_field(name="State", value=profanity.censor(state), inline=False)
-            
-            embed.set_footer(text=f"Requested by {ctx.author.display_name}", icon_url=ctx.author.display_avatar.url)
+                embed.add_field(
+                    name="State", value=profanity.censor(state), inline=False
+                )
+
+            embed.set_footer(
+                text=f"Requested by {ctx.author.display_name}",
+                icon_url=ctx.author.display_avatar.url,
+            )
         else:
             # No music activity found - show debug info
             if target_user == ctx.author:
                 # Show what activities were detected
                 activities_list = []
                 for activity in target_user.activities:
-                    activities_list.append(f"• **{activity.name}** (Type: {activity.type.name})")
-                
+                    activities_list.append(
+                        f"• **{activity.name}** (Type: {activity.type.name})"
+                    )
+
                 if activities_list:
                     debug_info = "\n".join(activities_list)
                     message = (
@@ -401,35 +442,33 @@ class Misc(commands.Cog):
                     f"❌ **{target_user.display_name} is not currently listening to any music!**\n\n"
                     "They must be listening to Spotify or another music app with activity status enabled."
                 )
-            
+
             embed = discord.Embed(
-                title="No Music Playing",
-                description=message,
-                color=0x000000
+                title="No Music Playing", description=message, color=0x000000
             )
             embed.set_footer(text="Activity Privacy must be enabled")
-        
+
         await ctx.send(embed=embed)
 
-    @commands.command(name='uptime', hidden=True)
+    @commands.command(name="uptime", hidden=True)
     async def uptime(self, ctx: commands.Context):
         """Show the bot's uptime."""
-        start_time = getattr(self.bot, 'start_time', None)
+        start_time = getattr(self.bot, "start_time", None)
         if not start_time:
             await ctx.send("Start time not tracked.")
             return
 
         now = discord.utils.utcnow()
         delta = now - start_time
-        
+
         days = delta.days
         hours, remainder = divmod(delta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        
+
         uptime_str = f"{days}d {hours}h {minutes}m {seconds}s"
         await ctx.send(f"⏱️ **Uptime:** {uptime_str}")
 
-    @commands.command(name='diagnose', hidden=True)
+    @commands.command(name="diagnose", hidden=True)
     @commands.has_permissions(administrator=True)
     async def diagnose(self, ctx: commands.Context):
         """Show diagnostic information (Admin only)."""
@@ -443,22 +482,28 @@ class Misc(commands.Cog):
         users = sum(g.member_count for g in self.bot.guilds if g.member_count)
         # Latency
         latency = round(self.bot.latency * 1000)
-        
+
         embed = discord.Embed(title="Diagnostic Info", color=0x000000)
         embed.add_field(name="Slash Commands", value=str(slash_commands), inline=True)
         embed.add_field(name="Prefix Commands", value=str(prefix_commands), inline=True)
         embed.add_field(name="Guilds", value=str(guilds), inline=True)
         embed.add_field(name="Users", value=str(users), inline=True)
         embed.add_field(name="Latency", value=f"{latency}ms", inline=True)
-        
-        start_time = getattr(self.bot, 'start_time', None)
+
+        start_time = getattr(self.bot, "start_time", None)
         if start_time:
-             embed.add_field(name="Start Time", value=discord.utils.format_dt(start_time, 'R'), inline=True)
+            embed.add_field(
+                name="Start Time",
+                value=discord.utils.format_dt(start_time, "R"),
+                inline=True,
+            )
 
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='bug', description='Report a bug to the bot dev - Only for small bugs')
-    @app_commands.describe(bug='Describe the bug you encountered')
+    @commands.hybrid_command(
+        name="bug", description="Report a bug to the bot dev - Only for small bugs"
+    )
+    @app_commands.describe(bug="Describe the bug you encountered")
     async def bug_report(self, ctx: commands.Context, *, bug: str):
         """Report a bug to the support server."""
         # Support server channel ID
@@ -466,38 +511,41 @@ class Misc(commands.Cog):
 
         user = ctx.author
         guild = ctx.guild
-        
+
         try:
             # Get the support channel
             support_channel = self.bot.get_channel(SUPPORT_CHANNEL_ID)
-            
-            if not support_channel or not isinstance(support_channel, discord.TextChannel):
+
+            if not support_channel or not isinstance(
+                support_channel, discord.TextChannel
+            ):
                 response = "❌ Could not access the support channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and report the bug there."
                 if ctx.interaction:
-                    await ctx.interaction.response.send_message(response, ephemeral=True)
+                    await ctx.interaction.response.send_message(
+                        response, ephemeral=True
+                    )
                 else:
                     await ctx.send(response)
                 return
-            
+
             # Create bug report embed
-            embed = discord.Embed(
-                title="Bug Report",
-                color=0x000000
-            )
-            
+            embed = discord.Embed(title="Bug Report", color=0x000000)
+
             # Add bug details
-            embed.add_field(name="Details", value="*"+bug+"*", inline=False)
-            
+            embed.add_field(name="Details", value="*" + bug + "*", inline=False)
+
             # Add reporter and server info inline
             reporter_info = f"{user.mention} · `{user.id}`"
-            location_info = f"{guild.name} · `{guild.id}`" if guild else "Direct Message"
-            
+            location_info = (
+                f"{guild.name} · `{guild.id}`" if guild else "Direct Message"
+            )
+
             embed.add_field(name="Reported by", value=reporter_info, inline=True)
             embed.add_field(name="Server", value=location_info, inline=True)
-            
+
             # Send to support channel
             await support_channel.send(embed=embed)
-            
+
             # Confirm to user
             response = (
                 "✅ Your bug report has been submitted to our support team. Thank you for helping us improve!\n\n"
@@ -506,12 +554,14 @@ class Misc(commands.Cog):
             )
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
-                    await ctx.interaction.response.send_message(response, ephemeral=True)
+                    await ctx.interaction.response.send_message(
+                        response, ephemeral=True
+                    )
                 else:
                     await ctx.interaction.followup.send(response, ephemeral=True)
             else:
                 await ctx.send(response)
-            
+
         except Exception as e:
             response = (
                 f"❌ An error occurred while submitting your bug report: {str(e)}\n\n"
@@ -519,17 +569,21 @@ class Misc(commands.Cog):
             )
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
-                    await ctx.interaction.response.send_message(response, ephemeral=True)
+                    await ctx.interaction.response.send_message(
+                        response, ephemeral=True
+                    )
                 else:
                     await ctx.interaction.followup.send(response, ephemeral=True)
             else:
                 await ctx.send(response)
-    
-    @commands.hybrid_command(name='support', description='Get the support server invite link')
+
+    @commands.hybrid_command(
+        name="support", description="Get the support server invite link"
+    )
     async def support(self, ctx: commands.Context):
         """Send the support server invite link."""
         content = "Join our support server: https://discord.gg/4TkQYz7qea"
-        
+
         if ctx.interaction:
             await ctx.interaction.response.send_message(content, ephemeral=True)
         else:
@@ -541,110 +595,126 @@ class Misc(commands.Cog):
                     pass
             except:
                 await ctx.send(content, delete_after=10)
-    
-    @app_commands.command(name='newfeature', description='Suggest a new feature for the bot')
-    @app_commands.describe(feature='Describe the feature you would like to see')
+
+    @app_commands.command(
+        name="newfeature", description="Suggest a new feature for the bot"
+    )
+    @app_commands.describe(feature="Describe the feature you would like to see")
     async def new_feature(self, interaction: discord.Interaction, feature: str):
         """Submit a feature request to the support server."""
         # Feature requests channel ID
         FEATURE_CHANNEL_ID = 1452740031419777096
-        
+
         try:
             # Get the feature requests channel
             feature_channel = self.bot.get_channel(FEATURE_CHANNEL_ID)
-            
-            if not feature_channel or not isinstance(feature_channel, discord.TextChannel):
+
+            if not feature_channel or not isinstance(
+                feature_channel, discord.TextChannel
+            ):
                 await interaction.response.send_message(
                     "❌ Could not access the feature requests channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and submit your request there.",
-                    ephemeral=True
+                    ephemeral=True,
                 )
                 return
-            
+
             # Create feature request embed
-            embed = discord.Embed(
-                title="Feature Request",
-                color=0x000000
-            )
-            
+            embed = discord.Embed(title="Feature Request", color=0x000000)
+
             # Add feature details
-            embed.add_field(name="Details", value="*"+feature+"*", inline=False)
-            
+            embed.add_field(name="Details", value="*" + feature + "*", inline=False)
+
             # Add requester and server info inline
             requester_info = f"{interaction.user.mention} · `{interaction.user.id}`"
-            location_info = f"{interaction.guild.name} · `{interaction.guild.id}`" if interaction.guild else "Direct Message"
-            
+            location_info = (
+                f"{interaction.guild.name} · `{interaction.guild.id}`"
+                if interaction.guild
+                else "Direct Message"
+            )
+
             embed.add_field(name="Requested By", value=requester_info, inline=True)
             embed.add_field(name="Location", value=location_info, inline=True)
-            
+
             # Send to feature requests channel
             await feature_channel.send(embed=embed)
-            
+
             # Confirm to user
             await interaction.response.send_message(
                 "✅ Your feature request has been submitted! Our team will review it soon.\n\n"
                 "**Want to discuss your idea or see other requests?**\n"
                 "Join our support server: https://discord.gg/4TkQYz7qea",
-                ephemeral=True
+                ephemeral=True,
             )
-            
+
         except Exception as e:
             await interaction.response.send_message(
                 f"❌ An error occurred while submitting your feature request: {str(e)}\n\n"
                 "Please submit it directly in our [support server](https://discord.gg/4TkQYz7qea).",
-                ephemeral=True
+                ephemeral=True,
             )
-    
-    @app_commands.command(name='feedback', description='Share your feedback about the bot')
-    @app_commands.describe(
-        rating='Rate your experience (1-5 stars)',
-        feedback='Share your thoughts, suggestions, or testimonial'
+
+    @app_commands.command(
+        name="feedback", description="Share your feedback about the bot"
     )
-    @app_commands.choices(rating=[
-        app_commands.Choice(name='⭐ 1 Star - Poor', value=1),
-        app_commands.Choice(name='⭐⭐ 2 Stars - Fair', value=2),
-        app_commands.Choice(name='⭐⭐⭐ 3 Stars - Good', value=3),
-        app_commands.Choice(name='⭐⭐⭐⭐ 4 Stars - Very Good', value=4),
-        app_commands.Choice(name='⭐⭐⭐⭐⭐ 5 Stars - Excellent', value=5)
-    ])
-    async def feedback_command(self, interaction: discord.Interaction, rating: int, feedback: str):
+    @app_commands.describe(
+        rating="Rate your experience (1-5 stars)",
+        feedback="Share your thoughts, suggestions, or testimonial",
+    )
+    @app_commands.choices(
+        rating=[
+            app_commands.Choice(name="⭐ 1 Star - Poor", value=1),
+            app_commands.Choice(name="⭐⭐ 2 Stars - Fair", value=2),
+            app_commands.Choice(name="⭐⭐⭐ 3 Stars - Good", value=3),
+            app_commands.Choice(name="⭐⭐⭐⭐ 4 Stars - Very Good", value=4),
+            app_commands.Choice(name="⭐⭐⭐⭐⭐ 5 Stars - Excellent", value=5),
+        ]
+    )
+    async def feedback_command(
+        self, interaction: discord.Interaction, rating: int, feedback: str
+    ):
         """Submit feedback/testimonial to the support server."""
         # Feedback/testimonials channel ID
         FEEDBACK_CHANNEL_ID = 1453356371952275527
-        
+
         try:
             # Get the feedback channel
             feedback_channel = self.bot.get_channel(FEEDBACK_CHANNEL_ID)
-            
-            if not feedback_channel or not isinstance(feedback_channel, discord.TextChannel):
+
+            if not feedback_channel or not isinstance(
+                feedback_channel, discord.TextChannel
+            ):
                 await interaction.response.send_message(
                     "❌ Could not access the feedback channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and share your feedback there.",
-                    ephemeral=True
+                    ephemeral=True,
                 )
                 return
-            
+
             # Create star rating display
             stars = "⭐" * rating
             rating_text = ["Poor", "Fair", "Good", "Very Good", "Excellent"][rating - 1]
-            
+
             # Create feedback embed with professional black design
             embed = discord.Embed(
-                title=f"{stars} {rating}/5 · {rating_text}",
-                color=0x000000
+                title=f"{stars} {rating}/5 · {rating_text}", color=0x000000
             )
-            
+
             # Add feedback content
-            embed.add_field(name="Feedback", value="*"+feedback+"*", inline=False)
-            
+            embed.add_field(name="Feedback", value="*" + feedback + "*", inline=False)
+
             # Add reviewer and server info inline
             reviewer_info = f"{interaction.user.mention} · `{interaction.user.id}`"
-            location_info = f"{interaction.guild.name} · `{interaction.guild.id}`" if interaction.guild else "Direct Message"
-            
+            location_info = (
+                f"{interaction.guild.name} · `{interaction.guild.id}`"
+                if interaction.guild
+                else "Direct Message"
+            )
+
             embed.add_field(name="User", value=reviewer_info, inline=True)
             embed.add_field(name="Server", value=location_info, inline=True)
-            
+
             # Send to feedback channel
             await feedback_channel.send(embed=embed)
-            
+
             # Confirm to user with different messages based on rating
             if rating >= 4:
                 message = (
@@ -658,34 +728,36 @@ class Misc(commands.Cog):
                     "**Want to discuss further?**\n"
                     "Join our support server: https://discord.gg/4TkQYz7qea"
                 )
-            
+
             await interaction.response.send_message(message, ephemeral=True)
-            
+
         except Exception as e:
             await interaction.response.send_message(
                 f"❌ An error occurred while submitting your feedback: {str(e)}\n\n"
                 "Please share it directly in our [support server](https://discord.gg/4TkQYz7qea).",
-                ephemeral=True
+                ephemeral=True,
             )
-    
-    @app_commands.command(name='timestamp', description='Generate Discord timestamps for any date/time')
+
+    @app_commands.command(
+        name="timestamp", description="Generate Discord timestamps for any date/time"
+    )
     @app_commands.describe(
-        year='Year (e.g., 2025)',
-        month='Month (1-12)',
-        day='Day of month (1-31)',
-        hour='Hour in 24-hour format (0-23, optional)',
-        minute='Minute (0-59, optional)',
-        utc_offset='UTC offset in hours (e.g., -5 for EST, 5.5 for IST, optional)'
+        year="Year (e.g., 2025)",
+        month="Month (1-12)",
+        day="Day of month (1-31)",
+        hour="Hour in 24-hour format (0-23, optional)",
+        minute="Minute (0-59, optional)",
+        utc_offset="UTC offset in hours (e.g., -5 for EST, 5.5 for IST, optional)",
     )
     async def timestamp_command(
-        self, 
+        self,
         interaction: discord.Interaction,
         year: int,
         month: app_commands.Range[int, 1, 12],
         day: app_commands.Range[int, 1, 31],
         hour: Optional[app_commands.Range[int, 0, 23]] = None,
         minute: Optional[app_commands.Range[int, 0, 59]] = None,
-        utc_offset: float = 0.0
+        utc_offset: float = 0.0,
     ):
         """Generate Discord timestamps with all available formats."""
         # Set defaults if None
@@ -693,47 +765,46 @@ class Misc(commands.Cog):
             hour = 0
         if minute is None:
             minute = 0
-            
+
         try:
             # Validate UTC offset range
             if utc_offset < -12 or utc_offset > 14:
                 await interaction.response.send_message(
-                    "❌ UTC offset must be between -12 and +14 hours!",
-                    ephemeral=True
+                    "❌ UTC offset must be between -12 and +14 hours!", ephemeral=True
                 )
                 return
-            
+
             # Validate the date
             if day > calendar.monthrange(year, month)[1]:
                 await interaction.response.send_message(
                     f"❌ Invalid date: {month}/{day}/{year} does not exist!",
-                    ephemeral=True
+                    ephemeral=True,
                 )
                 return
-            
+
             # Create datetime object in UTC
             # User provides time in their timezone, convert to UTC
             offset_hours = int(utc_offset)
             offset_minutes = int((utc_offset - offset_hours) * 60)
-            
+
             # Create the datetime in user's timezone
             user_dt = datetime(year, month, day, hour, minute)
-            
+
             # Convert to UTC by subtracting the offset
             utc_dt = user_dt.replace(tzinfo=None)
             # Subtract offset to get UTC time
             utc_dt = utc_dt - timedelta(hours=offset_hours, minutes=offset_minutes)
-            
+
             # Get Unix timestamp
             unix_timestamp = int(utc_dt.replace(tzinfo=timezone.utc).timestamp())
-            
+
             # Create embed with all timestamp formats
             embed = discord.Embed(
                 title="Discord Timestamps",
                 description=f"{month}/{day}/{year} {hour:02d}:{minute:02d} (UTC{utc_offset:+.1f})",
-                color=0x000000
+                color=0x000000,
             )
-            
+
             # Add all timestamp formats
             formats = [
                 ("Short Time", "t", f"<t:{unix_timestamp}:t>"),
@@ -744,18 +815,18 @@ class Misc(commands.Cog):
                 ("Long Date/Time", "F", f"<t:{unix_timestamp}:F>"),
                 ("Relative Time", "R", f"<t:{unix_timestamp}:R>"),
             ]
-            
+
             format_text = ""
             for name, code, timestamp_code in formats:
                 # Show both the code and how it renders
-                format_text += f"**{name}** (`{code}`)\n`{timestamp_code}` → {timestamp_code}\n\n"
-            
+                format_text += (
+                    f"**{name}** (`{code}`)\n`{timestamp_code}` → {timestamp_code}\n\n"
+                )
+
             embed.add_field(
-                name="Available Formats",
-                value=format_text.strip(),
-                inline=False
+                name="Available Formats", value=format_text.strip(), inline=False
             )
-            
+
             # Add copy-paste section
             embed.add_field(
                 name="Quick Copy",
@@ -764,51 +835,51 @@ class Misc(commands.Cog):
                     f"**Default:** `<t:{unix_timestamp}>`\n"
                     f"**Relative:** `<t:{unix_timestamp}:R>`"
                 ),
-                inline=False
+                inline=False,
             )
-            
+
             embed.set_footer(text="Click 'Copy' on any code block to use it")
-            
+
             await interaction.response.send_message(embed=embed, ephemeral=True)
-            
+
         except ValueError as e:
             await interaction.response.send_message(
-                f"❌ Invalid date/time: {str(e)}",
-                ephemeral=True
+                f"❌ Invalid date/time: {str(e)}", ephemeral=True
             )
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred: {str(e)}",
-                ephemeral=True
+                f"❌ An error occurred: {str(e)}", ephemeral=True
             )
 
-    @app_commands.command(name='say', description='Make the bot say something (Admin only)')
-    @app_commands.describe(text='The text you want the bot to say')
+    @app_commands.command(
+        name="say", description="Make the bot say something (Admin only)"
+    )
+    @app_commands.describe(text="The text you want the bot to say")
     @app_commands.default_permissions(administrator=True)
     async def say(self, interaction: discord.Interaction, text: str):
         """Make the bot send a message (admin only to prevent abuse)."""
         # Double-check permissions (extra safety)
         if not interaction.guild:
             await interaction.response.send_message(
-                "❌ This command can only be used in a server.",
-                ephemeral=True
+                "❌ This command can only be used in a server.", ephemeral=True
             )
             return
 
-        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+        if (
+            not isinstance(interaction.user, discord.Member)
+            or not interaction.user.guild_permissions.administrator
+        ):
             await interaction.response.send_message(
-                "❌ This command is restricted to administrators only.",
-                ephemeral=True
+                "❌ This command is restricted to administrators only.", ephemeral=True
             )
             return
-        
+
         # Check if channel is messageable
         if not isinstance(interaction.channel, discord.abc.Messageable):
-             await interaction.response.send_message(
-                "❌ Cannot send messages in this channel type.",
-                ephemeral=True
+            await interaction.response.send_message(
+                "❌ Cannot send messages in this channel type.", ephemeral=True
             )
-             return
+            return
 
         # Send the text in the channel
         sent = await interaction.channel.send(text)
@@ -823,12 +894,9 @@ class Misc(commands.Cog):
             )
         except Exception:
             pass
-        
+
         # Confirm to admin (ephemeral so only they see it)
-        await interaction.response.send_message(
-            "✅ Message sent!",
-            ephemeral=True
-        )
+        await interaction.response.send_message("✅ Message sent!", ephemeral=True)
 
     @app_commands.command(
         name="edit",
@@ -845,7 +913,10 @@ class Misc(commands.Cog):
             )
             return
 
-        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+        if (
+            not isinstance(interaction.user, discord.Member)
+            or not interaction.user.guild_permissions.administrator
+        ):
             await interaction.response.send_message(
                 "❌ This command is restricted to administrators only.",
                 ephemeral=True,
@@ -870,7 +941,9 @@ class Misc(commands.Cog):
             return
 
         _guild_id, channel_id = say_row
-        channel = interaction.guild.get_channel(channel_id) or self.bot.get_channel(channel_id)
+        channel = interaction.guild.get_channel(channel_id) or self.bot.get_channel(
+            channel_id
+        )
         if not isinstance(channel, (discord.TextChannel, discord.Thread)):
             await interaction.response.send_message(
                 "❌ Could not find the channel for that message.",
@@ -900,7 +973,9 @@ class Misc(commands.Cog):
             )
             return
 
-        await interaction.response.send_modal(_EditSayModal(target_message=target_message))
+        await interaction.response.send_modal(
+            _EditSayModal(target_message=target_message)
+        )
 
     @app_commands.command(
         name="react",
@@ -924,7 +999,10 @@ class Misc(commands.Cog):
             )
             return
 
-        if not isinstance(interaction.user, discord.Member) or not interaction.user.guild_permissions.administrator:
+        if (
+            not isinstance(interaction.user, discord.Member)
+            or not interaction.user.guild_permissions.administrator
+        ):
             await interaction.response.send_message(
                 "❌ This command is restricted to administrators only.",
                 ephemeral=True,
@@ -954,7 +1032,9 @@ class Misc(commands.Cog):
                         ephemeral=True,
                     )
                     return
-                ch = interaction.guild.get_channel(channel_id) or self.bot.get_channel(channel_id)
+                ch = interaction.guild.get_channel(channel_id) or self.bot.get_channel(
+                    channel_id
+                )
                 if not isinstance(ch, (discord.TextChannel, discord.Thread)):
                     await interaction.response.send_message(
                         "❌ Could not access that channel.",
@@ -970,8 +1050,12 @@ class Misc(commands.Cog):
                 # Allow providing just a message ID for the current channel.
                 try:
                     message_id = int(raw)
-                    if isinstance(interaction.channel, (discord.TextChannel, discord.Thread)):
-                        target_message = await interaction.channel.fetch_message(message_id)
+                    if isinstance(
+                        interaction.channel, (discord.TextChannel, discord.Thread)
+                    ):
+                        target_message = await interaction.channel.fetch_message(
+                            message_id
+                        )
                 except Exception:
                     target_message = None
 
@@ -1020,7 +1104,9 @@ class Misc(commands.Cog):
 
         await interaction.response.send_message("✅ Reaction added!", ephemeral=True)
 
-    @commands.command(name='dm', description='Explains why you should not DM members for help')
+    @commands.command(
+        name="dm", description="Explains why you should not DM members for help"
+    )
     async def dm_command(self, ctx: commands.Context):
         """Explains why questions should be asked in the server instead of DMs."""
         message = (
