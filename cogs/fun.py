@@ -226,6 +226,14 @@ class Fun(commands.Cog):
         embed.set_image(url="attachment://fridge.png")
         await ctx.reply(embed=embed, file=file, mention_author=False)
 
+    @commands.command(name="pat", help="Send a wholesome pat gif (prefix-only).")
+    async def pat(self, ctx: commands.Context):
+        """Send a wholesome pat gif (prefix-only)."""
+        gif_url = "https://tenor.com/bQSNq.gif"
+        embed = discord.Embed(color=0xFFB6C1)
+        embed.set_image(url=gif_url)
+        await ctx.reply(embed=embed, mention_author=False)
+
     @commands.hybrid_command(
         name="compliment", help="Receive a professional programming compliment"
     )
@@ -349,6 +357,7 @@ class Fun(commands.Cog):
         )
         embed.set_footer(text="CodeVerse Bot | Decision Helper")
         await ctx.reply(embed=embed, mention_author=False)
+
     @app_commands.describe(text="Text to replace 'cinema' with")
     async def absolute(self, ctx: commands.Context, *, text: str):
 
