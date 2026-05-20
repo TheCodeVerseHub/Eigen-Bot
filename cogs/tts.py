@@ -1,13 +1,13 @@
 import asyncio
 import os
 import sqlite3
-from queue import Queue
 from io import BytesIO
+from queue import Queue
 
 import discord
+import edge_tts
 from discord.ext import commands
 from discord.ext.commands import Context
-import edge_tts
 
 
 class Say(commands.Cog):
@@ -21,8 +21,7 @@ class Say(commands.Cog):
 
         # Persistent SQLite storage
         self.db: sqlite3.Connection = sqlite3.connect(
-            "botdata.db",
-            check_same_thread=False
+            "botdata.db", check_same_thread=False
         )
 
         self.db.execute(
@@ -46,11 +45,16 @@ class Say(commands.Cog):
         async def leave_later():
             try:
                 timeout = float(os.getenv("TTS_VC_LEAVE_TIMEOUT", "240"))
-                await asyncio.sleep(timeout)
+                try:
+                    await asyncio.sleep(timeout)
+                except asyncio.CancelledError:
+                    # Task was cancelled (shutdown or reschedule). No action needed.
+                    return
 
                 if vc.is_connected() and not vc.is_playing():
                     await vc.disconnect()
             except asyncio.CancelledError:
+                # Outer CancelledError catch for safety; ignore
                 pass
 
         self.leave_task = asyncio.create_task(leave_later())
@@ -60,7 +64,9 @@ class Say(commands.Cog):
     # ----------------------------
 
     async def edge_to_bytes(self, text: str) -> BytesIO:
-        voice = os.getenv("TTS_VOICE", "en-US-AriaNeural") # Default voice if env missing
+        voice = os.getenv(
+            "TTS_VOICE", "en-US-AriaNeural"
+        )  # Default voice if env missing
         comm = edge_tts.Communicate(text=text, voice=voice)
 
         fp = BytesIO()
@@ -100,7 +106,11 @@ class Say(commands.Cog):
                     vc.play(source, after=after_playing)
 
                     while vc.is_playing():
-                        await asyncio.sleep(0.5)
+                        try:
+                            await asyncio.sleep(0.5)
+                        except asyncio.CancelledError:
+                            # If the bot is shutting down, abort loop early
+                            break
                         if not vc.is_connected():
                             break
 
@@ -112,7 +122,7 @@ class Say(commands.Cog):
             self.playing = False
             await self.schedule_leave(vc)
 
-    # ----------------------------
+        # ----------------------------
         await self.schedule_leave(vc)
 
     # ----------------------------
@@ -126,14 +136,11 @@ class Say(commands.Cog):
 
         self.db.execute(
             "INSERT OR REPLACE INTO tts_logins (user_id, name) VALUES (?, ?)",
-            (ctx.author.id, name.strip())
+            (ctx.author.id, name.strip()),
         )
         self.db.commit()
 
-        await ctx.send(
-            f'TTS name set to: {name}\n'
-            "You can now use ?tts <message>"
-        )
+        await ctx.send(f"TTS name set to: {name}\nYou can now use ?tts <message>")
 
     # ----------------------------
     # FORCE LEAVE VC
@@ -168,15 +175,13 @@ class Say(commands.Cog):
 
         # Fetch login from DB
         cursor = self.db.execute(
-            "SELECT name FROM tts_logins WHERE user_id = ?",
-            (ctx.author.id,)
+            "SELECT name FROM tts_logins WHERE user_id = ?", (ctx.author.id,)
         )
         row = cursor.fetchone()
 
         if row is None:
             return await ctx.send(
-                "You must set your TTS name first.\n"
-                "Use: ?logintts <your_name>"
+                "You must set your TTS name first.\nUse: ?logintts <your_name>"
             )
 
         tts_name: str = row[0]
@@ -197,17 +202,11 @@ class Say(commands.Cog):
 
         if ctx.message:
             for member in ctx.message.mentions:
-                content = content.replace(
-                    f"<@{member.id}>", f"@{member.display_name}"
-                )
-                content = content.replace(
-                    f"<@!{member.id}>", f"@{member.display_name}"
-                )
+                content = content.replace(f"<@{member.id}>", f"@{member.display_name}")
+                content = content.replace(f"<@!{member.id}>", f"@{member.display_name}")
 
             for channel_ in ctx.message.channel_mentions:
-                content = content.replace(
-                    f"<#{channel_.id}>", f"#{channel_.name}"
-                )
+                content = content.replace(f"<#{channel_.id}>", f"#{channel_.name}")
 
         self.queue.put(f"{tts_name} said {content}")
 

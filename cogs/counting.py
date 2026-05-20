@@ -12,7 +12,9 @@ from discord.ext import commands
 
 from utils.codebuddy_database import (
     DB_PATH,
+    MAX_SAVE_UNITS,
     add_guild_save_units,
+    get_guild_daily_award_info,
     get_guild_save_units,
     get_user_save_units,
     increment_guild_daily_count,
@@ -45,16 +47,31 @@ class Counting(commands.Cog):
         # A small delay between reaction requests keeps us under the common reaction route limits.
         # Reactions may appear slightly delayed, but they will still be added.
         while True:
-            message, emoji = await self._reaction_queue.get()
+            try:
+                message, emoji = await self._reaction_queue.get()
+            except asyncio.CancelledError:
+                # Task cancelled (bot shutdown); exit gracefully.
+                break
+
             try:
                 try:
                     await message.add_reaction(emoji)
                 except Exception:
                     pass
-                await asyncio.sleep(0.35)
+                try:
+                    await asyncio.sleep(0.35)
+                except asyncio.CancelledError:
+                    # Task cancelled during sleep; still perform cleanup and exit loop.
+                    self._pending_reactions.discard((message.id, emoji))
+                    self._reaction_queue.task_done()
+                    break
             finally:
                 self._pending_reactions.discard((message.id, emoji))
-                self._reaction_queue.task_done()
+                try:
+                    self._reaction_queue.task_done()
+                except Exception:
+                    # Ignore if task_done called multiple times or queue already closed.
+                    pass
 
     def _enqueue_reaction(self, message: discord.Message, emoji: str) -> None:
         key = (message.id, emoji)
@@ -577,9 +594,11 @@ class Counting(commands.Cog):
                     # Guild daily counting: increment the per-guild daily counter and award
                     # a server save for every 10 valid counts (counts may come from multiple users).
                     try:
-                        awarded, new_daily_count = await increment_guild_daily_count(
-                            message.guild.id
-                        )
+                        (
+                            awarded,
+                            new_daily_count,
+                            reason,
+                        ) = await increment_guild_daily_count(message.guild.id)
                         if awarded:
                             # Try to get current server save units for display (best-effort).
                             try:
@@ -598,6 +617,11 @@ class Counting(commands.Cog):
                                 await message.channel.send(
                                     f"Server reached **{new_daily_count}** counting numbers today — awarded **1.0** server save!"
                                 )
+                        else:
+                            # Silent on non-award situations to avoid spamming the counting channel.
+                            # We maintain internal state and will award again when conditions are met.
+                            pass
+
                     except Exception:
                         # Best-effort only; do not break counting if this fails.
                         pass
