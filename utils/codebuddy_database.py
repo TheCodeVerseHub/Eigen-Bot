@@ -256,6 +256,8 @@ async def _ensure_daily_quest_row(db: aiosqlite.Connection, user_id: int) -> Non
     )
 
     # Reset daily progress if date has rolled over
+
+    ## Removed Quiz reset from Update
     cursor = await db.execute(
         "SELECT quest_date FROM daily_quests WHERE user_id = ?",
         (user_id,),
@@ -269,7 +271,6 @@ async def _ensure_daily_quest_row(db: aiosqlite.Connection, user_id: int) -> Non
             SET quest_date = ?,
                 quizzes_completed = 0,
                 counting_numbers = 0,
-                quiz_quest_completed = 0,
                 counting_quest_completed = 0,
                 voted_today = 0,
                 quest_completed = 0
