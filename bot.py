@@ -19,12 +19,9 @@ from utils.config import Config
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO")),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("bot.log"), logging.StreamHandler()],
-)
+from utils.logger import setup_logging
+
+setup_logging()
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +62,8 @@ class Fun2OoshBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Setup hook called before the bot starts."""
-        # Initialize CodeBuddy database
+        self.tree.on_app_command_completion = self.on_app_command_completion
+
         try:
             from utils.codebuddy_database import init_db
 
@@ -176,6 +174,18 @@ class Fun2OoshBot(commands.Bot):
             activity=discord.Game(name="?helpmenu /help | Made by YC45")
         )
 
+    async def on_command_completion(self, ctx: commands.Context):
+        """Handle prefix command completion."""
+        from utils.logger import log_command_usage
+        log_command_usage(ctx, command_type="PREFIX", success=True)
+
+    async def on_app_command_completion(
+        self, interaction: discord.Interaction, command: app_commands.Command
+    ):
+        """Handle slash command completion."""
+        from utils.logger import log_command_usage
+        log_command_usage(interaction, command_type="SLASH", success=True)
+
     async def on_command_error(
         self, ctx: commands.Context, error: commands.CommandError
     ):
@@ -183,6 +193,9 @@ class Fun2OoshBot(commands.Bot):
         # Silence unknown/prefix-not-found commands
         if isinstance(error, commands.CommandNotFound):
             return
+
+        from utils.logger import log_command_usage
+        log_command_usage(ctx, command_type="PREFIX", success=False, error=error)
 
         async def _safe_ctx_send(message: str) -> None:
             """Send a message without crashing on expired slash interactions.
@@ -235,6 +248,9 @@ class Fun2OoshBot(commands.Bot):
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ):
         """Handle slash command errors."""
+        from utils.logger import log_command_usage
+        log_command_usage(interaction, command_type="SLASH", success=False, error=error)
+
         # Silence unknown slash/app commands.
         # `app_commands` doesn't expose a stable CommandNotFound across versions, so be conservative.
 
