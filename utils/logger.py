@@ -9,7 +9,8 @@ def setup_logging():
     log_level_str = os.getenv("LOG_LEVEL", "INFO")
     log_level = getattr(logging, log_level_str.upper(), logging.INFO)
 
-    file_handler = logging.FileHandler("bot.log", encoding="utf-8")
+    os.makedirs("logs", exist_ok=True)
+    file_handler = logging.FileHandler(os.path.join("logs", "bot.log"), encoding="utf-8")
     stream_handler = logging.StreamHandler()
 
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
