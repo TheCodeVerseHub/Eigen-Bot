@@ -13,7 +13,7 @@ from discord.ext import commands
 logger = logging.getLogger(__name__)
 
 # Constants
-STAFF_ROLE_ID = 1403059755001577543
+STAFF_ROLE_ID = 1479382718239346809
 DEFAULT_REVIEW_CHANNEL_ID = 1396353386429026304
 DB_PATH = Path("data/staff_applications.db")
 MAX_APPLICATIONS_PER_MONTH = 2
