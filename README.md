@@ -11,7 +11,7 @@ Eigen Bot is an all-in-one Discord bot designed for thriving communities. Built 
 ### Quick Links
 * **[Ticket System](./docs/TICKETS.md)** — Professional thread-based support management.
 * **[Gaming & Quests](./docs/GAMES.md)** — Counting game, CodeBuddy, and Daily Quests.
-* **[Full Feature List](./docs/FEATURES.md)** — Comprehensive command library.
+* **[Full Command Reference](./docs/FEATURES.md)** — Comprehensive command library with syntax and examples.
 * **[Advanced Configuration](./docs/SETUP_GUIDE.md)** — Docker, Env Vars, and Database info.
 
 ---
