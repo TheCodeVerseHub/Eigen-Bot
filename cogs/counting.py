@@ -714,7 +714,7 @@ class Counting(commands.Cog):
                 prompt_msg: Optional[discord.Message] = None
                 try:
                     prompt_msg = await message.channel.send(
-                        f"{message.author.mention} do you want to waste a server save for your foolish ruin?"
+                        f"{message.author.mention} Looks like You Ruined our Effort, Nvm, Do you want to save the count? Choose :check: below!!"
                     )
                 except Exception:
                     prompt_msg = None
