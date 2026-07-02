@@ -278,7 +278,6 @@ class Misc(commands.Cog):
             value=(
                 "[GitHub](https://github.com/TheCodeVerseHub/Eigen-Bot) · "
                 "[Invite](https://discord.com/api/oauth2/authorize) · "
-                "[Support](https://discord.gg/4TkQYz7qea)"
             ),
             inline=False,
         )
@@ -519,7 +518,7 @@ class Misc(commands.Cog):
             if not support_channel or not isinstance(
                 support_channel, discord.TextChannel
             ):
-                response = "❌ Could not access the support channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and report the bug there."
+                response = "❌ Could not access the support channel."
                 if ctx.interaction:
                     await ctx.interaction.response.send_message(
                         response, ephemeral=True
@@ -547,11 +546,7 @@ class Misc(commands.Cog):
             await support_channel.send(embed=embed)
 
             # Confirm to user
-            response = (
-                "✅ Your bug report has been submitted to our support team. Thank you for helping us improve!\n\n"
-                "**Want to track your report or get faster support?**\n"
-                "Join our support server: https://discord.gg/4TkQYz7qea"
-            )
+            response = "✅ Your bug report has been submitted to our support team. Thank you for helping us improve!\n\n"
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
                     await ctx.interaction.response.send_message(
@@ -565,7 +560,6 @@ class Misc(commands.Cog):
         except Exception as e:
             response = (
                 f"❌ An error occurred while submitting your bug report: {str(e)}\n\n"
-                "Please report this directly in our [support server](https://discord.gg/4TkQYz7qea)."
             )
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
@@ -582,7 +576,7 @@ class Misc(commands.Cog):
     )
     async def support(self, ctx: commands.Context):
         """Send the support server invite link."""
-        content = "Join our support server: https://discord.gg/4TkQYz7qea"
+        content = "Coming Soon!"
 
         if ctx.interaction:
             await ctx.interaction.response.send_message(content, ephemeral=True)
@@ -613,7 +607,7 @@ class Misc(commands.Cog):
                 feature_channel, discord.TextChannel
             ):
                 await interaction.response.send_message(
-                    "❌ Could not access the feature requests channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and submit your request there.",
+                    "❌ Could not access the feature requests channel.",
                     ephemeral=True,
                 )
                 return
@@ -641,15 +635,13 @@ class Misc(commands.Cog):
             # Confirm to user
             await interaction.response.send_message(
                 "✅ Your feature request has been submitted! Our team will review it soon.\n\n"
-                "**Want to discuss your idea or see other requests?**\n"
-                "Join our support server: https://discord.gg/4TkQYz7qea",
+                "**Want to discuss your idea or see other requests?**\n",
                 ephemeral=True,
             )
 
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feature request: {str(e)}\n\n"
-                "Please submit it directly in our [support server](https://discord.gg/4TkQYz7qea).",
+                f"❌ An error occurred while submitting your feature request: {str(e)}\n\n",
                 ephemeral=True,
             )
 
@@ -684,7 +676,7 @@ class Misc(commands.Cog):
                 feedback_channel, discord.TextChannel
             ):
                 await interaction.response.send_message(
-                    "❌ Could not access the feedback channel. Please join our [support server](https://discord.gg/4TkQYz7qea) and share your feedback there.",
+                    "❌ Could not access the feedback channel.",
                     ephemeral=True,
                 )
                 return
@@ -720,21 +712,15 @@ class Misc(commands.Cog):
                 message = (
                     "✅ Thank you for your positive feedback! We're thrilled you're enjoying the bot! 🎉\n\n"
                     "**Help us grow:**\n"
-                    "Share your experience with others in our [support server](https://discord.gg/4TkQYz7qea)!"
                 )
             else:
-                message = (
-                    "✅ Thank you for your feedback! We appreciate your honesty and will work on improvements.\n\n"
-                    "**Want to discuss further?**\n"
-                    "Join our support server: https://discord.gg/4TkQYz7qea"
-                )
+                message = "✅ Thank you for your feedback! We appreciate your honesty and will work on improvements.\n\n"
 
             await interaction.response.send_message(message, ephemeral=True)
 
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feedback: {str(e)}\n\n"
-                "Please share it directly in our [support server](https://discord.gg/4TkQYz7qea).",
+                f"❌ An error occurred while submitting your feedback: {str(e)}\n\n",
                 ephemeral=True,
             )
 
