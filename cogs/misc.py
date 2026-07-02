@@ -634,8 +634,7 @@ class Misc(commands.Cog):
 
             # Confirm to user
             await interaction.response.send_message(
-                "✅ Your feature request has been submitted! Our team will review it soon.\n\n"
-                "**Want to discuss your idea or see other requests?**\n",
+                "✅ Your feature request has been submitted! Our team will review it soon.\n\n",
                 ephemeral=True,
             )
 
@@ -709,10 +708,7 @@ class Misc(commands.Cog):
 
             # Confirm to user with different messages based on rating
             if rating >= 4:
-                message = (
-                    "✅ Thank you for your positive feedback! We're thrilled you're enjoying the bot! 🎉\n\n"
-                    "**Help us grow:**\n"
-                )
+                message = "✅ Thank you for your positive feedback! We're thrilled you're enjoying the bot! 🎉\n\n"
             else:
                 message = "✅ Thank you for your feedback! We appreciate your honesty and will work on improvements.\n\n"
 
