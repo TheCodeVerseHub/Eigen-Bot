@@ -109,6 +109,7 @@ class Fun2OoshBot(commands.Bot):
             "cogs.staff_applications",
             "cogs.tts",
             "cogs.chowkidar",
+            "cogs.staff_guide",
         ]
 
         for ext in feature_cogs:
