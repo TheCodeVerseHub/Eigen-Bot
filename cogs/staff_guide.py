@@ -53,7 +53,7 @@ class StaffGuideLayout(LayoutView):
                 f"Hey {member.mention}, welcome to the CodeVerse staff team.\n\n"
                 "Please complete the steps below before you begin moderating."
             ),
-            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            Separator(spacing=2),
             # Step 1
             Section(
                 "**Step 1 \u2014 Choose Your Branch**",
@@ -67,7 +67,7 @@ class StaffGuideLayout(LayoutView):
                     style=ButtonStyle.link,
                 ),
             ),
-            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            Separator(spacing=2),
             # Step 2
             Section(
                 "**Step 2 \u2014 Read the Staff Guide**",
@@ -81,7 +81,7 @@ class StaffGuideLayout(LayoutView):
                     style=ButtonStyle.link,
                 ),
             ),
-            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            Separator(spacing=2),
             # Staff Rules
             TextDisplay(
                 "## Staff Rules\n\n"
@@ -104,7 +104,7 @@ class StaffGuideLayout(LayoutView):
                 "\u2022 Contribute ideas that improve the server whenever "
                 "possible."
             ),
-            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            Separator(spacing=2),
             # Need Help?
             TextDisplay(
                 "**Need Help?**\n\n"
@@ -112,7 +112,7 @@ class StaffGuideLayout(LayoutView):
                 f"or permissions, contact a senior staff member or ping "
                 f"<@{SENIOR_STAFF_ID}>."
             ),
-            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            Separator(spacing=2),
             # You're Ready
             TextDisplay(
                 "**You\u2019re Ready**\n\n"
