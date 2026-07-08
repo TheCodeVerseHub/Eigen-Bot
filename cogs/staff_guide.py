@@ -11,8 +11,7 @@ from typing import Optional, Set
 
 import aiosqlite
 import discord
-from discord import ButtonStyle
-from discord import app_commands
+from discord import ButtonStyle, app_commands
 from discord.ext import commands
 from discord.ui import Button, Container, LayoutView, Section, Separator, TextDisplay
 
@@ -49,11 +48,11 @@ class StaffGuideLayout(LayoutView):
         container = Container(
             # Welcome header
             TextDisplay(
-                "## Welcome to the Staff Team\n\n"
-                f"Hey {member.mention}, welcome to the CodeVerse staff team.\n\n"
+                "## Welcome to the Staff Team\n"
+                f"Hey {member.mention}, welcome to the CodeVerse staff team.\n"
                 "Please complete the steps below before you begin moderating."
             ),
-            Separator(spacing=2),
+            Separator(),
             # Step 1
             Section(
                 "**Step 1 \u2014 Choose Your Branch**",
@@ -67,7 +66,7 @@ class StaffGuideLayout(LayoutView):
                     style=ButtonStyle.link,
                 ),
             ),
-            Separator(spacing=2),
+            Separator(),
             # Step 2
             Section(
                 "**Step 2 \u2014 Read the Staff Guide**",
@@ -81,41 +80,39 @@ class StaffGuideLayout(LayoutView):
                     style=ButtonStyle.link,
                 ),
             ),
-            Separator(spacing=2),
+            Separator(),
             # Staff Rules
             TextDisplay(
-                "## Staff Rules\n\n"
-                f"\u2022 Stay active and responsive. Consistency matters more "
+                "## Staff Rules\n"
+                f"- Stay active and responsive. Consistency matters more "
                 "than occasional bursts of activity. If you will be inactive, "
-                f"notify the team beforehand in <#{INACTIVITY_CHANNEL_ID}>.\n\n"
-                "\u2022 Avoid unnecessary conflicts or arguments. Escalate "
-                "issues to senior staff whenever needed.\n\n"
-                "\u2022 Always follow the server rules yourself. Staff members "
-                "are expected to set the standard.\n\n"
-                "\u2022 Communicate clearly within staff channels to keep "
-                "everyone aligned.\n\n"
-                "\u2022 If you're unsure about something, ask instead of "
-                f"guessing. You can always ping <@{SENIOR_STAFF_ID}>.\n\n"
-                "\u2022 Respect the staff hierarchy and decisions made by "
-                "senior moderators and administrators.\n\n"
-                "\u2022 Do not misuse your permissions under any circumstances. "
-                "Doing so may result in disciplinary action.\n\n"
-                "\u2022 Keep sensitive staff discussions confidential.\n\n"
-                "\u2022 Contribute ideas that improve the server whenever "
+                f"notify the team beforehand in <#{INACTIVITY_CHANNEL_ID}>.\n"
+                "- Avoid unnecessary conflicts or arguments. Escalate "
+                "issues to senior staff whenever needed.\n"
+                "- Always follow the server rules yourself. Staff members "
+                "are expected to set the standard.\n"
+                "- Communicate clearly within staff channels to keep "
+                "everyone aligned.\n"
+                "- Respect the staff hierarchy and decisions made by "
+                "senior moderators and administrators.\n"
+                "- Do not misuse your permissions under any circumstances. "
+                "Doing so may result in disciplinary action.\n"
+                "- Keep sensitive staff discussions confidential.\n"
+                "- Contribute ideas that improve the server whenever "
                 "possible."
             ),
-            Separator(spacing=2),
+            Separator(),
             # Need Help?
             TextDisplay(
-                "**Need Help?**\n\n"
+                "**Need Help?**\n"
                 "If you have any questions about moderation, procedures, "
                 f"or permissions, contact a senior staff member or ping "
                 f"<@{SENIOR_STAFF_ID}>."
             ),
-            Separator(spacing=2),
+            Separator(),
             # You're Ready
             TextDisplay(
-                "**You\u2019re Ready**\n\n"
+                "**You\u2019re Ready**\n"
                 "Once you've completed the steps above, you're all set to "
                 "begin your duties as a member of the staff team."
             ),
