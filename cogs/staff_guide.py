@@ -1,7 +1,8 @@
 """
 Staff guide cog for Eigen bot.
 
-Automatically sends a staff guide embed via DM when a member receives the Staff role.
+Automatically sends a staff guide via DM when a member receives the Staff role.
+Uses Discord's Components V2 for a clean, modern onboarding UI.
 Includes admin commands for manual sending, resending, and previewing the guide.
 """
 
@@ -10,8 +11,10 @@ from typing import Optional, Set
 
 import aiosqlite
 import discord
+from discord import ButtonStyle
 from discord import app_commands
 from discord.ext import commands
+from discord.ui import Button, Container, LayoutView, Section, Separator, TextDisplay
 
 from utils.database import DATABASE_NAME
 from utils.helpers import EmbedBuilder
@@ -20,6 +23,106 @@ logger = logging.getLogger(__name__)
 
 STAFF_ROLE_ID = 1403059755001577543
 LOG_CHANNEL_ID = 1482343273459875962
+
+BRANCH_CHANNEL_URL = (
+    "https://discord.com/channels/1263067254153805905/"
+    "1413895674705084567/1475200684138696916"
+)
+GUIDE_CHANNEL_ID = 1413895674705084567
+GUIDE_CHANNEL_URL = (
+    f"https://discord.com/channels/1263067254153805905/{GUIDE_CHANNEL_ID}"
+)
+INACTIVITY_CHANNEL_ID = 1452608211948408902
+SENIOR_STAFF_ID = 955695820999639120
+
+
+class StaffGuideLayout(LayoutView):
+    """Components V2 layout for the staff guide DM.
+
+    Resembles Discord's native onboarding UI with sections,
+    separators, and link buttons for each step.
+    """
+
+    def __init__(self, member: discord.Member) -> None:
+        super().__init__(timeout=None)
+
+        container = Container(
+            # Welcome header
+            TextDisplay(
+                "## Welcome to the Staff Team\n\n"
+                f"Hey {member.mention}, welcome to the CodeVerse staff team.\n\n"
+                "Please complete the steps below before you begin moderating."
+            ),
+            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            # Step 1
+            Section(
+                "**Step 1 \u2014 Choose Your Branch**",
+                (
+                    "Select your staff branch and review the responsibilities "
+                    "assigned to it."
+                ),
+                accessory=Button(
+                    label="Open Staff Branch",
+                    url=BRANCH_CHANNEL_URL,
+                    style=ButtonStyle.link,
+                ),
+            ),
+            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            # Step 2
+            Section(
+                "**Step 2 \u2014 Read the Staff Guide**",
+                (
+                    "Carefully read the Staff Guide before performing any "
+                    "moderation actions."
+                ),
+                accessory=Button(
+                    label="Open Staff Guide",
+                    url=GUIDE_CHANNEL_URL,
+                    style=ButtonStyle.link,
+                ),
+            ),
+            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            # Staff Rules
+            TextDisplay(
+                "## Staff Rules\n\n"
+                f"\u2022 Stay active and responsive. Consistency matters more "
+                "than occasional bursts of activity. If you will be inactive, "
+                f"notify the team beforehand in <#{INACTIVITY_CHANNEL_ID}>.\n\n"
+                "\u2022 Avoid unnecessary conflicts or arguments. Escalate "
+                "issues to senior staff whenever needed.\n\n"
+                "\u2022 Always follow the server rules yourself. Staff members "
+                "are expected to set the standard.\n\n"
+                "\u2022 Communicate clearly within staff channels to keep "
+                "everyone aligned.\n\n"
+                "\u2022 If you're unsure about something, ask instead of "
+                f"guessing. You can always ping <@{SENIOR_STAFF_ID}>.\n\n"
+                "\u2022 Respect the staff hierarchy and decisions made by "
+                "senior moderators and administrators.\n\n"
+                "\u2022 Do not misuse your permissions under any circumstances. "
+                "Doing so may result in disciplinary action.\n\n"
+                "\u2022 Keep sensitive staff discussions confidential.\n\n"
+                "\u2022 Contribute ideas that improve the server whenever "
+                "possible."
+            ),
+            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            # Need Help?
+            TextDisplay(
+                "**Need Help?**\n\n"
+                "If you have any questions about moderation, procedures, "
+                f"or permissions, contact a senior staff member or ping "
+                f"<@{SENIOR_STAFF_ID}>."
+            ),
+            Separator(spacing=discord.SeparatorSpacing.LARGE),
+            # You're Ready
+            TextDisplay(
+                "**You\u2019re Ready**\n\n"
+                "Once you've completed the steps above, you're all set to "
+                "begin your duties as a member of the staff team."
+            ),
+            accent_color=0x000000,
+        )
+
+        self.add_item(container)
 
 
 class StaffGuide(commands.Cog):
@@ -61,55 +164,9 @@ class StaffGuide(commands.Cog):
             )
             await db.commit()
 
-    def _build_staff_guide_embed(self) -> discord.Embed:
-        """Build the staff guide embed."""
-        embed = discord.Embed(
-            title="Welcome to the Staff Team",
-            description=(
-                "Hey new staff member, welcome to the team.\n\n"
-                "Start by visiting this channel and selecting your branch "
-                "(Core Moderation or Community/Activity):\n\n"
-                "https://discord.com/channels/1263067254153805905/1413895674705084567/1475200684138696916\n\n"
-                "Next, review your responsibilities in that message and "
-                "read through <#1413895674705084567> carefully."
-            ),
-            color=0x000000,
-            timestamp=discord.utils.utcnow(),
-        )
-        embed.add_field(
-            name="Staff Rules",
-            value=(
-                "- Stay active and responsive. Consistency matters more than "
-                "occasional bursts of activity. In case of inactivity, inform "
-                "the team beforehand in <#1452608211948408902>.\n"
-                "- Avoid unnecessary conflicts or arguments. Escalate issues "
-                "to senior staff whenever needed.\n"
-                "- Always follow the server rules yourself. Staff members are "
-                "expected to set the standard.\n"
-                "- Communicate clearly within staff channels to keep everyone "
-                "aligned.\n"
-                "- If you're unsure about something, ask instead of guessing. "
-                "You can always ping <@955695820999639120>.\n"
-                "- Respect the staff hierarchy and decisions made by senior "
-                "moderators and administrators.\n"
-                "- Do not misuse your permissions under any circumstances. "
-                "Doing so may result in serious disciplinary action.\n"
-                "- Keep sensitive staff discussions confidential.\n"
-                "- Contribute ideas to improve the server whenever possible. "
-                "Your feedback is valuable."
-            ),
-            inline=False,
-        )
-        embed.add_field(
-            name="You're Ready",
-            value=(
-                "Once you've completed the steps above, you're all set to "
-                "begin your duties as a staff member."
-            ),
-            inline=False,
-        )
-        embed.set_footer(text="Eigen Staff Guide")
-        return embed
+    def _build_staff_guide_view(self, member: discord.Member) -> StaffGuideLayout:
+        """Build the staff guide as a Components V2 layout."""
+        return StaffGuideLayout(member)
 
     async def _send_guide(
         self,
@@ -155,8 +212,8 @@ class StaffGuide(commands.Cog):
 
         self._processing.add(user_id)
         try:
-            embed = self._build_staff_guide_embed()
-            await member.send(embed=embed)
+            view = self._build_staff_guide_view(member)
+            await member.send(view=view)
             await self._mark_guide_sent(user_id, guild_id)
             await self._log_action(member, triggered_by, "SUCCESS")
             return "SUCCESS"
@@ -335,12 +392,19 @@ class StaffGuide(commands.Cog):
 
     @staffrules.command(
         name="preview",
-        description="Preview the staff guide embed",
+        description="Preview the staff guide in the current channel",
     )
     async def staffrules_preview(self, ctx: commands.Context) -> None:
-        """Send the staff guide embed in the current channel for preview."""
-        embed = self._build_staff_guide_embed()
-        await ctx.send(embed=embed)
+        """Send the staff guide Components V2 layout in the current channel for preview."""
+        if not isinstance(ctx.author, discord.Member):
+            await ctx.send(
+                embed=EmbedBuilder.error_embed(
+                    "Error", "This command can only be used in a server."
+                )
+            )
+            return
+        view = self._build_staff_guide_view(ctx.author)
+        await ctx.send(view=view)
 
 
 async def setup(bot: commands.Bot) -> None:
