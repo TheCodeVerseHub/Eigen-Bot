@@ -66,43 +66,45 @@ class StaffGuide(commands.Cog):
         embed = discord.Embed(
             title="Welcome to the Staff Team",
             description=(
-                "Welcome to the staff team.\n"
-                "This guide explains your responsibilities, expectations, "
-                "and important rules. Please read everything carefully."
+                "Hey new staff member, welcome to the team.\n\n"
+                "Start by visiting this channel and selecting your branch "
+                "(Core Moderation or Community/Activity):\n\n"
+                "https://discord.com/channels/1263067254153805905/1413895674705084567/1475200684138696916\n\n"
+                "Next, review your responsibilities in that message and "
+                "read through <#1413895674705084567> carefully."
             ),
             color=0x000000,
             timestamp=discord.utils.utcnow(),
         )
         embed.add_field(
-            name="Responsibilities",
-            value=(
-                "Staff members are expected to:\n"
-                "- Help members respectfully\n"
-                "- Enforce server rules fairly\n"
-                "- Report serious issues\n"
-                "- Be active when possible\n"
-                "- Remain professional"
-            ),
-            inline=False,
-        )
-        embed.add_field(
             name="Staff Rules",
             value=(
-                "- Do not abuse permissions.\n"
-                "- Do not leak internal information.\n"
-                "- Treat everyone respectfully.\n"
-                "- Stay impartial.\n"
-                "- Follow management instructions.\n"
-                "- Do not argue publicly with members.\n"
-                "- Use moderation powers only when necessary."
+                "- Stay active and responsive. Consistency matters more than "
+                "occasional bursts of activity. In case of inactivity, inform "
+                "the team beforehand in <#1452608211948408902>.\n"
+                "- Avoid unnecessary conflicts or arguments. Escalate issues "
+                "to senior staff whenever needed.\n"
+                "- Always follow the server rules yourself. Staff members are "
+                "expected to set the standard.\n"
+                "- Communicate clearly within staff channels to keep everyone "
+                "aligned.\n"
+                "- If you're unsure about something, ask instead of guessing. "
+                "You can always ping <@955695820999639120>.\n"
+                "- Respect the staff hierarchy and decisions made by senior "
+                "moderators and administrators.\n"
+                "- Do not misuse your permissions under any circumstances. "
+                "Doing so may result in serious disciplinary action.\n"
+                "- Keep sensitive staff discussions confidential.\n"
+                "- Contribute ideas to improve the server whenever possible. "
+                "Your feedback is valuable."
             ),
             inline=False,
         )
         embed.add_field(
-            name="Need Help?",
+            name="You're Ready",
             value=(
-                "If you have any questions about moderation or staff "
-                "procedures, contact a senior staff member or administrator."
+                "Once you've completed the steps above, you're all set to "
+                "begin your duties as a staff member."
             ),
             inline=False,
         )
