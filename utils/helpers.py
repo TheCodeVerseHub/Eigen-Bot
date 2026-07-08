@@ -17,19 +17,19 @@ class EmbedBuilder:
     @staticmethod
     def success_embed(title: str, description: str = "") -> Embed:
         """Create a success embed."""
-        embed = Embed(title=title, description=description, color=discord.Color.green())
+        embed = Embed(title=title, description=description, color=0x00ff00)
         return embed
 
     @staticmethod
     def error_embed(title: str, description: str = "") -> Embed:
         """Create an error embed."""
-        embed = Embed(title=title, description=description, color=discord.Color.red())
+        embed = Embed(title=title, description=description, color=0xff0000)
         return embed
 
     @staticmethod
     def info_embed(title: str, description: str = "") -> Embed:
         """Create an info embed."""
-        embed = Embed(title=title, description=description, color=discord.Color.blue())
+        embed = Embed(title=title, description=description, color=0x07f9dd)
         return embed
 
 

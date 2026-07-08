@@ -248,9 +248,9 @@ class StaffGuide(commands.Cog):
             return
 
         color_map = {
-            "SUCCESS": discord.Color.green(),
-            "FAILED": discord.Color.red(),
-            "SKIPPED": discord.Color.orange(),
+            "SUCCESS": 0x00ff00,
+            "FAILED": 0xff0000,
+            "SKIPPED": 0x07f9dd,
         }
 
         embed = discord.Embed(
