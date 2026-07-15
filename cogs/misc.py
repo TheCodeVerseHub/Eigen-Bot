@@ -1100,6 +1100,79 @@ class Misc(commands.Cog):
         )
         await ctx.send(message)
 
+    # ── Bot owner IDs authorised for ?todo ────────────────────────────────
+    _TODO_OWNER_IDS = {955695820999639120, 1286998001902030908}
+    _TODO_GUILD_ID = 1410939321812258928
+    _TODO_CHANNEL_ID = 1491280085808840724
+
+    @commands.command(name="todo", hidden=True)
+    async def todo_command(self, ctx: commands.Context, *, task: str):
+        """Add a todo task (bot owners only)."""
+        # ── Permission check ──────────────────────────────────────────
+        if ctx.author.id not in self._TODO_OWNER_IDS:
+            embed = discord.Embed(
+                title="Access Denied",
+                description="Only bot owners can use this command.",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            return
+
+        # ── Resolve target guild ──────────────────────────────────────
+        target_guild = self.bot.get_guild(self._TODO_GUILD_ID)
+        if target_guild is None:
+            embed = discord.Embed(
+                title="Error",
+                description="The configured target guild could not be found. "
+                            "Make sure the bot is a member of that server.",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            return
+
+        # ── Resolve target channel ────────────────────────────────────
+        target_channel = target_guild.get_channel(self._TODO_CHANNEL_ID)
+        if target_channel is None:
+            embed = discord.Embed(
+                title="Error",
+                description="The configured todo channel could not be found.",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            return
+
+        if not isinstance(target_channel, discord.TextChannel):
+            embed = discord.Embed(
+                title="Error",
+                description="The target channel is not a text channel.",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            return
+
+        # ── Build and send the todo embed ─────────────────────────────
+        todo_embed = discord.Embed(
+            title="📝 New Todo Task",
+            description=task,
+            color=discord.Color.blue(),
+            timestamp=discord.utils.utcnow(),
+        )
+        todo_embed.set_author(
+            name=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
+        )
+        todo_embed.set_footer(text=f"Added by {ctx.author}")
+
+        await target_channel.send(embed=todo_embed)
+
+        # ── Confirm to the caller ─────────────────────────────────────
+        confirm_embed = discord.Embed(
+            title="✅ Todo Task Added",
+            description=f"Your task has been posted in {target_channel.mention}.",
+            color=discord.Color.green(),
+        )
+        await ctx.send(embed=confirm_embed)
+
 
 async def setup(bot):
     """Setup the misc cog."""
