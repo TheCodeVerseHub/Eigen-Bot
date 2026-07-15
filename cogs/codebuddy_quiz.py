@@ -26,6 +26,7 @@ from utils.codingquestions import (
 class _PracticeSession(TypedDict):
     created_at: float
     correct: str
+    interaction: discord.Interaction
 
 
 class CodeBuddyQuizCog(commands.Cog):
@@ -35,6 +36,7 @@ class CodeBuddyQuizCog(commands.Cog):
 
         self.current_question: Optional[str] = None
         self.current_answer: Optional[str] = None
+        self.current_question_data: Optional[dict] = None
         self.current_message: Optional[discord.Message] = None
         self.question_active = False
         self.ignored_users = set()
@@ -105,6 +107,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 q = get_random_question()
                 self.current_question = q["question"]
                 self.current_answer = q["correct"]
+                self.current_question_data = q
                 self.question_active = True
                 self.ignored_users.clear()
                 self.bonus_active = random.random() < 0.1
@@ -133,6 +136,7 @@ class CodeBuddyQuizCog(commands.Cog):
         self.question_active = False
         self.current_question = None
         self.current_answer = None
+        self.current_question_data = None
         self.current_message = None
         self.ignored_users.clear()
         self.bonus_active = False
@@ -241,6 +245,20 @@ class CodeBuddyQuizCog(commands.Cog):
                     except Exception:
                         pass
 
+                    # ── Reveal the correct answer in the channel ───────────
+                    if self.current_question_data is not None:
+                        try:
+                            correct_idx = ord(self.current_answer) - ord("a")
+                            options = self.current_question_data.get("options", [])
+                            if 0 <= correct_idx < len(options):
+                                correct_text = options[correct_idx]
+                                await message.channel.send(
+                                    f"❌ {message.author.mention} The correct answer was **{self.current_answer}**: {correct_text}",
+                                    delete_after=15,
+                                )
+                        except Exception as e:
+                            print(f"[Error revealing correct answer]: {e}")
+
                     freeze_used = False
                     try:
                         freeze_used = await use_streak_freeze(user_id)
@@ -297,21 +315,50 @@ class CodeBuddyQuizCog(commands.Cog):
                 return
 
             correct = session.get("correct", "").lower().strip()
+            practice_interaction = session.get("interaction")
             try:
                 if content == correct:
                     await message.add_reaction("✅")
-                    await message.channel.send(
-                        f"{message.author.mention} Correct! ✅",
-                        allowed_mentions=discord.AllowedMentions(users=True),
-                        delete_after=10,
-                    )
+                    # Reveal as ephemeral via the stored interaction
+                    if practice_interaction and not practice_interaction.is_expired():
+                        try:
+                            await practice_interaction.followup.send(
+                                f"{message.author.mention} Correct! ✅",
+                                ephemeral=True,
+                            )
+                        except Exception:
+                            await message.channel.send(
+                                f"{message.author.mention} Correct! ✅",
+                                allowed_mentions=discord.AllowedMentions(users=True),
+                                delete_after=10,
+                            )
+                    else:
+                        await message.channel.send(
+                            f"{message.author.mention} Correct! ✅",
+                            allowed_mentions=discord.AllowedMentions(users=True),
+                            delete_after=10,
+                        )
                 else:
                     await message.add_reaction("❌")
-                    await message.channel.send(
-                        f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
-                        allowed_mentions=discord.AllowedMentions(users=True),
-                        delete_after=12,
-                    )
+                    # Reveal the correct answer as ephemeral via the stored interaction
+                    if practice_interaction and not practice_interaction.is_expired():
+                        try:
+                            await practice_interaction.followup.send(
+                                f"❌ Wrong. The correct answer is **{correct}**.",
+                                ephemeral=True,
+                            )
+                        except Exception:
+                            await message.channel.send(
+                                f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
+                                allowed_mentions=discord.AllowedMentions(users=True),
+                                delete_after=12,
+                            )
+                    else:
+                        await message.channel.send(
+                            f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
+                            allowed_mentions=discord.AllowedMentions(users=True),
+                            delete_after=12,
+                        )
             except Exception:
                 pass
             finally:
@@ -357,6 +404,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 self._practice_sessions[(interaction.user.id, int(channel_id))] = {
                     "created_at": time.monotonic(),
                     "correct": str(q.get("correct", "")).lower().strip(),
+                    "interaction": interaction,
                 }
 
         except Exception as e:
