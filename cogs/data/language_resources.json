@@ -3,7 +3,11 @@
     {
       "key": "python",
       "display_name": "Python",
-      "aliases": ["py", "python3", "python 3"],
+      "aliases": [
+        "py",
+        "python3",
+        "python 3"
+      ],
       "description": "A beginner-friendly, versatile language used for automation, web development, data work, scripting, and more.",
       "documentation_url": "https://docs.python.org/3/tutorial/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/python",
@@ -26,7 +30,12 @@
     {
       "key": "javascript",
       "display_name": "JavaScript",
-      "aliases": ["js", "node", "nodejs", "node.js"],
+      "aliases": [
+        "js",
+        "node",
+        "nodejs",
+        "node.js"
+      ],
       "description": "The language of the web for interactive frontends, server-side apps, automation, and full-stack development.",
       "documentation_url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/javascript",
@@ -49,7 +58,10 @@
     {
       "key": "typescript",
       "display_name": "TypeScript",
-      "aliases": ["ts", "typescript"],
+      "aliases": [
+        "ts",
+        "typescript"
+      ],
       "description": "A typed superset of JavaScript that adds static analysis and better tooling for larger applications.",
       "documentation_url": "https://www.typescriptlang.org/docs/handbook/intro.html",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/typescript",
@@ -72,7 +84,9 @@
     {
       "key": "java",
       "display_name": "Java",
-      "aliases": ["java"],
+      "aliases": [
+        "java"
+      ],
       "description": "A widely used object-oriented language for backend systems, Android development, tooling, and enterprise software.",
       "documentation_url": "https://dev.java/learn/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/java",
@@ -95,7 +109,11 @@
     {
       "key": "cpp",
       "display_name": "CPP",
-      "aliases": ["c++", "cpp", "cxx"],
+      "aliases": [
+        "c++",
+        "cpp",
+        "cxx"
+      ],
       "description": "A powerful systems language used for performance-critical software, games, embedded work, and competitive programming.",
       "documentation_url": "https://en.cppreference.com/w/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/cpp",
@@ -118,7 +136,12 @@
     {
       "key": "csharp",
       "display_name": "CSharp",
-      "aliases": ["c#", "csharp", "dotnet", ".net"],
+      "aliases": [
+        "c#",
+        "csharp",
+        "dotnet",
+        ".net"
+      ],
       "description": "Microsoft's modern language for backend services, desktop apps, game development, and the .NET ecosystem.",
       "documentation_url": "https://learn.microsoft.com/en-us/dotnet/csharp/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/csharp",
@@ -141,7 +164,9 @@
     {
       "key": "go",
       "display_name": "Go",
-      "aliases": ["golang"],
+      "aliases": [
+        "golang"
+      ],
       "description": "A fast, simple language popular for services, CLI tools, cloud infrastructure, and concurrency-heavy backends.",
       "documentation_url": "https://go.dev/doc/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/go",
@@ -164,7 +189,9 @@
     {
       "key": "rust",
       "display_name": "Rust",
-      "aliases": ["rust"],
+      "aliases": [
+        "rust"
+      ],
       "description": "A systems language focused on memory safety, performance, and modern tooling for reliable software.",
       "documentation_url": "https://doc.rust-lang.org/book/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/rust",
@@ -181,6 +208,2133 @@
         {
           "label": "Rust by Example",
           "url": "https://doc.rust-lang.org/rust-by-example/"
+        }
+      ]
+    },
+    {
+      "key": "c",
+      "display_name": "C",
+      "aliases": [
+        "c"
+      ],
+      "description": "The foundational systems language behind operating systems, embedded devices, and most other languages' runtimes.",
+      "documentation_url": "https://en.cppreference.com/w/c",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "cppreference C",
+          "url": "https://en.cppreference.com/w/c"
+        },
+        {
+          "label": "Learn-C.org",
+          "url": "https://www.learn-c.org/"
+        }
+      ]
+    },
+    {
+      "key": "objectivec",
+      "display_name": "Objective-C",
+      "aliases": [
+        "objective-c",
+        "objc"
+      ],
+      "description": "Apple's original object-oriented language for macOS and iOS, still found throughout legacy Apple codebases.",
+      "documentation_url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Apple Programming with Objective-C",
+          "url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/"
+        },
+        {
+          "label": "Objective-C Docs (Apple Developer)",
+          "url": "https://developer.apple.com/documentation/objectivec"
+        }
+      ]
+    },
+    {
+      "key": "swift",
+      "display_name": "Swift",
+      "aliases": [
+        "swift"
+      ],
+      "description": "Apple's modern, safe, and fast language for iOS, macOS, and server-side development.",
+      "documentation_url": "https://docs.swift.org/swift-book/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "The Swift Programming Language",
+          "url": "https://docs.swift.org/swift-book/"
+        },
+        {
+          "label": "Hacking with Swift",
+          "url": "https://www.hackingwithswift.com/quick-start"
+        }
+      ]
+    },
+    {
+      "key": "kotlin",
+      "display_name": "Kotlin",
+      "aliases": [
+        "kt"
+      ],
+      "description": "A modern, concise JVM language and the preferred choice for Android development.",
+      "documentation_url": "https://kotlinlang.org/docs/home.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Kotlin Docs",
+          "url": "https://kotlinlang.org/docs/home.html"
+        },
+        {
+          "label": "Kotlin Koans",
+          "url": "https://kotlinlang.org/docs/koans.html"
+        }
+      ]
+    },
+    {
+      "key": "dart",
+      "display_name": "Dart",
+      "aliases": [
+        "dart"
+      ],
+      "description": "Google's client-optimized language best known as the engine behind Flutter apps.",
+      "documentation_url": "https://dart.dev/guides",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Dart Guides",
+          "url": "https://dart.dev/guides"
+        },
+        {
+          "label": "Dart Language Tour",
+          "url": "https://dart.dev/language"
+        }
+      ]
+    },
+    {
+      "key": "php",
+      "display_name": "PHP",
+      "aliases": [
+        "php"
+      ],
+      "description": "A server-side scripting language that powers a huge share of the web, including WordPress and Laravel apps.",
+      "documentation_url": "https://www.php.net/manual/en/tutorial.php",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "PHP Manual",
+          "url": "https://www.php.net/manual/en/tutorial.php"
+        },
+        {
+          "label": "PHP The Right Way",
+          "url": "https://phptherightway.com/"
+        }
+      ]
+    },
+    {
+      "key": "ruby",
+      "display_name": "Ruby",
+      "aliases": [
+        "rb"
+      ],
+      "description": "A friendly, expressive language famous for the Rails web framework and elegant syntax.",
+      "documentation_url": "https://www.ruby-lang.org/en/documentation/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Ruby Documentation",
+          "url": "https://www.ruby-lang.org/en/documentation/"
+        },
+        {
+          "label": "Try Ruby",
+          "url": "https://try.ruby-lang.org/"
+        }
+      ]
+    },
+    {
+      "key": "perl",
+      "display_name": "Perl",
+      "aliases": [
+        "pl"
+      ],
+      "description": "A powerful text-processing and scripting language with a long history in sysadmin and bioinformatics work.",
+      "documentation_url": "https://learn.perl.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "learn.perl.org",
+          "url": "https://learn.perl.org/"
+        },
+        {
+          "label": "perldoc",
+          "url": "https://perldoc.perl.org/"
+        }
+      ]
+    },
+    {
+      "key": "r",
+      "display_name": "R",
+      "aliases": [
+        "r-lang"
+      ],
+      "description": "A language built for statistics, data analysis, and visualization, widely used in academia and data science.",
+      "documentation_url": "https://cran.r-project.org/manuals.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "An Introduction to R",
+          "url": "https://cran.r-project.org/doc/manuals/r-release/R-intro.html"
+        },
+        {
+          "label": "W3Schools R Tutorial",
+          "url": "https://www.w3schools.com/r/"
+        }
+      ]
+    },
+    {
+      "key": "lua",
+      "display_name": "Lua",
+      "aliases": [
+        "lua"
+      ],
+      "description": "A lightweight, embeddable scripting language popular in game engines like Roblox and Love2D.",
+      "documentation_url": "https://www.lua.org/manual/5.4/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Lua 5.4 Reference Manual",
+          "url": "https://www.lua.org/manual/5.4/"
+        },
+        {
+          "label": "Programming in Lua (PiL)",
+          "url": "https://www.lua.org/pil/"
+        }
+      ]
+    },
+    {
+      "key": "haskell",
+      "display_name": "Haskell",
+      "aliases": [
+        "hs"
+      ],
+      "description": "A purely functional language with strong static typing, popular for teaching functional programming concepts.",
+      "documentation_url": "https://www.haskell.org/documentation/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Haskell Documentation",
+          "url": "https://www.haskell.org/documentation/"
+        },
+        {
+          "label": "Learn You a Haskell",
+          "url": "http://learnyouahaskell.com/"
+        }
+      ]
+    },
+    {
+      "key": "elixir",
+      "display_name": "Elixir",
+      "aliases": [
+        "ex",
+        "exs"
+      ],
+      "description": "A functional language built on the Erlang VM, known for fault tolerance and use in scalable web apps via Phoenix.",
+      "documentation_url": "https://elixir-lang.org/getting-started/introduction.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Elixir Getting Started Guide",
+          "url": "https://elixir-lang.org/getting-started/introduction.html"
+        },
+        {
+          "label": "Elixir School",
+          "url": "https://elixirschool.com/en"
+        }
+      ]
+    },
+    {
+      "key": "erlang",
+      "display_name": "Erlang",
+      "aliases": [
+        "erl"
+      ],
+      "description": "The functional, concurrent language behind massively fault-tolerant telecom and messaging systems.",
+      "documentation_url": "https://www.erlang.org/doc/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Erlang Documentation",
+          "url": "https://www.erlang.org/doc/"
+        },
+        {
+          "label": "Learn You Some Erlang",
+          "url": "https://learnyousomeerlang.com/"
+        }
+      ]
+    },
+    {
+      "key": "clojure",
+      "display_name": "Clojure",
+      "aliases": [
+        "clj"
+      ],
+      "description": "A modern Lisp dialect that runs on the JVM, emphasizing immutability and functional programming.",
+      "documentation_url": "https://clojure.org/guides/getting_started",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Clojure Getting Started",
+          "url": "https://clojure.org/guides/getting_started"
+        },
+        {
+          "label": "Clojure for the Brave and True",
+          "url": "https://www.braveclojure.com/"
+        }
+      ]
+    },
+    {
+      "key": "fsharp",
+      "display_name": "F#",
+      "aliases": [
+        "f#",
+        "fsharp"
+      ],
+      "description": "A functional-first language on .NET, great for data pipelines, correctness, and concise code.",
+      "documentation_url": "https://learn.microsoft.com/en-us/dotnet/fsharp/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "F# Documentation",
+          "url": "https://learn.microsoft.com/en-us/dotnet/fsharp/"
+        },
+        {
+          "label": "F# for Fun and Profit",
+          "url": "https://fsharpforfunandprofit.com/"
+        }
+      ]
+    },
+    {
+      "key": "ocaml",
+      "display_name": "OCaml",
+      "aliases": [
+        "ocaml"
+      ],
+      "description": "A statically typed functional language known for speed and correctness, used in compilers and finance.",
+      "documentation_url": "https://ocaml.org/docs",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "OCaml Documentation",
+          "url": "https://ocaml.org/docs"
+        },
+        {
+          "label": "Real World OCaml",
+          "url": "https://dev.realworldocaml.org/"
+        }
+      ]
+    },
+    {
+      "key": "scala",
+      "display_name": "Scala",
+      "aliases": [
+        "scala"
+      ],
+      "description": "A hybrid object-oriented and functional language on the JVM, used heavily in big-data tools like Spark.",
+      "documentation_url": "https://docs.scala-lang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Scala Documentation",
+          "url": "https://docs.scala-lang.org/"
+        },
+        {
+          "label": "Scala Exercises",
+          "url": "https://www.scala-exercises.org/"
+        }
+      ]
+    },
+    {
+      "key": "groovy",
+      "display_name": "Groovy",
+      "aliases": [
+        "groovy"
+      ],
+      "description": "A dynamic JVM language often used for Gradle build scripts and Jenkins pipelines.",
+      "documentation_url": "https://groovy-lang.org/documentation.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Groovy Documentation",
+          "url": "https://groovy-lang.org/documentation.html"
+        },
+        {
+          "label": "Groovy Getting Started",
+          "url": "https://groovy-lang.org/single-page-documentation.html"
+        }
+      ]
+    },
+    {
+      "key": "julia",
+      "display_name": "Julia",
+      "aliases": [
+        "jl"
+      ],
+      "description": "A high-performance language for numerical and scientific computing that reads almost like Python.",
+      "documentation_url": "https://docs.julialang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Julia Documentation",
+          "url": "https://docs.julialang.org/"
+        },
+        {
+          "label": "Julia Academy",
+          "url": "https://juliaacademy.com/"
+        }
+      ]
+    },
+    {
+      "key": "matlab",
+      "display_name": "MATLAB",
+      "aliases": [
+        "matlab"
+      ],
+      "description": "A numerical computing environment and language widely used in engineering, math, and academia.",
+      "documentation_url": "https://www.mathworks.com/help/matlab/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "MATLAB Documentation",
+          "url": "https://www.mathworks.com/help/matlab/"
+        },
+        {
+          "label": "MATLAB Onramp",
+          "url": "https://matlabacademy.mathworks.com/"
+        }
+      ]
+    },
+    {
+      "key": "sql",
+      "display_name": "SQL",
+      "aliases": [
+        "mysql",
+        "postgres",
+        "postgresql"
+      ],
+      "description": "The standard language for querying and managing relational databases.",
+      "documentation_url": "https://www.w3schools.com/sql/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "W3Schools SQL Tutorial",
+          "url": "https://www.w3schools.com/sql/"
+        },
+        {
+          "label": "PostgreSQL Tutorial",
+          "url": "https://www.postgresqltutorial.com/"
+        }
+      ]
+    },
+    {
+      "key": "bash",
+      "display_name": "Bash",
+      "aliases": [
+        "shell",
+        "sh"
+      ],
+      "description": "The default Linux/macOS shell scripting language for automation and command-line tooling.",
+      "documentation_url": "https://www.gnu.org/software/bash/manual/bash.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GNU Bash Manual",
+          "url": "https://www.gnu.org/software/bash/manual/bash.html"
+        },
+        {
+          "label": "ShellCheck (linter)",
+          "url": "https://www.shellcheck.net/"
+        }
+      ]
+    },
+    {
+      "key": "powershell",
+      "display_name": "PowerShell",
+      "aliases": [
+        "pwsh",
+        "ps1"
+      ],
+      "description": "Microsoft's object-oriented shell and scripting language for automating Windows and cloud tasks.",
+      "documentation_url": "https://learn.microsoft.com/en-us/powershell/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "PowerShell Docs",
+          "url": "https://learn.microsoft.com/en-us/powershell/"
+        },
+        {
+          "label": "Learn PowerShell",
+          "url": "https://learn.microsoft.com/en-us/training/paths/powershell/"
+        }
+      ]
+    },
+    {
+      "key": "assembly",
+      "display_name": "Assembly (x86)",
+      "aliases": [
+        "asm",
+        "x86"
+      ],
+      "description": "Low-level architecture-specific code that maps closely to a CPU's own instructions.",
+      "documentation_url": "https://www.nasm.us/doc/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "NASM Documentation",
+          "url": "https://www.nasm.us/doc/"
+        },
+        {
+          "label": "x86 Assembly Guide (UVA)",
+          "url": "https://www.cs.virginia.edu/~evans/cs216/guides/x86.html"
+        }
+      ]
+    },
+    {
+      "key": "vhdl",
+      "display_name": "VHDL",
+      "aliases": [
+        "vhdl"
+      ],
+      "description": "A hardware description language used to design and simulate digital circuits.",
+      "documentation_url": "https://nandland.com/learn-vhdl/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Nandland: Introduction to VHDL",
+          "url": "https://nandland.com/introduction-to-vhdl-for-beginners-with-code-examples/"
+        },
+        {
+          "label": "Free Range VHDL (book, GitHub mirror)",
+          "url": "https://github.com/aXon/Free-Range-VHDL-book"
+        }
+      ]
+    },
+    {
+      "key": "verilog",
+      "display_name": "Verilog",
+      "aliases": [
+        "verilog",
+        "systemverilog"
+      ],
+      "description": "A hardware description language used heavily in chip design, alongside VHDL and SystemVerilog.",
+      "documentation_url": "https://www.asic-world.com/verilog/veritut.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "ASIC World Verilog Tutorial",
+          "url": "https://www.asic-world.com/verilog/veritut.html"
+        },
+        {
+          "label": "ChipVerify Verilog Tutorial",
+          "url": "https://www.chipverify.com/verilog/verilog-tutorial"
+        }
+      ]
+    },
+    {
+      "key": "prolog",
+      "display_name": "Prolog",
+      "aliases": [
+        "prolog"
+      ],
+      "description": "A logic programming language built around facts, rules, and queries, popular in AI coursework.",
+      "documentation_url": "https://www.swi-prolog.org/pldoc/doc_for?object=manual",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "SWI-Prolog Manual",
+          "url": "https://www.swi-prolog.org/pldoc/doc_for?object=manual"
+        },
+        {
+          "label": "Learn Prolog Now!",
+          "url": "http://www.learnprolognow.org/"
+        }
+      ]
+    },
+    {
+      "key": "scheme",
+      "display_name": "Scheme",
+      "aliases": [
+        "scheme"
+      ],
+      "description": "A minimalist Lisp dialect often used to teach core programming and language design concepts.",
+      "documentation_url": "https://www.scheme.com/tspl4/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "The Scheme Programming Language (TSPL)",
+          "url": "https://www.scheme.com/tspl4/"
+        },
+        {
+          "label": "Scheme community site",
+          "url": "https://schemers.org/"
+        }
+      ]
+    },
+    {
+      "key": "commonlisp",
+      "display_name": "Common Lisp",
+      "aliases": [
+        "lisp",
+        "cl"
+      ],
+      "description": "A mature, powerful Lisp dialect used for symbolic computing, AI research, and rapid prototyping.",
+      "documentation_url": "https://lisp-lang.org/learn/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "lisp-lang.org Learn",
+          "url": "https://lisp-lang.org/learn/"
+        },
+        {
+          "label": "Practical Common Lisp",
+          "url": "https://www.gigamonkeys.com/book/"
+        }
+      ]
+    },
+    {
+      "key": "racket",
+      "display_name": "Racket",
+      "aliases": [
+        "racket"
+      ],
+      "description": "A Lisp-family language designed for building and experimenting with other programming languages.",
+      "documentation_url": "https://docs.racket-lang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Racket Documentation",
+          "url": "https://docs.racket-lang.org/"
+        },
+        {
+          "label": "Racket Guide",
+          "url": "https://docs.racket-lang.org/guide/index.html"
+        }
+      ]
+    },
+    {
+      "key": "ada",
+      "display_name": "Ada",
+      "aliases": [
+        "ada"
+      ],
+      "description": "A strongly typed language designed for reliability, used in aviation, defense, and safety-critical systems.",
+      "documentation_url": "https://learn.adacore.com/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Learn Ada (AdaCore)",
+          "url": "https://learn.adacore.com/"
+        },
+        {
+          "label": "Ada Reference Manual",
+          "url": "https://ada-lang.io/docs/arm/"
+        }
+      ]
+    },
+    {
+      "key": "fortran",
+      "display_name": "Fortran",
+      "aliases": [
+        "fortran",
+        "f90"
+      ],
+      "description": "One of the oldest languages, still dominant in high-performance scientific and numerical computing.",
+      "documentation_url": "https://fortran-lang.org/learn/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Fortran-lang Learn",
+          "url": "https://fortran-lang.org/learn/"
+        },
+        {
+          "label": "Fortran Tutorial",
+          "url": "https://fortran-lang.org/learn/quickstart/"
+        }
+      ]
+    },
+    {
+      "key": "cobol",
+      "display_name": "COBOL",
+      "aliases": [
+        "cobol"
+      ],
+      "description": "A verbose, business-oriented language that still runs a huge share of banking and government systems.",
+      "documentation_url": "https://www.ibm.com/docs/en/cobol-zos",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "IBM COBOL Documentation",
+          "url": "https://www.ibm.com/docs/en/cobol-zos"
+        },
+        {
+          "label": "GnuCOBOL Programmer's Guide",
+          "url": "https://gnucobol.sourceforge.io/HTML/gnucobpg.html"
+        }
+      ]
+    },
+    {
+      "key": "pascal",
+      "display_name": "Pascal",
+      "aliases": [
+        "pascal",
+        "delphi",
+        "objectpascal"
+      ],
+      "description": "A structured, teaching-friendly language whose modern descendants (Free Pascal, Delphi) are still used commercially.",
+      "documentation_url": "https://www.freepascal.org/docs.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Free Pascal Documentation",
+          "url": "https://www.freepascal.org/docs.html"
+        },
+        {
+          "label": "Object Pascal Style Guide",
+          "url": "https://wiki.freepascal.org/Coding_style"
+        }
+      ]
+    },
+    {
+      "key": "visualbasic",
+      "display_name": "Visual Basic .NET",
+      "aliases": [
+        "vb",
+        "vbnet",
+        "vb.net"
+      ],
+      "description": "A beginner-approachable .NET language known for rapid application and Windows desktop development.",
+      "documentation_url": "https://learn.microsoft.com/en-us/dotnet/visual-basic/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "VB.NET Documentation",
+          "url": "https://learn.microsoft.com/en-us/dotnet/visual-basic/"
+        },
+        {
+          "label": "VB.NET Language Reference",
+          "url": "https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/"
+        }
+      ]
+    },
+    {
+      "key": "d",
+      "display_name": "D",
+      "aliases": [
+        "dlang"
+      ],
+      "description": "A systems language combining C++-level performance with modern conveniences like garbage collection.",
+      "documentation_url": "https://dlang.org/documentation.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "D Documentation",
+          "url": "https://dlang.org/documentation.html"
+        },
+        {
+          "label": "Programming in D (tutorial)",
+          "url": "https://ddili.org/ders/d.en/index.html"
+        }
+      ]
+    },
+    {
+      "key": "nim",
+      "display_name": "Nim",
+      "aliases": [
+        "nim"
+      ],
+      "description": "A statically typed, Python-like language that compiles to fast native code.",
+      "documentation_url": "https://nim-lang.org/documentation.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Nim Documentation",
+          "url": "https://nim-lang.org/documentation.html"
+        },
+        {
+          "label": "Nim by Example",
+          "url": "https://nim-by-example.github.io/"
+        }
+      ]
+    },
+    {
+      "key": "crystal",
+      "display_name": "Crystal",
+      "aliases": [
+        "crystal"
+      ],
+      "description": "A Ruby-inspired language with static typing and compiled performance.",
+      "documentation_url": "https://crystal-lang.org/reference/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Crystal Language Reference",
+          "url": "https://crystal-lang.org/reference/"
+        },
+        {
+          "label": "Crystal for Rubyists",
+          "url": "https://crystal-lang.org/reference/crystal_for_rubyists/"
+        }
+      ]
+    },
+    {
+      "key": "zig",
+      "display_name": "Zig",
+      "aliases": [
+        "zig"
+      ],
+      "description": "A modern systems language positioned as a simpler, safer alternative to C with manual memory control.",
+      "documentation_url": "https://ziglang.org/documentation/master/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Zig Documentation",
+          "url": "https://ziglang.org/documentation/master/"
+        },
+        {
+          "label": "Ziglings (exercises)",
+          "url": "https://github.com/ratfactor/ziglings"
+        }
+      ]
+    },
+    {
+      "key": "v",
+      "display_name": "V",
+      "aliases": [
+        "vlang"
+      ],
+      "description": "A simple, fast-compiling language aiming to combine Go's simplicity with C-like performance.",
+      "documentation_url": "https://docs.vlang.io/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "V Documentation",
+          "url": "https://docs.vlang.io/"
+        },
+        {
+          "label": "V Language Tour",
+          "url": "https://docs.vlang.io/introduction.html"
+        }
+      ]
+    },
+    {
+      "key": "odin",
+      "display_name": "Odin",
+      "aliases": [
+        "odin"
+      ],
+      "description": "A data-oriented systems language designed with game and simulation programmers in mind.",
+      "documentation_url": "https://odin-lang.org/docs/overview/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Odin Overview",
+          "url": "https://odin-lang.org/docs/overview/"
+        },
+        {
+          "label": "Odin Documentation Hub",
+          "url": "https://odin-lang.org/docs/"
+        }
+      ]
+    },
+    {
+      "key": "solidity",
+      "display_name": "Solidity",
+      "aliases": [
+        "sol"
+      ],
+      "description": "The primary smart contract language for Ethereum and other EVM-compatible blockchains.",
+      "documentation_url": "https://docs.soliditylang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Solidity Documentation",
+          "url": "https://docs.soliditylang.org/"
+        },
+        {
+          "label": "CryptoZombies (interactive)",
+          "url": "https://cryptozombies.io/"
+        }
+      ]
+    },
+    {
+      "key": "webassembly",
+      "display_name": "WebAssembly",
+      "aliases": [
+        "wasm",
+        "wat"
+      ],
+      "description": "A low-level, portable binary format that runs at near-native speed in browsers and beyond.",
+      "documentation_url": "https://webassembly.github.io/spec/core/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "WebAssembly Core Spec",
+          "url": "https://webassembly.github.io/spec/core/"
+        },
+        {
+          "label": "MDN WebAssembly Guide",
+          "url": "https://developer.mozilla.org/en-US/docs/WebAssembly"
+        }
+      ]
+    },
+    {
+      "key": "elm",
+      "display_name": "Elm",
+      "aliases": [
+        "elm"
+      ],
+      "description": "A purely functional language that compiles to JavaScript, prized for eliminating runtime errors in the browser.",
+      "documentation_url": "https://guide.elm-lang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "An Introduction to Elm",
+          "url": "https://guide.elm-lang.org/"
+        },
+        {
+          "label": "Elm Package Docs",
+          "url": "https://package.elm-lang.org/"
+        }
+      ]
+    },
+    {
+      "key": "purescript",
+      "display_name": "PureScript",
+      "aliases": [
+        "purs"
+      ],
+      "description": "A strongly-typed functional language that compiles to JavaScript, similar in spirit to Haskell.",
+      "documentation_url": "https://book.purescript.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "PureScript by Example (book)",
+          "url": "https://book.purescript.org/"
+        },
+        {
+          "label": "PureScript Documentation Repo",
+          "url": "https://github.com/purescript/documentation"
+        }
+      ]
+    },
+    {
+      "key": "rescript",
+      "display_name": "ReScript",
+      "aliases": [
+        "res"
+      ],
+      "description": "A strongly typed language that compiles to clean, readable JavaScript, built on OCaml's type system.",
+      "documentation_url": "https://rescript-lang.org/docs/manual/latest/introduction",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "ReScript Manual",
+          "url": "https://rescript-lang.org/docs/manual/latest/introduction"
+        },
+        {
+          "label": "ReScript Try Page",
+          "url": "https://rescript-lang.org/try"
+        }
+      ]
+    },
+    {
+      "key": "idris",
+      "display_name": "Idris",
+      "aliases": [
+        "idris",
+        "idris2"
+      ],
+      "description": "A dependently typed functional language used to explore proofs and highly precise type systems.",
+      "documentation_url": "https://idris2.readthedocs.io/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Idris 2 Documentation",
+          "url": "https://idris2.readthedocs.io/"
+        },
+        {
+          "label": "Idris Tutorial",
+          "url": "https://idris2.readthedocs.io/en/latest/tutorial/index.html"
+        }
+      ]
+    },
+    {
+      "key": "agda",
+      "display_name": "Agda",
+      "aliases": [
+        "agda"
+      ],
+      "description": "A dependently typed language and proof assistant used in programming language theory research.",
+      "documentation_url": "https://agda.readthedocs.io/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Agda Documentation",
+          "url": "https://agda.readthedocs.io/"
+        },
+        {
+          "label": "Programming Language Foundations in Agda",
+          "url": "https://plfa.github.io/"
+        }
+      ]
+    },
+    {
+      "key": "coq",
+      "display_name": "Coq",
+      "aliases": [
+        "coq",
+        "rocq"
+      ],
+      "description": "A formal proof assistant language used to verify mathematical theorems and software correctness.",
+      "documentation_url": "https://coq.inria.fr/documentation",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Coq Documentation",
+          "url": "https://coq.inria.fr/documentation"
+        },
+        {
+          "label": "Software Foundations (book)",
+          "url": "https://softwarefoundations.cis.upenn.edu/"
+        }
+      ]
+    },
+    {
+      "key": "lean",
+      "display_name": "Lean",
+      "aliases": [
+        "lean",
+        "lean4"
+      ],
+      "description": "A functional language and theorem prover increasingly used for formalized mathematics.",
+      "documentation_url": "https://leanprover.github.io/theorem_proving_in_lean4/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Theorem Proving in Lean 4",
+          "url": "https://leanprover.github.io/theorem_proving_in_lean4/"
+        },
+        {
+          "label": "Lean Documentation Overview",
+          "url": "https://lean-lang.org/documentation/"
+        }
+      ]
+    },
+    {
+      "key": "standardml",
+      "display_name": "Standard ML",
+      "aliases": [
+        "sml"
+      ],
+      "description": "A classic statically typed functional language that heavily influenced OCaml, F#, and Haskell.",
+      "documentation_url": "https://smlfamily.github.io/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Standard ML Family site",
+          "url": "https://smlfamily.github.io/"
+        },
+        {
+          "label": "Programming in Standard ML (book)",
+          "url": "https://www.cs.cmu.edu/~rwh/isml/book.pdf"
+        }
+      ]
+    },
+    {
+      "key": "haxe",
+      "display_name": "Haxe",
+      "aliases": [
+        "haxe"
+      ],
+      "description": "A cross-compiling language that targets JavaScript, C++, Python, and more from one codebase, popular in game dev.",
+      "documentation_url": "https://haxe.org/documentation/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Haxe Documentation",
+          "url": "https://haxe.org/documentation/"
+        },
+        {
+          "label": "Haxe Manual",
+          "url": "https://haxe.org/manual/"
+        }
+      ]
+    },
+    {
+      "key": "vala",
+      "display_name": "Vala",
+      "aliases": [
+        "vala"
+      ],
+      "description": "A language with C#-like syntax that compiles to C and GObject, used in the GNOME desktop ecosystem.",
+      "documentation_url": "https://vala.dev/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Vala Documentation",
+          "url": "https://vala.dev/"
+        },
+        {
+          "label": "Vala Tutorial (GNOME wiki)",
+          "url": "https://wiki.gnome.org/Projects/Vala/Tutorial"
+        }
+      ]
+    },
+    {
+      "key": "pony",
+      "display_name": "Pony",
+      "aliases": [
+        "pony"
+      ],
+      "description": "An actor-model language guaranteeing data-race-free and deadlock-free concurrent programs.",
+      "documentation_url": "https://tutorial.ponylang.io/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Pony Tutorial",
+          "url": "https://tutorial.ponylang.io/"
+        },
+        {
+          "label": "Pony Patterns",
+          "url": "https://patterns.ponylang.io/"
+        }
+      ]
+    },
+    {
+      "key": "chapel",
+      "display_name": "Chapel",
+      "aliases": [
+        "chapel",
+        "chpl"
+      ],
+      "description": "A language designed for productive parallel and high-performance computing across clusters.",
+      "documentation_url": "https://chapel-lang.org/docs/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Chapel Documentation",
+          "url": "https://chapel-lang.org/docs/"
+        },
+        {
+          "label": "Chapel Tutorials",
+          "url": "https://chapel-lang.org/learning.html"
+        }
+      ]
+    },
+    {
+      "key": "apl",
+      "display_name": "APL",
+      "aliases": [
+        "apl"
+      ],
+      "description": "An array-oriented language with a distinctive symbolic notation, powerful for concise mathematical code.",
+      "documentation_url": "https://tryapl.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Try APL (interactive)",
+          "url": "https://tryapl.org/"
+        },
+        {
+          "label": "Dyalog APL Documentation",
+          "url": "https://help.dyalog.com/"
+        }
+      ]
+    },
+    {
+      "key": "j",
+      "display_name": "J",
+      "aliases": [
+        "jlang"
+      ],
+      "description": "A terse, array-oriented descendant of APL that uses standard ASCII characters instead of symbols.",
+      "documentation_url": "https://www.jsoftware.com/help/learning/contents.htm",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "J Primer",
+          "url": "https://www.jsoftware.com/help/primer/contents.htm"
+        },
+        {
+          "label": "Learning J",
+          "url": "https://www.jsoftware.com/help/learning/contents.htm"
+        }
+      ]
+    },
+    {
+      "key": "forth",
+      "display_name": "Forth",
+      "aliases": [
+        "forth"
+      ],
+      "description": "A minimalist, stack-based language often used in embedded systems and bootloaders like Open Firmware.",
+      "documentation_url": "https://www.forth.com/starting-forth/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Starting Forth",
+          "url": "https://www.forth.com/starting-forth/"
+        },
+        {
+          "label": "Forth Programming Wikibook",
+          "url": "https://en.wikibooks.org/wiki/Forth"
+        }
+      ]
+    },
+    {
+      "key": "smalltalk",
+      "display_name": "Smalltalk",
+      "aliases": [
+        "smalltalk",
+        "squeak"
+      ],
+      "description": "One of the earliest pure object-oriented languages, highly influential on Ruby, Python, and Objective-C.",
+      "documentation_url": "https://squeak.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Squeak (Smalltalk environment)",
+          "url": "https://squeak.org/"
+        },
+        {
+          "label": "Pharo by Example (book)",
+          "url": "https://books.pharo.org/"
+        }
+      ]
+    },
+    {
+      "key": "tcl",
+      "display_name": "Tcl",
+      "aliases": [
+        "tcl"
+      ],
+      "description": "A simple, embeddable scripting language commonly paired with the Tk GUI toolkit and used in EDA tools.",
+      "documentation_url": "https://www.tcl.tk/man/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Tcl/Tk Manuals",
+          "url": "https://www.tcl.tk/man/"
+        },
+        {
+          "label": "Tcl Tutorial",
+          "url": "https://www.tcl.tk/man/tcl8.6/tutorial/tcltutorial.html"
+        }
+      ]
+    },
+    {
+      "key": "awk",
+      "display_name": "AWK",
+      "aliases": [
+        "awk",
+        "gawk"
+      ],
+      "description": "A pattern-scanning and text-processing language built for quick one-liners over structured text.",
+      "documentation_url": "https://www.gnu.org/software/gawk/manual/gawk.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GNU Awk User's Guide",
+          "url": "https://www.gnu.org/software/gawk/manual/gawk.html"
+        },
+        {
+          "label": "AWK one-liners",
+          "url": "https://learnbyexample.github.io/learn_gnuawk/preface.html"
+        }
+      ]
+    },
+    {
+      "key": "factor",
+      "display_name": "Factor",
+      "aliases": [
+        "factor"
+      ],
+      "description": "A concatenative, stack-based language with a full interactive development environment.",
+      "documentation_url": "https://factorcode.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Factor Documentation",
+          "url": "https://docs.factorcode.org/"
+        },
+        {
+          "label": "Factor Handbook",
+          "url": "https://docs.factorcode.org/content/article-handbook.html"
+        }
+      ]
+    },
+    {
+      "key": "nix",
+      "display_name": "Nix",
+      "aliases": [
+        "nixlang"
+      ],
+      "description": "A purely functional language for building reproducible packages and systems, used by NixOS.",
+      "documentation_url": "https://nix.dev/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "nix.dev Guides",
+          "url": "https://nix.dev/"
+        },
+        {
+          "label": "Nix Language Basics",
+          "url": "https://nix.dev/tutorials/nix-language.html"
+        }
+      ]
+    },
+    {
+      "key": "hcl",
+      "display_name": "Terraform (HCL)",
+      "aliases": [
+        "terraform",
+        "hcl"
+      ],
+      "description": "HashiCorp Configuration Language, used to declaratively describe cloud infrastructure with Terraform.",
+      "documentation_url": "https://developer.hashicorp.com/terraform/language",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Terraform Language Docs",
+          "url": "https://developer.hashicorp.com/terraform/language"
+        },
+        {
+          "label": "Terraform Tutorials",
+          "url": "https://developer.hashicorp.com/terraform/tutorials"
+        }
+      ]
+    },
+    {
+      "key": "dhall",
+      "display_name": "Dhall",
+      "aliases": [
+        "dhall"
+      ],
+      "description": "A programmable, non-Turing-complete configuration language designed to replace unsafe templated YAML/JSON.",
+      "documentation_url": "https://docs.dhall-lang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Dhall Documentation",
+          "url": "https://docs.dhall-lang.org/"
+        },
+        {
+          "label": "Dhall Tutorial",
+          "url": "https://docs.dhall-lang.org/tutorials/Language-Tour.html"
+        }
+      ]
+    },
+    {
+      "key": "gleam",
+      "display_name": "Gleam",
+      "aliases": [
+        "gleam"
+      ],
+      "description": "A friendly, statically typed language that runs on the Erlang VM, aiming for approachable BEAM development.",
+      "documentation_url": "https://gleam.run/documentation/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Gleam Documentation",
+          "url": "https://gleam.run/documentation/"
+        },
+        {
+          "label": "Gleam Language Tour",
+          "url": "https://tour.gleam.run/"
+        }
+      ]
+    },
+    {
+      "key": "unison",
+      "display_name": "Unison",
+      "aliases": [
+        "unison"
+      ],
+      "description": "A functional language where code is content-addressed, enabling novel distributed programming models.",
+      "documentation_url": "https://www.unison-lang.org/docs/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Unison Documentation",
+          "url": "https://www.unison-lang.org/docs/"
+        },
+        {
+          "label": "Unison Getting Started",
+          "url": "https://www.unison-lang.org/docs/quickstart/"
+        }
+      ]
+    },
+    {
+      "key": "eiffel",
+      "display_name": "Eiffel",
+      "aliases": [
+        "eiffel"
+      ],
+      "description": "An object-oriented language built around design-by-contract, embedding correctness checks into the code itself.",
+      "documentation_url": "https://www.eiffel.org/doc/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Eiffel Documentation",
+          "url": "https://www.eiffel.org/doc/"
+        },
+        {
+          "label": "Eiffel Tutorial",
+          "url": "https://www.eiffel.org/doc/eiffel/Tutorials"
+        }
+      ]
+    },
+    {
+      "key": "gdscript",
+      "display_name": "GDScript",
+      "aliases": [
+        "gdscript",
+        "godot"
+      ],
+      "description": "A Python-like scripting language built into the Godot game engine.",
+      "documentation_url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/index.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GDScript Reference",
+          "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/index.html"
+        },
+        {
+          "label": "Godot Scripting Docs",
+          "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/index.html"
+        }
+      ]
+    },
+    {
+      "key": "tlaplus",
+      "display_name": "TLA+",
+      "aliases": [
+        "tla+",
+        "tla"
+      ],
+      "description": "A formal specification language used to design and verify the correctness of concurrent and distributed systems.",
+      "documentation_url": "https://lamport.azurewebsites.net/tla/tla.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "TLA+ Home Page",
+          "url": "https://lamport.azurewebsites.net/tla/tla.html"
+        },
+        {
+          "label": "Learn TLA+",
+          "url": "https://learntla.com/"
+        }
+      ]
+    },
+    {
+      "key": "mojo",
+      "display_name": "Mojo",
+      "aliases": [
+        "mojo"
+      ],
+      "description": "A new language from Modular combining Python's syntax with systems-level performance for AI workloads.",
+      "documentation_url": "https://docs.modular.com/mojo/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Mojo Documentation",
+          "url": "https://docs.modular.com/mojo/"
+        },
+        {
+          "label": "Mojo Manual",
+          "url": "https://docs.modular.com/mojo/manual/"
+        }
+      ]
+    },
+    {
+      "key": "coffeescript",
+      "display_name": "CoffeeScript",
+      "aliases": [
+        "coffee"
+      ],
+      "description": "A concise language that compiles directly to JavaScript, popular before modern ES6+ syntax closed the gap.",
+      "documentation_url": "https://coffeescript.org/#introduction",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "CoffeeScript Documentation",
+          "url": "https://coffeescript.org/#introduction"
+        },
+        {
+          "label": "CoffeeScript Cookbook",
+          "url": "https://coffeescript-cookbook.github.io/"
+        }
+      ]
+    },
+    {
+      "key": "coldfusion",
+      "display_name": "ColdFusion (CFML)",
+      "aliases": [
+        "cfml",
+        "coldfusion"
+      ],
+      "description": "A tag-based server-side language for rapid web application development, still used in enterprise systems.",
+      "documentation_url": "https://helpx.adobe.com/support/coldfusion.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Adobe ColdFusion Documentation",
+          "url": "https://helpx.adobe.com/support/coldfusion.html"
+        },
+        {
+          "label": "Lucee (open source CFML) Docs",
+          "url": "https://docs.lucee.org/"
+        }
+      ]
+    },
+    {
+      "key": "abap",
+      "display_name": "ABAP",
+      "aliases": [
+        "abap"
+      ],
+      "description": "SAP's proprietary language for customizing and extending enterprise resource planning systems.",
+      "documentation_url": "https://help.sap.com/docs/abap-cloud",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "SAP ABAP Documentation",
+          "url": "https://help.sap.com/docs/abap-cloud"
+        },
+        {
+          "label": "SAP Learning Journeys",
+          "url": "https://learning.sap.com/"
+        }
+      ]
+    },
+    {
+      "key": "plsql",
+      "display_name": "PL/SQL",
+      "aliases": [
+        "plsql"
+      ],
+      "description": "Oracle's procedural extension to SQL, used to write stored procedures and triggers.",
+      "documentation_url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Oracle PL/SQL Language Reference",
+          "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/"
+        },
+        {
+          "label": "Oracle PL/SQL Tutorial",
+          "url": "https://www.oracletutorial.com/plsql-tutorial/"
+        }
+      ]
+    },
+    {
+      "key": "tsql",
+      "display_name": "T-SQL",
+      "aliases": [
+        "transact-sql"
+      ],
+      "description": "Microsoft SQL Server's procedural extension to SQL for stored procedures and advanced queries.",
+      "documentation_url": "https://learn.microsoft.com/en-us/sql/t-sql/language-reference",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Transact-SQL Reference",
+          "url": "https://learn.microsoft.com/en-us/sql/t-sql/language-reference"
+        },
+        {
+          "label": "T-SQL Tutorial",
+          "url": "https://learn.microsoft.com/en-us/training/paths/get-started-querying-with-transact-sql/"
+        }
+      ]
+    },
+    {
+      "key": "move",
+      "display_name": "Move",
+      "aliases": [
+        "movelang"
+      ],
+      "description": "A resource-oriented smart contract language designed for safe digital asset ownership, used by Aptos and Sui.",
+      "documentation_url": "https://move-language.github.io/move/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Move Book",
+          "url": "https://move-language.github.io/move/"
+        },
+        {
+          "label": "Move on Aptos",
+          "url": "https://aptos.dev/en/build/smart-contracts"
+        }
+      ]
+    },
+    {
+      "key": "cairo",
+      "display_name": "Cairo",
+      "aliases": [
+        "cairolang"
+      ],
+      "description": "A language for writing provable programs, used to build StarkNet smart contracts.",
+      "documentation_url": "https://book.cairo-lang.org/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "The Cairo Book",
+          "url": "https://book.cairo-lang.org/"
+        },
+        {
+          "label": "Cairo Documentation Hub",
+          "url": "https://www.cairo-lang.org/docs/"
+        }
+      ]
+    },
+    {
+      "key": "ballerina",
+      "display_name": "Ballerina",
+      "aliases": [
+        "bal"
+      ],
+      "description": "A language purpose-built for integration and API-driven cloud-native applications.",
+      "documentation_url": "https://ballerina.io/learn/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Ballerina Learn Hub",
+          "url": "https://ballerina.io/learn/"
+        },
+        {
+          "label": "Ballerina by Example",
+          "url": "https://ballerina.io/learn/by-example/"
+        }
+      ]
+    },
+    {
+      "key": "reasonml",
+      "display_name": "ReasonML",
+      "aliases": [
+        "reason"
+      ],
+      "description": "A syntax for OCaml designed to feel familiar to JavaScript developers while keeping OCaml's type safety.",
+      "documentation_url": "https://reasonml.github.io/docs/en/what-and-why",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "ReasonML Documentation",
+          "url": "https://reasonml.github.io/docs/en/what-and-why"
+        },
+        {
+          "label": "ReasonML API Reference",
+          "url": "https://reasonml.github.io/api/"
+        }
+      ]
+    },
+    {
+      "key": "brainfuck",
+      "display_name": "Brainfuck",
+      "aliases": [
+        "bf"
+      ],
+      "description": "An intentionally minimal esoteric language with only 8 commands, popular as a mind-bending programming puzzle.",
+      "documentation_url": "https://esolangs.org/wiki/Brainfuck",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Brainfuck",
+          "url": "https://esolangs.org/wiki/Brainfuck"
+        },
+        {
+          "label": "El Brainfuck (online interpreter)",
+          "url": "https://copy.sh/brainfuck/"
+        }
+      ]
+    },
+    {
+      "key": "whitespace",
+      "display_name": "Whitespace",
+      "aliases": [
+        "ws"
+      ],
+      "description": "An esoteric language where only spaces, tabs, and linefeeds are meaningful — everything else is a comment.",
+      "documentation_url": "https://esolangs.org/wiki/Whitespace",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Whitespace",
+          "url": "https://esolangs.org/wiki/Whitespace"
+        },
+        {
+          "label": "Whitespace Explained (with examples)",
+          "url": "https://cpjsmith.uk/whitespace"
+        }
+      ]
+    },
+    {
+      "key": "malbolge",
+      "display_name": "Malbolge",
+      "aliases": [
+        "malbolge"
+      ],
+      "description": "A famously difficult esoteric language deliberately designed to be nearly impossible to program in.",
+      "documentation_url": "https://esolangs.org/wiki/Malbolge",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Malbolge",
+          "url": "https://esolangs.org/wiki/Malbolge"
+        },
+        {
+          "label": "Malbolge Specification",
+          "url": "https://www.lscheffer.com/malbolge.shtml"
+        }
+      ]
+    },
+    {
+      "key": "intercal",
+      "display_name": "INTERCAL",
+      "aliases": [
+        "intercal"
+      ],
+      "description": "A satirical esoteric language created to parody the design decisions of other programming languages.",
+      "documentation_url": "https://esolangs.org/wiki/INTERCAL",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: INTERCAL",
+          "url": "https://esolangs.org/wiki/INTERCAL"
+        },
+        {
+          "label": "The INTERCAL Programming Language Manual",
+          "url": "https://www.muppetlabs.com/~breadbox/intercal-man/"
+        }
+      ]
+    },
+    {
+      "key": "befunge",
+      "display_name": "Befunge",
+      "aliases": [
+        "befunge"
+      ],
+      "description": "A stack-based esoteric language whose program flow moves in two dimensions across a grid of code.",
+      "documentation_url": "https://esolangs.org/wiki/Befunge",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Befunge",
+          "url": "https://esolangs.org/wiki/Befunge"
+        },
+        {
+          "label": "Befunge-93 Spec",
+          "url": "https://catseye.tc/view/Befunge-93/doc/Befunge-93.markdown"
+        }
+      ]
+    },
+    {
+      "key": "lolcode",
+      "display_name": "LOLCODE",
+      "aliases": [
+        "lolcode"
+      ],
+      "description": "A joke language modeled on lolcat internet-speak, with keywords like HAI and KTHXBYE.",
+      "documentation_url": "https://esolangs.org/wiki/LOLCODE",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: LOLCODE",
+          "url": "https://esolangs.org/wiki/LOLCODE"
+        },
+        {
+          "label": "LOLCODE Specification (GitHub)",
+          "url": "https://github.com/justinmeza/lolcode-spec"
+        }
+      ]
+    },
+    {
+      "key": "piet",
+      "display_name": "Piet",
+      "aliases": [
+        "piet"
+      ],
+      "description": "An esoteric language whose programs are abstract art — instructions are encoded as grids of colored pixels.",
+      "documentation_url": "https://www.dangermouse.net/esoteric/piet.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Piet Language Specification",
+          "url": "https://www.dangermouse.net/esoteric/piet.html"
+        },
+        {
+          "label": "Esolang Wiki: Piet",
+          "url": "https://esolangs.org/wiki/Piet"
+        }
+      ]
+    },
+    {
+      "key": "shakespeare",
+      "display_name": "Shakespeare Programming Language",
+      "aliases": [
+        "spl"
+      ],
+      "description": "An esoteric language where valid programs read like Shakespearean stage dialogue between characters.",
+      "documentation_url": "https://esolangs.org/wiki/Shakespeare",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Shakespeare",
+          "url": "https://esolangs.org/wiki/Shakespeare"
+        },
+        {
+          "label": "SPL Language Report (shakespearelang)",
+          "url": "https://krayon.github.io/shakespearelang/docs/shakespeare.html"
+        }
+      ]
+    },
+    {
+      "key": "ook",
+      "display_name": "Ook!",
+      "aliases": [
+        "ook"
+      ],
+      "description": "A Brainfuck derivative that replaces every command with combinations of 'Ook.', 'Ook?', and 'Ook!'.",
+      "documentation_url": "https://esolangs.org/wiki/Ook!",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Ook!",
+          "url": "https://esolangs.org/wiki/Ook!"
+        },
+        {
+          "label": "Ook! Online Interpreter",
+          "url": "https://www.dcode.fr/ook-language"
+        }
+      ]
+    },
+    {
+      "key": "unlambda",
+      "display_name": "Unlambda",
+      "aliases": [
+        "unlambda"
+      ],
+      "description": "A minimalist functional esoteric language built entirely from higher-order functions and no named variables.",
+      "documentation_url": "https://www.madore.org/~david/programs/unlambda/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Unlambda Official Page",
+          "url": "https://www.madore.org/~david/programs/unlambda/"
+        },
+        {
+          "label": "Esolang Wiki: Unlambda",
+          "url": "https://esolangs.org/wiki/Unlambda"
+        }
+      ]
+    },
+    {
+      "key": "arnoldc",
+      "display_name": "ArnoldC",
+      "aliases": [
+        "arnoldc"
+      ],
+      "description": "A joke language whose keywords are all Arnold Schwarzenegger movie quotes, e.g. 'HEY CHRISTMAS TREE' for variables.",
+      "documentation_url": "https://github.com/lhartikk/ArnoldC",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "ArnoldC GitHub Repository",
+          "url": "https://github.com/lhartikk/ArnoldC"
+        },
+        {
+          "label": "Esolang Wiki: ArnoldC",
+          "url": "https://esolangs.org/wiki/ArnoldC"
+        }
+      ]
+    },
+    {
+      "key": "chef",
+      "display_name": "Chef",
+      "aliases": [
+        "chef"
+      ],
+      "description": "An esoteric language where programs are written as cooking recipes, complete with ingredients and steps.",
+      "documentation_url": "https://www.dangermouse.net/esoteric/chef.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Chef Language Specification",
+          "url": "https://www.dangermouse.net/esoteric/chef.html"
+        },
+        {
+          "label": "Esolang Wiki: Chef",
+          "url": "https://esolangs.org/wiki/Chef"
+        }
+      ]
+    },
+    {
+      "key": "rockstar",
+      "display_name": "Rockstar",
+      "aliases": [
+        "rockstar"
+      ],
+      "description": "An esoteric language designed so valid programs read like power ballad lyrics.",
+      "documentation_url": "https://codewithrockstar.com/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Rockstar Language Site",
+          "url": "https://codewithrockstar.com/"
+        },
+        {
+          "label": "Rockstar GitHub Repository",
+          "url": "https://github.com/RockstarLang/rockstar"
+        }
+      ]
+    },
+    {
+      "key": "emojicode",
+      "display_name": "Emojicode",
+      "aliases": [
+        "emojicode"
+      ],
+      "description": "A real, statically typed language where every keyword and type is represented by an emoji.",
+      "documentation_url": "https://www.emojicode.org/docs/reference/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Emojicode: Compile and Run Your First Program",
+          "url": "https://www.emojicode.org/docs/guides/compile-and-run"
+        },
+        {
+          "label": "Emojicode Language Reference",
+          "url": "https://www.emojicode.org/docs/reference/basics"
+        }
+      ]
+    },
+    {
+      "key": "retina",
+      "display_name": "Retina",
+      "aliases": [
+        "retina"
+      ],
+      "description": "An esoteric, regex-driven language where entire programs are built out of pattern-matching and replacement steps.",
+      "documentation_url": "https://github.com/m-ender/retina/wiki",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Retina Wiki",
+          "url": "https://github.com/m-ender/retina/wiki"
+        },
+        {
+          "label": "Esolang Wiki: Retina",
+          "url": "https://esolangs.org/wiki/Retina"
+        }
+      ]
+    },
+    {
+      "key": "golfscript",
+      "display_name": "GolfScript",
+      "aliases": [
+        "golfscript"
+      ],
+      "description": "A stack-based esoteric language designed to write extremely short solutions for code golf challenges.",
+      "documentation_url": "https://esolangs.org/wiki/GolfScript",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: GolfScript",
+          "url": "https://esolangs.org/wiki/GolfScript"
+        },
+        {
+          "label": "GolfScript Tutorial",
+          "url": "http://www.golfscript.com/golfscript/tutorial.html"
+        }
+      ]
+    },
+    {
+      "key": "deadfish",
+      "display_name": "Deadfish",
+      "aliases": [
+        "deadfish"
+      ],
+      "description": "An extremely minimal esoteric language with only four commands operating on a single number.",
+      "documentation_url": "https://esolangs.org/wiki/Deadfish",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: Deadfish",
+          "url": "https://esolangs.org/wiki/Deadfish"
+        },
+        {
+          "label": "Deadfish Online Interpreter (dCode)",
+          "url": "https://www.dcode.fr/deadfish-language"
+        }
+      ]
+    },
+    {
+      "key": "false",
+      "display_name": "FALSE",
+      "aliases": [
+        "false"
+      ],
+      "description": "A tiny stack-based esoteric language that inspired Brainfuck, fitting a whole compiler in about 1024 bytes.",
+      "documentation_url": "https://esolangs.org/wiki/FALSE",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: FALSE",
+          "url": "https://esolangs.org/wiki/FALSE"
+        },
+        {
+          "label": "FALSE Language Specification",
+          "url": "https://strlen.com/false-language/"
+        }
+      ]
+    },
+    {
+      "key": "fish",
+      "display_name": "><> (Fish)",
+      "aliases": [
+        "fish",
+        "><>"
+      ],
+      "description": "A 2D esoteric language (a Befunge relative) where the instruction pointer swims around the code like a fish.",
+      "documentation_url": "https://esolangs.org/wiki/Fish",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: ><> (Fish)",
+          "url": "https://esolangs.org/wiki/Fish"
+        },
+        {
+          "label": "Try It Online: Fish",
+          "url": "https://tio.run/#fish"
+        }
+      ]
+    },
+    {
+      "key": "hq9plus",
+      "display_name": "HQ9+",
+      "aliases": [
+        "hq9+"
+      ],
+      "description": "A joke esoteric language with just four commands, mainly built to needle Turing-completeness purists.",
+      "documentation_url": "https://esolangs.org/wiki/HQ9%2B",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Esolang Wiki: HQ9+",
+          "url": "https://esolangs.org/wiki/HQ9%2B"
+        },
+        {
+          "label": "HQ9+ by its creator, Cliff L. Biffle",
+          "url": "https://cliffle.com/esoterica/hq9plus/"
         }
       ]
     }
