@@ -107,12 +107,11 @@ class Misc(commands.Cog):
         if guild is None:
             if resource.related_channel_names:
                 return "\n".join(
-                    f"• `#{name}`" for name in resource.related_channel_names
+                    f"• `{name}`" for name in resource.related_channel_names
                 )
             if resource.related_channel_ids:
                 return "\n".join(
-                    f"• `<#{channel_id}>`"
-                    for channel_id in resource.related_channel_ids
+                    f"• `<{channel_id}>`" for channel_id in resource.related_channel_ids
                 )
             return "• No configured Discord channels."
 
@@ -128,7 +127,7 @@ class Misc(commands.Cog):
                     resolved.append(f"• {mention}")
                     resolved_mentions.add(mention)
             else:
-                missing.append(f"#{channel_id}")
+                missing.append(f"{channel_id}")
 
         for channel_name in resource.related_channel_names:
             channel = self._resolve_resource_channel(guild, channel_name)
@@ -138,7 +137,7 @@ class Misc(commands.Cog):
                     resolved.append(f"• {mention}")
                     resolved_mentions.add(mention)
             else:
-                missing.append(f"#{channel_name}")
+                missing.append(f"{channel_name}")
 
         if not resolved and not missing:
             return "• No configured Discord channels."
@@ -1373,7 +1372,7 @@ class Misc(commands.Cog):
 
         # ── Build and send the todo embed ─────────────────────────────
         todo_embed = discord.Embed(
-            title="📝 New Todo Task",
+            title="New Todo Task",
             description=task,
             color=discord.Color.blue(),
             timestamp=discord.utils.utcnow(),
