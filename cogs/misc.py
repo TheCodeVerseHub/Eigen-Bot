@@ -30,6 +30,12 @@ except Exception:
 
 from utils.codebuddy_database import DB_PATH
 from utils.config import Config
+from utils.language_resources import (
+    LanguageResource,
+    find_language_resource,
+    get_supported_language_names,
+    suggest_language_names,
+)
 
 
 class _EditSayModal(discord.ui.Modal, title="Edit Bot Message"):
@@ -78,6 +84,159 @@ class Misc(commands.Cog):
     def __init__(self, bot: commands.Bot, config: Config):
         self.bot = bot
         self.config = config
+
+    def _resolve_resource_channel(
+        self, guild: discord.Guild, channel_name: str, channel_id: Optional[int] = None
+    ) -> Optional[discord.abc.GuildChannel]:
+        """Resolve a configured channel by ID first, then by name."""
+        if channel_id:
+            channel = guild.get_channel(int(channel_id))
+            if channel is not None:
+                return channel
+
+        normalized_name = channel_name.strip().lower()
+        for channel in guild.channels:
+            if channel.name.lower() == normalized_name:
+                return channel
+        return None
+
+    def _format_channel_mentions(
+        self, guild: Optional[discord.Guild], resource: LanguageResource
+    ) -> str:
+        """Format channel references for display, preferring clickable mentions."""
+        if guild is None:
+            if resource.related_channel_names:
+                return "\n".join(
+                    f"• `#{name}`" for name in resource.related_channel_names
+                )
+            if resource.related_channel_ids:
+                return "\n".join(
+                    f"• `<#{channel_id}>`"
+                    for channel_id in resource.related_channel_ids
+                )
+            return "• No configured Discord channels."
+
+        resolved: list[str] = []
+        resolved_mentions: set[str] = set()
+        missing: list[str] = []
+
+        for channel_id in resource.related_channel_ids:
+            channel = guild.get_channel(int(channel_id))
+            if channel is not None:
+                mention = channel.mention
+                if mention not in resolved_mentions:
+                    resolved.append(f"• {mention}")
+                    resolved_mentions.add(mention)
+            else:
+                missing.append(f"#{channel_id}")
+
+        for channel_name in resource.related_channel_names:
+            channel = self._resolve_resource_channel(guild, channel_name)
+            if channel is not None:
+                mention = channel.mention
+                if mention not in resolved_mentions:
+                    resolved.append(f"• {mention}")
+                    resolved_mentions.add(mention)
+            else:
+                missing.append(f"#{channel_name}")
+
+        if not resolved and not missing:
+            return "• No configured Discord channels."
+
+        lines = resolved[:]
+        if missing:
+            lines.extend(f"• {item}" for item in missing)
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_link_block(links: tuple, empty_text: str) -> str:
+        if not links:
+            return empty_text
+        return "\n".join(f"• [{link.label}]({link.url})" for link in links)
+
+    def _build_resource_embed(
+        self, guild: Optional[discord.Guild], resource: LanguageResource
+    ) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"{resource.display_name} Resources",
+            description=resource.description,
+            color=0x000000,
+        )
+
+        embed.add_field(
+            name="Discord Channels",
+            value=self._format_channel_mentions(guild, resource),
+            inline=False,
+        )
+        embed.add_field(
+            name="Official Documentation",
+            value=f"[Open documentation]({resource.documentation_url})",
+            inline=False,
+        )
+        embed.add_field(
+            name="Our Website",
+            value=f"[Open resource page]({resource.codeverse_hub_url})",
+            inline=False,
+        )
+
+        beginner_links = self._format_link_block(
+            resource.beginner_resources,
+            "• No beginner resources configured yet.",
+        )
+        embed.add_field(
+            name="Beginner / Recommended",
+            value=beginner_links,
+            inline=False,
+        )
+
+        if resource.extra_resources:
+            embed.add_field(
+                name="Extra Resources",
+                value=self._format_link_block(resource.extra_resources, ""),
+                inline=False,
+            )
+
+        embed.set_footer(text="Use ?resource <language> to look up another language")
+        return embed
+
+    async def _send_resource_response(
+        self,
+        ctx: commands.Context,
+        embed: discord.Embed,
+    ) -> None:
+        if ctx.interaction:
+            if not ctx.interaction.response.is_done():
+                await ctx.interaction.response.send_message(embed=embed)
+            else:
+                await ctx.interaction.followup.send(embed=embed)
+            return
+        await ctx.reply(embed=embed, mention_author=False)
+
+    async def _send_resource_usage(self, ctx: commands.Context) -> None:
+        supported = get_supported_language_names()
+        embed = discord.Embed(
+            title="Usage: ?resource <language>",
+            description=(
+                "Provide a programming language to see related Discord channels, "
+                "official documentation, the CodeVerse Hub Resources page, and curated beginner resources."
+            ),
+            color=0x000000,
+        )
+
+        if supported:
+            embed.add_field(
+                name="Supported Languages",
+                value=", ".join(f"`{name}`" for name in supported),
+                inline=False,
+            )
+        else:
+            embed.add_field(
+                name="Supported Languages",
+                value="No language resources are configured yet.",
+                inline=False,
+            )
+
+        await self._send_resource_response(ctx, embed)
 
     async def cog_load(self):
         # Track which messages were created via /say so only those are editable via /edit.
@@ -192,6 +351,68 @@ class Misc(commands.Cog):
             return await ctx.send("I could not connect to that voice channel.")
 
         await ctx.send(f"Joined {channel.mention}.")
+
+    @commands.hybrid_command(
+        name="resource",
+        description="Find learning resources for a programming language.",
+    )
+    @app_commands.describe(language="Programming language to look up")
+    async def resource(self, ctx: commands.Context, *, language: str):
+        """Show learning resources for a programming language."""
+        if ctx.guild is None:
+            await self._send_resource_response(
+                ctx,
+                discord.Embed(
+                    title="Server Only",
+                    description="This command is only available inside a server.",
+                    color=0x000000,
+                ),
+            )
+            return
+
+        resource = find_language_resource(language)
+
+        if resource is None:
+            suggestions = suggest_language_names(language)
+            supported = get_supported_language_names()
+            embed = discord.Embed(
+                title="Language Not Supported",
+                description=f"`{language}` is not currently configured.",
+                color=0x000000,
+            )
+            if suggestions:
+                embed.add_field(
+                    name="Closest Matches",
+                    value=", ".join(f"`{name}`" for name in suggestions),
+                    inline=False,
+                )
+            if supported:
+                embed.add_field(
+                    name="Available Languages",
+                    value=", ".join(f"`{name}`" for name in supported),
+                    inline=False,
+                )
+            await self._send_resource_response(ctx, embed)
+            return
+
+        embed = self._build_resource_embed(ctx.guild, resource)
+        view = discord.ui.View(timeout=None)
+        view.add_item(
+            discord.ui.Button(
+                label="Open in Our Website",
+                url=resource.codeverse_hub_url,
+                style=discord.ButtonStyle.link,
+            )
+        )
+
+        if ctx.interaction:
+            if not ctx.interaction.response.is_done():
+                await ctx.interaction.response.send_message(embed=embed, view=view)
+            else:
+                await ctx.interaction.followup.send(embed=embed, view=view)
+            return
+
+        await ctx.reply(embed=embed, view=view, mention_author=False)
 
     @commands.Cog.listener()
     async def on_voice_state_update(
@@ -1124,7 +1345,7 @@ class Misc(commands.Cog):
             embed = discord.Embed(
                 title="Error",
                 description="The configured target guild could not be found. "
-                            "Make sure the bot is a member of that server.",
+                "Make sure the bot is a member of that server.",
                 color=discord.Color.red(),
             )
             await ctx.send(embed=embed)

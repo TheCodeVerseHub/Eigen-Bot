@@ -224,6 +224,15 @@ class Fun2OoshBot(commands.Bot):
             await _safe_ctx_send(
                 f"This command is on cooldown. Try again in {error.retry_after:.2f} seconds."
             )
+        elif isinstance(error, commands.MissingRequiredArgument):
+            command = getattr(ctx, "command", None)
+            cog = getattr(command, "cog", None)
+            if command and command.qualified_name == "resource" and cog is not None:
+                send_usage = getattr(cog, "_send_resource_usage", None)
+                if callable(send_usage):
+                    await send_usage(ctx)
+                    return
+            await _safe_ctx_send("A required argument is missing.")
         elif isinstance(error, commands.MissingPermissions):
             await _safe_ctx_send("You don't have permission to use this command.")
         elif isinstance(error, commands.BadArgument):

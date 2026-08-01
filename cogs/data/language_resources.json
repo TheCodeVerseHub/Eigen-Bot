@@ -1,0 +1,188 @@
+{
+  "languages": [
+    {
+      "key": "python",
+      "display_name": "Python",
+      "aliases": ["py", "python3", "python 3"],
+      "description": "A beginner-friendly, versatile language used for automation, web development, data work, scripting, and more.",
+      "documentation_url": "https://docs.python.org/3/tutorial/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/python",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "<#1263068920571625503>"
+      ],
+      "beginner_resources": [
+        {
+          "label": "Python Tutorial",
+          "url": "https://docs.python.org/3/tutorial/"
+        },
+        {
+          "label": "W3Schools Python Basics",
+          "url": "https://www.w3schools.com/python/"
+        }
+      ]
+    },
+    {
+      "key": "javascript",
+      "display_name": "JavaScript",
+      "aliases": ["js", "node", "nodejs", "node.js"],
+      "description": "The language of the web for interactive frontends, server-side apps, automation, and full-stack development.",
+      "documentation_url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/javascript",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "MDN JavaScript Guide",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+        },
+        {
+          "label": "javascript.info",
+          "url": "https://javascript.info/"
+        }
+      ]
+    },
+    {
+      "key": "typescript",
+      "display_name": "TypeScript",
+      "aliases": ["ts", "typescript"],
+      "description": "A typed superset of JavaScript that adds static analysis and better tooling for larger applications.",
+      "documentation_url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/typescript",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "TypeScript Handbook",
+          "url": "https://www.typescriptlang.org/docs/handbook/intro.html"
+        },
+        {
+          "label": "TypeScript Playground",
+          "url": "https://www.typescriptlang.org/play"
+        }
+      ]
+    },
+    {
+      "key": "java",
+      "display_name": "Java",
+      "aliases": ["java"],
+      "description": "A widely used object-oriented language for backend systems, Android development, tooling, and enterprise software.",
+      "documentation_url": "https://dev.java/learn/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/java",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "Dev.java Learn",
+          "url": "https://dev.java/learn/"
+        },
+        {
+          "label": "Oracle Java Tutorials",
+          "url": "https://docs.oracle.com/javase/tutorial/"
+        }
+      ]
+    },
+    {
+      "key": "cpp",
+      "display_name": "CPP",
+      "aliases": ["c++", "cpp", "cxx"],
+      "description": "A powerful systems language used for performance-critical software, games, embedded work, and competitive programming.",
+      "documentation_url": "https://en.cppreference.com/w/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/cpp",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "LearnCpp",
+          "url": "https://www.learncpp.com/"
+        },
+        {
+          "label": "cppreference",
+          "url": "https://en.cppreference.com/w/"
+        }
+      ]
+    },
+    {
+      "key": "csharp",
+      "display_name": "CSharp",
+      "aliases": ["c#", "csharp", "dotnet", ".net"],
+      "description": "Microsoft's modern language for backend services, desktop apps, game development, and the .NET ecosystem.",
+      "documentation_url": "https://learn.microsoft.com/en-us/dotnet/csharp/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/csharp",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "C# Documentation",
+          "url": "https://learn.microsoft.com/en-us/dotnet/csharp/"
+        },
+        {
+          "label": ".NET Learn",
+          "url": "https://learn.microsoft.com/en-us/training/dotnet/"
+        }
+      ]
+    },
+    {
+      "key": "go",
+      "display_name": "Go",
+      "aliases": ["golang"],
+      "description": "A fast, simple language popular for services, CLI tools, cloud infrastructure, and concurrency-heavy backends.",
+      "documentation_url": "https://go.dev/doc/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/go",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "A Tour of Go",
+          "url": "https://go.dev/tour/"
+        },
+        {
+          "label": "Go Documentation",
+          "url": "https://go.dev/doc/"
+        }
+      ]
+    },
+    {
+      "key": "rust",
+      "display_name": "Rust",
+      "aliases": ["rust"],
+      "description": "A systems language focused on memory safety, performance, and modern tooling for reliable software.",
+      "documentation_url": "https://doc.rust-lang.org/book/",
+      "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/rust",
+      "related_channel_names": [
+        "<#1532077038830092300>",
+        "<#1388169643234955354>",
+        "code-review"
+      ],
+      "beginner_resources": [
+        {
+          "label": "The Rust Book",
+          "url": "https://doc.rust-lang.org/book/"
+        },
+        {
+          "label": "Rust by Example",
+          "url": "https://doc.rust-lang.org/rust-by-example/"
+        }
+      ]
+    }
+  ]
+}
