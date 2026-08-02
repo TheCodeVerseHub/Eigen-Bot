@@ -117,6 +117,17 @@ class Counting(commands.Cog):
                     )
                 """)
 
+                # Anti-abuse cooldown for automatic server saves.
+                # `remaining` counts down on every successful count (by anyone).
+                await db.execute("""
+                    CREATE TABLE IF NOT EXISTS counting_save_cooldowns (
+                        guild_id INTEGER,
+                        user_id INTEGER,
+                        remaining INTEGER NOT NULL DEFAULT 0,
+                        PRIMARY KEY (guild_id, user_id)
+                    )
+                """)
+
                 await db.commit()
 
                 try:
@@ -167,6 +178,49 @@ class Counting(commands.Cog):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
             await db.execute(
                 "DELETE FROM counting_warnings WHERE guild_id = ?", (guild_id,)
+            )
+            await db.commit()
+
+    async def _get_save_cooldown(self, guild_id: int, user_id: int) -> int:
+        """Remaining successful counts before this user may auto-save again."""
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+            async with db.execute(
+                "SELECT remaining FROM counting_save_cooldowns WHERE guild_id = ? AND user_id = ?",
+                (guild_id, user_id),
+            ) as cursor:
+                row = await cursor.fetchone()
+        return int(row[0]) if row else 0
+
+    async def _set_save_cooldown(
+        self, guild_id: int, user_id: int, remaining: int
+    ) -> None:
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+            if remaining <= 0:
+                await db.execute(
+                    "DELETE FROM counting_save_cooldowns WHERE guild_id = ? AND user_id = ?",
+                    (guild_id, user_id),
+                )
+            else:
+                await db.execute(
+                    """
+                    INSERT INTO counting_save_cooldowns (guild_id, user_id, remaining)
+                    VALUES (?, ?, ?)
+                    ON CONFLICT(guild_id, user_id) DO UPDATE SET remaining = excluded.remaining
+                    """,
+                    (guild_id, user_id, remaining),
+                )
+            await db.commit()
+
+    async def _decrement_save_cooldowns(self, guild_id: int) -> None:
+        """Count one successful count towards every active auto-save cooldown."""
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
+            await db.execute(
+                "UPDATE counting_save_cooldowns SET remaining = remaining - 1 WHERE guild_id = ? AND remaining > 0",
+                (guild_id,),
+            )
+            await db.execute(
+                "DELETE FROM counting_save_cooldowns WHERE guild_id = ? AND remaining <= 0",
+                (guild_id,),
             )
             await db.commit()
 
@@ -576,6 +630,12 @@ class Counting(commands.Cog):
                     # Side effects after commit to avoid duplicate reactions on retries.
                     self._enqueue_reaction(message, "✅")
 
+                    # Count down active automatic-save cooldowns on each valid count (best-effort).
+                    try:
+                        await self._decrement_save_cooldowns(message.guild.id)
+                    except Exception:
+                        pass
+
                     # Daily quest progress: count 5 numbers (best-effort).
                     try:
                         quest_completed = await increment_quest_counting_count(
@@ -702,56 +762,36 @@ class Counting(commands.Cog):
         except Exception:
             used_personal = False
 
-        # Only spend a server save with explicit confirmation.
+        # Automatic server save: consume one immediately if the bank has a save.
+        # No manual confirmation prompt anymore.
         if not used_personal:
-            guild_units = 0
+            # Anti-abuse: the user who triggered an automatic save cannot do so
+            # again until 10 successful counts happen (by anyone).
+            cooldown_remaining = 0
             try:
-                guild_units = await get_guild_save_units(guild_id)
+                cooldown_remaining = await self._get_save_cooldown(guild_id, user_id)
             except Exception:
+                cooldown_remaining = 0
+
+            if cooldown_remaining <= 0:
                 guild_units = 0
-
-            if guild_units >= 10:
-                prompt_msg: Optional[discord.Message] = None
                 try:
-                    prompt_msg = await message.channel.send(
-                        f"{message.author.mention} Looks like You Ruined our Effort, Nvm, Do you want to save the count? Choose :check: below!!"
-                    )
+                    guild_units = await get_guild_save_units(guild_id)
                 except Exception:
-                    prompt_msg = None
+                    guild_units = 0
 
-                if prompt_msg is not None:
+                if guild_units >= 10:
                     try:
-                        await prompt_msg.add_reaction("✅")
-                        await prompt_msg.add_reaction("❌")
-                    except Exception:
-                        pass
-
-                    def _check(
-                        reaction: discord.Reaction, user: discord.abc.User
-                    ) -> bool:
-                        if user.bot:
-                            return False
-                        if user.id != message.author.id:
-                            return False
-                        if reaction.message.id != prompt_msg.id:
-                            return False
-                        return str(reaction.emoji) in {"✅", "❌"}
-
-                    try:
-                        reaction, _user = await self.bot.wait_for(
-                            "reaction_add", timeout=20.0, check=_check
-                        )
-                        if str(reaction.emoji) == "✅":
-                            try:
-                                used_guild = await try_use_guild_save(guild_id)
-                            except Exception:
-                                used_guild = False
-                        else:
-                            used_guild = False
-                    except asyncio.TimeoutError:
-                        used_guild = False
+                        used_guild = await try_use_guild_save(guild_id)
                     except Exception:
                         used_guild = False
+
+                    if used_guild:
+                        # Save consumed immediately; start the 10-count cooldown.
+                        try:
+                            await self._set_save_cooldown(guild_id, user_id, 10)
+                        except Exception:
+                            pass
 
         if used_personal or used_guild:
             try:

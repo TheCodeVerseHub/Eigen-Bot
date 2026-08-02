@@ -414,6 +414,23 @@ class Misc(commands.Cog):
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
     @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """Easter egg: react with :blunder: to the standalone number 67."""
+        if message.author.bot or not message.guild:
+            return
+        # Match the standalone number 67, not longer numbers like 670 or 1678.
+        if not re.search(r"(?<!\d)67(?!\d)", message.content or ""):
+            return
+        # Fail silently if the emoji isn't available in this guild.
+        emoji = discord.utils.get(message.guild.emojis, name="blunder")
+        if emoji is None:
+            return
+        try:
+            await message.add_reaction(emoji)
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
     async def on_voice_state_update(
         self,
         member: discord.Member,

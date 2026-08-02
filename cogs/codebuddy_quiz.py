@@ -254,7 +254,7 @@ class CodeBuddyQuizCog(commands.Cog):
                                 correct_text = options[correct_idx]
                                 await message.channel.send(
                                     f"❌ {message.author.mention} The correct answer was **{self.current_answer}**: {correct_text}",
-                                    delete_after=15,
+                                    delete_after=3,
                                 )
                         except Exception as e:
                             print(f"[Error revealing correct answer]: {e}")
@@ -351,13 +351,13 @@ class CodeBuddyQuizCog(commands.Cog):
                             await message.channel.send(
                                 f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
                                 allowed_mentions=discord.AllowedMentions(users=True),
-                                delete_after=12,
+                                delete_after=3,
                             )
                     else:
                         await message.channel.send(
                             f"{message.author.mention} Wrong. Correct answer is **{correct}**.",
                             allowed_mentions=discord.AllowedMentions(users=True),
-                            delete_after=12,
+                            delete_after=3,
                         )
             except Exception:
                 pass

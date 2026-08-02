@@ -447,8 +447,13 @@ class PanelView(discord.ui.View):
                     )
 
                 view = ReviewView(user.id, self.bot)
+                # Override the bot-wide mention restriction for THIS send only so
+                # @here actually pings; other messages keep the global default.
                 await review_channel.send(
-                    content="@here", embed=review_embed, view=view
+                    content="@here",
+                    embed=review_embed,
+                    view=view,
+                    allowed_mentions=discord.AllowedMentions(everyone=True),
                 )
             elif review_channel:
                 logger.error(
