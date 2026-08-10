@@ -185,6 +185,16 @@ class Fun2OoshBot(commands.Bot):
         if isinstance(error, commands.CommandNotFound):
             return
 
+        # If a command/cog-level error handler (e.g. `cog_command_error`)
+        # already handled the error, don't send a generic message on top.
+        command = ctx.command
+        if command is not None:
+            if command.has_error_handler():
+                return
+            cog = command.cog
+            if cog is not None and cog.has_error_handler():
+                return
+
         async def _safe_ctx_send(message: str) -> None:
             """Send a message without crashing on expired slash interactions.
 

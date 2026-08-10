@@ -248,9 +248,9 @@ class StaffGuide(commands.Cog):
             return
 
         color_map = {
-            "SUCCESS": 0x00ff00,
-            "FAILED": 0xff0000,
-            "SKIPPED": 0x07f9dd,
+            "SUCCESS": 0x00FF00,
+            "FAILED": 0xFF0000,
+            "SKIPPED": 0x07F9DD,
         }
 
         embed = discord.Embed(
@@ -295,6 +295,72 @@ class StaffGuide(commands.Cog):
             if member and member.guild_permissions.administrator:
                 return True
         return False
+
+    async def _safe_respond(
+        self,
+        ctx: commands.Context,
+        content: Optional[str] = None,
+        *,
+        embed: Optional[discord.Embed] = None,
+        ephemeral: bool = False,
+    ) -> None:
+        """Respond without crashing on expired slash interactions.
+
+        Hybrid commands invoked as slash commands may have an interaction that
+        expires; fall back to a normal channel send if that happens.
+        """
+        interaction = getattr(ctx, "interaction", None)
+        payload: dict = {}
+        if content is not None:
+            payload["content"] = content
+        if embed is not None:
+            payload["embed"] = embed
+
+        if interaction is not None:
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        **payload, ephemeral=ephemeral
+                    )
+                    return
+                await interaction.followup.send(**payload, ephemeral=ephemeral)
+                return
+            except (discord.NotFound, discord.HTTPException, discord.Forbidden):
+                pass
+            except Exception:
+                pass
+
+        try:
+            if ctx.channel is not None:
+                await ctx.channel.send(**payload)
+        except Exception:
+            return
+
+    async def cog_command_error(
+        self, ctx: commands.Context, error: commands.CommandError
+    ) -> None:
+        """Handle errors from staff guide commands with a clear message."""
+        if isinstance(error, commands.CheckFailure):
+            # The whole staffrules group is admin-only; tell non-admins
+            # (including regular staff) instead of a generic error.
+            if ctx.guild is None:
+                message = "This command can only be used in a server."
+            else:
+                message = "This command is admin-only."
+            await self._safe_respond(ctx, message, ephemeral=True)
+            return
+        if isinstance(error, commands.MissingRequiredArgument):
+            await self._safe_respond(
+                ctx, "A required argument is missing.", ephemeral=True
+            )
+            return
+        if isinstance(error, commands.BadArgument):
+            await self._safe_respond(ctx, "Invalid argument provided.", ephemeral=True)
+            return
+        logger.error(f"Staff guide command error: {error}")
+        await self._safe_respond(
+            ctx, "An error occurred while processing your command.", ephemeral=True
+        )
 
     @commands.hybrid_group(
         name="staffrules",
