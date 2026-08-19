@@ -21,6 +21,16 @@
           "label": "W3Schools Python Basics",
           "url": "https://www.w3schools.com/python/"
         }
+      ],
+      "extra_resources": [
+        {
+          "label": "Real Python",
+          "url": "https://realpython.com/"
+        },
+        {
+          "label": "Python Packaging User Guide",
+          "url": "https://packaging.python.org/"
+        }
       ]
     },
     {
@@ -43,6 +53,16 @@
         {
           "label": "javascript.info",
           "url": "https://javascript.info/"
+        }
+      ],
+      "extra_resources": [
+        {
+          "label": "Eloquent JavaScript",
+          "url": "https://eloquentjavascript.net/"
+        },
+        {
+          "label": "MDN JavaScript Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference"
         }
       ]
     },
@@ -67,6 +87,16 @@
           "label": "TypeScript Playground",
           "url": "https://www.typescriptlang.org/play"
         }
+      ],
+      "extra_resources": [
+        {
+          "label": "TypeScript Deep Dive",
+          "url": "https://basarat.gitbook.io/typescript/"
+        },
+        {
+          "label": "TSConfig Reference",
+          "url": "https://www.typescriptlang.org/tsconfig"
+        }
       ]
     },
     {
@@ -89,6 +119,16 @@
         {
           "label": "Oracle Java Tutorials",
           "url": "https://docs.oracle.com/javase/tutorial/"
+        }
+      ],
+      "extra_resources": [
+        {
+          "label": "Baeldung Java Tutorials",
+          "url": "https://www.baeldung.com/"
+        },
+        {
+          "label": "OpenJDK Documentation",
+          "url": "https://openjdk.org/"
         }
       ]
     },
@@ -113,6 +153,16 @@
           "label": "cppreference",
           "url": "https://en.cppreference.com/w/"
         }
+      ],
+      "extra_resources": [
+        {
+          "label": "C++ Core Guidelines",
+          "url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+        },
+        {
+          "label": "C++ Reference Examples",
+          "url": "https://en.cppreference.com/w/cpp"
+        }
       ]
     },
     {
@@ -135,6 +185,16 @@
         {
           "label": ".NET Learn",
           "url": "https://learn.microsoft.com/en-us/training/dotnet/"
+        }
+      ],
+      "extra_resources": [
+        {
+          "label": "C# Yellow Book",
+          "url": "https://www.robmiles.com/c-yellow-book"
+        },
+        {
+          "label": ".NET API Browser",
+          "url": "https://learn.microsoft.com/en-us/dotnet/api/"
         }
       ]
     },
@@ -159,6 +219,16 @@
           "label": "Go Documentation",
           "url": "https://go.dev/doc/"
         }
+      ],
+      "extra_resources": [
+        {
+          "label": "Go by Example",
+          "url": "https://gobyexample.com/"
+        },
+        {
+          "label": "Effective Go",
+          "url": "https://go.dev/doc/effective_go"
+        }
       ]
     },
     {
@@ -181,6 +251,16 @@
         {
           "label": "Rust by Example",
           "url": "https://doc.rust-lang.org/rust-by-example/"
+        }
+      ],
+      "extra_resources": [
+        {
+          "label": "Rustlings",
+          "url": "https://rustlings.cool/"
+        },
+        {
+          "label": "Rust Reference",
+          "url": "https://doc.rust-lang.org/reference/"
         }
       ]
     },
@@ -2081,6 +2161,500 @@
         {
           "label": "HQ9+ by its creator, Cliff L. Biffle",
           "url": "https://cliffle.com/esoterica/hq9plus/"
+        }
+      ]
+    },
+    {
+      "key": "react",
+      "display_name": "React",
+      "aliases": ["reactjs"],
+      "description": "A declarative JavaScript library for building component-based user interfaces.",
+      "documentation_url": "https://react.dev/learn",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "React Learn",
+          "url": "https://react.dev/learn"
+        },
+        {
+          "label": "React Tutorial",
+          "url": "https://react.dev/learn/tutorial-tic-tac-toe"
+        }
+      ]
+    },
+    {
+      "key": "nextjs",
+      "display_name": "Next.js",
+      "aliases": ["next", "nextjs"],
+      "description": "A React framework for server rendering, routing, and full-stack web applications.",
+      "documentation_url": "https://nextjs.org/learn",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Next.js Learn",
+          "url": "https://nextjs.org/learn"
+        },
+        {
+          "label": "Next.js Docs",
+          "url": "https://nextjs.org/docs"
+        }
+      ]
+    },
+    {
+      "key": "nodejs",
+      "display_name": "Node.js",
+      "aliases": ["node", "nodejs"],
+      "description": "A JavaScript runtime for building servers, CLIs, and tooling with the V8 engine.",
+      "documentation_url": "https://nodejs.org/en/learn",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Node.js Learn",
+          "url": "https://nodejs.org/en/learn"
+        },
+        {
+          "label": "Node.js API Docs",
+          "url": "https://nodejs.org/api/"
+        }
+      ]
+    },
+    {
+      "key": "django",
+      "display_name": "Django",
+      "aliases": ["django"],
+      "description": "A high-level Python web framework with batteries included for rapid backend development.",
+      "documentation_url": "https://docs.djangoproject.com/en/stable/intro/tutorial01/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Django Tutorial",
+          "url": "https://docs.djangoproject.com/en/stable/intro/tutorial01/"
+        },
+        {
+          "label": "Django Docs",
+          "url": "https://docs.djangoproject.com/en/stable/"
+        }
+      ]
+    },
+    {
+      "key": "fastapi",
+      "display_name": "FastAPI",
+      "aliases": ["fastapi"],
+      "description": "A modern Python web framework for building fast APIs with type hints and automatic docs.",
+      "documentation_url": "https://fastapi.tiangolo.com/tutorial/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "FastAPI Tutorial",
+          "url": "https://fastapi.tiangolo.com/tutorial/"
+        },
+        {
+          "label": "FastAPI Docs",
+          "url": "https://fastapi.tiangolo.com/"
+        }
+      ]
+    },
+    {
+      "key": "svelte",
+      "display_name": "Svelte",
+      "aliases": ["svelte"],
+      "description": "A compiler-driven UI framework that shifts work from runtime to build time.",
+      "documentation_url": "https://svelte.dev/tutorial",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Svelte Tutorial",
+          "url": "https://svelte.dev/tutorial"
+        },
+        {
+          "label": "Svelte Docs",
+          "url": "https://svelte.dev/docs"
+        }
+      ]
+    },
+    {
+      "key": "vue",
+      "display_name": "Vue",
+      "aliases": ["vue", "vuejs"],
+      "description": "A progressive JavaScript framework for building approachable and performant web interfaces.",
+      "documentation_url": "https://vuejs.org/guide/introduction.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Vue Guide",
+          "url": "https://vuejs.org/guide/introduction.html"
+        },
+        {
+          "label": "Vue Tutorial",
+          "url": "https://vuejs.org/tutorial/"
+        }
+      ]
+    },
+    {
+      "key": "docker",
+      "display_name": "Docker",
+      "aliases": ["docker"],
+      "description": "A container platform for packaging applications and their dependencies into portable images.",
+      "documentation_url": "https://docs.docker.com/get-started/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Docker Get Started",
+          "url": "https://docs.docker.com/get-started/"
+        },
+        {
+          "label": "Docker Docs",
+          "url": "https://docs.docker.com/"
+        }
+      ]
+    },
+    {
+      "key": "kubernetes",
+      "display_name": "Kubernetes",
+      "aliases": ["k8s", "kubernetes"],
+      "description": "An orchestration system for deploying, scaling, and managing containers.",
+      "documentation_url": "https://kubernetes.io/docs/tutorials/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Kubernetes Tutorials",
+          "url": "https://kubernetes.io/docs/tutorials/"
+        },
+        {
+          "label": "Kubernetes Basics",
+          "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/"
+        }
+      ]
+    },
+    {
+      "key": "postgresql",
+      "display_name": "PostgreSQL",
+      "aliases": ["postgres", "postgresql"],
+      "description": "A powerful open-source relational database known for correctness, extensibility, and SQL support.",
+      "documentation_url": "https://www.postgresql.org/docs/current/tutorial.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "PostgreSQL Tutorial",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html"
+        },
+        {
+          "label": "PostgreSQL Docs",
+          "url": "https://www.postgresql.org/docs/"
+        }
+      ]
+    },
+    {
+      "key": "mongodb",
+      "display_name": "MongoDB",
+      "aliases": ["mongo", "mongodb"],
+      "description": "A document database designed for flexible schemas and rapid application development.",
+      "documentation_url": "https://www.mongodb.com/docs/manual/tutorial/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "MongoDB Tutorial",
+          "url": "https://www.mongodb.com/docs/manual/tutorial/"
+        },
+        {
+          "label": "MongoDB Docs",
+          "url": "https://www.mongodb.com/docs/"
+        }
+      ]
+    },
+    {
+      "key": "redis",
+      "display_name": "Redis",
+      "aliases": ["redis"],
+      "description": "An in-memory data store used for caching, queues, pub/sub, and fast key-value access.",
+      "documentation_url": "https://redis.io/docs/latest/develop/get-started/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Redis Get Started",
+          "url": "https://redis.io/docs/latest/develop/get-started/"
+        },
+        {
+          "label": "Redis Docs",
+          "url": "https://redis.io/docs/latest/"
+        }
+      ]
+    },
+    {
+      "key": "graphql",
+      "display_name": "GraphQL",
+      "aliases": ["graphql"],
+      "description": "A query language and runtime for APIs that lets clients ask for exactly the data they need.",
+      "documentation_url": "https://graphql.org/learn/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GraphQL Learn",
+          "url": "https://graphql.org/learn/"
+        },
+        {
+          "label": "GraphQL Docs",
+          "url": "https://graphql.org/"
+        }
+      ]
+    },
+    {
+      "key": "prisma",
+      "display_name": "Prisma",
+      "aliases": ["prisma"],
+      "description": "A type-safe ORM and database toolkit for modern Node.js and TypeScript applications.",
+      "documentation_url": "https://www.prisma.io/docs/getting-started",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Prisma Getting Started",
+          "url": "https://www.prisma.io/docs/getting-started"
+        },
+        {
+          "label": "Prisma Docs",
+          "url": "https://www.prisma.io/docs"
+        }
+      ]
+    },
+    {
+      "key": "linux",
+      "display_name": "Linux",
+      "aliases": ["linux"],
+      "description": "A family of open-source operating systems and the basis of many developer environments and servers.",
+      "documentation_url": "https://linuxjourney.com/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Linux Journey",
+          "url": "https://linuxjourney.com/"
+        },
+        {
+          "label": "The Linux Command Line",
+          "url": "https://linuxcommand.org/tlcl.php"
+        }
+      ]
+    },
+    {
+      "key": "aws",
+      "display_name": "AWS",
+      "aliases": ["aws", "amazon web services"],
+      "description": "Amazon's cloud platform for computing, storage, databases, networking, and managed services.",
+      "documentation_url": "https://aws.amazon.com/getting-started/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "AWS Getting Started",
+          "url": "https://aws.amazon.com/getting-started/"
+        },
+        {
+          "label": "AWS Docs",
+          "url": "https://docs.aws.amazon.com/"
+        }
+      ]
+    },
+    {
+      "key": "github",
+      "display_name": "GitHub",
+      "aliases": ["github"],
+      "description": "The platform used to host repositories, collaborate on code, and manage pull requests.",
+      "documentation_url": "https://docs.github.com/get-started",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GitHub Get Started",
+          "url": "https://docs.github.com/get-started"
+        },
+        {
+          "label": "GitHub Docs",
+          "url": "https://docs.github.com/"
+        }
+      ]
+    },
+    {
+      "key": "cicd",
+      "display_name": "CI/CD",
+      "aliases": ["ci/cd", "cicd"],
+      "description": "Continuous integration and continuous delivery practices for automating builds, tests, and deployments.",
+      "documentation_url": "https://docs.github.com/actions",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "GitHub Actions",
+          "url": "https://docs.github.com/actions"
+        },
+        {
+          "label": "CI/CD Concepts",
+          "url": "https://docs.github.com/actions/automating-builds-and-tests/about-continuous-integration"
+        }
+      ]
+    },
+    {
+      "key": "terraform",
+      "display_name": "Terraform",
+      "aliases": ["terraform"],
+      "description": "An infrastructure-as-code tool for provisioning and managing cloud resources declaratively.",
+      "documentation_url": "https://developer.hashicorp.com/terraform/tutorials",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Terraform Tutorials",
+          "url": "https://developer.hashicorp.com/terraform/tutorials"
+        },
+        {
+          "label": "Terraform Docs",
+          "url": "https://developer.hashicorp.com/terraform/docs"
+        }
+      ]
+    },
+    {
+      "key": "tauri",
+      "display_name": "Tauri",
+      "aliases": ["tauri"],
+      "description": "A framework for building lightweight desktop apps using web technologies and a Rust backend.",
+      "documentation_url": "https://tauri.app/start/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Tauri Start",
+          "url": "https://tauri.app/start/"
+        },
+        {
+          "label": "Tauri Docs",
+          "url": "https://tauri.app/v1/guides/"
+        }
+      ]
+    },
+    {
+      "key": "bun",
+      "display_name": "Bun",
+      "aliases": ["bun"],
+      "description": "A fast JavaScript runtime, bundler, test runner, and package manager.",
+      "documentation_url": "https://bun.sh/docs",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Bun Docs",
+          "url": "https://bun.sh/docs"
+        },
+        {
+          "label": "Bun Guides",
+          "url": "https://bun.sh/guides"
+        }
+      ]
+    },
+    {
+      "key": "html",
+      "display_name": "HTML",
+      "aliases": ["html"],
+      "description": "The markup language used to structure web pages and web applications.",
+      "documentation_url": "https://developer.mozilla.org/en-US/docs/Web/HTML",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "MDN HTML Guide",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML"
+        },
+        {
+          "label": "HTML Tutorial",
+          "url": "https://www.w3schools.com/html/"
+        }
+      ]
+    },
+    {
+      "key": "css",
+      "display_name": "CSS",
+      "aliases": ["css"],
+      "description": "The styling language used to control layout, color, and presentation on the web.",
+      "documentation_url": "https://developer.mozilla.org/en-US/docs/Web/CSS",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "MDN CSS Guide",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+        },
+        {
+          "label": "CSS Tutorial",
+          "url": "https://www.w3schools.com/css/"
+        }
+      ]
+    },
+    {
+      "key": "git",
+      "display_name": "Git",
+      "aliases": ["git"],
+      "description": "The distributed version control system used for nearly all modern software collaboration.",
+      "documentation_url": "https://git-scm.com/docs/gittutorial",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Git Tutorial",
+          "url": "https://git-scm.com/docs/gittutorial"
+        },
+        {
+          "label": "Pro Git",
+          "url": "https://git-scm.com/book/en/v2"
+        }
+      ]
+    },
+    {
+      "key": "vim",
+      "display_name": "Vim",
+      "aliases": ["vim"],
+      "description": "A highly configurable terminal text editor popular with developers and sysadmins.",
+      "documentation_url": "https://www.openvim.com/",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Vim Tutor",
+          "url": "https://www.openvim.com/"
+        },
+        {
+          "label": "Vim Adventures",
+          "url": "https://vim-adventures.com/"
+        }
+      ]
+    },
+    {
+      "key": "nginx",
+      "display_name": "Nginx",
+      "aliases": ["nginx"],
+      "description": "A high-performance web server, reverse proxy, and load balancer.",
+      "documentation_url": "https://nginx.org/en/docs/beginners_guide.html",
+      "codeverse_hub_url": "",
+      "related_channel_names": [],
+      "beginner_resources": [
+        {
+          "label": "Nginx Beginner's Guide",
+          "url": "https://nginx.org/en/docs/beginners_guide.html"
+        },
+        {
+          "label": "Nginx Docs",
+          "url": "https://nginx.org/en/docs/"
         }
       ]
     }

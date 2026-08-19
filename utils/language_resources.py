@@ -33,7 +33,7 @@ class LanguageResource:
     aliases: tuple[str, ...]
     description: str
     documentation_url: str
-    codeverse_hub_url: str
+    codeverse_hub_url: str = ""
     related_channel_names: tuple[str, ...] = ()
     related_channel_ids: tuple[int, ...] = ()
     beginner_resources: tuple[ResourceLink, ...] = ()
@@ -156,7 +156,7 @@ def _parse_language_entry(raw: Any) -> LanguageResource | None:
     documentation_url = str(raw.get("documentation_url", "")).strip()
     codeverse_hub_url = str(raw.get("codeverse_hub_url", "")).strip()
 
-    if not key or not display_name or not description or not documentation_url or not codeverse_hub_url:
+    if not key or not display_name or not description or not documentation_url:
         logger.warning("Skipping incomplete language resource entry: %s", raw)
         return None
 
@@ -275,4 +275,3 @@ def suggest_language_names(query: str, *, limit: int = 5) -> list[str]:
         if display_name and display_name not in suggestions:
             suggestions.append(display_name)
     return suggestions
-

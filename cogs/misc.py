@@ -32,9 +32,22 @@ from utils.codebuddy_database import DB_PATH
 from utils.config import Config
 from utils.language_resources import (
     LanguageResource,
+    ResourceLink,
     find_language_resource,
     get_supported_language_names,
     suggest_language_names,
+)
+
+GENERAL_PRACTICE_RESOURCES: tuple[ResourceLink, ...] = (
+    ResourceLink(label="Exercism", url="https://exercism.org/"),
+    ResourceLink(label="roadmap.sh", url="https://roadmap.sh/"),
+    ResourceLink(label="freeCodeCamp", url="https://www.freecodecamp.org/learn/"),
+)
+
+GENERAL_REFERENCE_RESOURCES: tuple[ResourceLink, ...] = (
+    ResourceLink(label="MDN Web Docs", url="https://developer.mozilla.org/"),
+    ResourceLink(label="Stack Overflow", url="https://stackoverflow.com/"),
+    ResourceLink(label="DevDocs", url="https://devdocs.io/"),
 )
 
 
@@ -172,11 +185,12 @@ class Misc(commands.Cog):
             value=f"[Open documentation]({resource.documentation_url})",
             inline=False,
         )
-        embed.add_field(
-            name="Our Website",
-            value=f"[Open resource page]({resource.codeverse_hub_url})",
-            inline=False,
-        )
+        if resource.codeverse_hub_url:
+            embed.add_field(
+                name="CodeVerse Hub",
+                value=f"[Open resource page]({resource.codeverse_hub_url})",
+                inline=False,
+            )
 
         beginner_links = self._format_link_block(
             resource.beginner_resources,
@@ -195,7 +209,18 @@ class Misc(commands.Cog):
                 inline=False,
             )
 
-        embed.set_footer(text="Use ?resource <language> to look up another language")
+        embed.add_field(
+            name="Practice Platforms",
+            value=self._format_link_block(GENERAL_PRACTICE_RESOURCES, ""),
+            inline=False,
+        )
+        embed.add_field(
+            name="Reference Hubs",
+            value=self._format_link_block(GENERAL_REFERENCE_RESOURCES, ""),
+            inline=False,
+        )
+
+        embed.set_footer(text="Use ?resources <language> to look up another language")
         return embed
 
     async def _send_resource_response(
@@ -214,7 +239,7 @@ class Misc(commands.Cog):
     async def _send_resource_usage(self, ctx: commands.Context) -> None:
         supported = get_supported_language_names()
         embed = discord.Embed(
-            title="Usage: ?resource <language>",
+            title="Usage: ?resources <language>",
             description=(
                 "Provide a programming language to see related Discord channels, "
                 "official documentation, the CodeVerse Hub Resources page, and curated beginner resources."
@@ -352,11 +377,12 @@ class Misc(commands.Cog):
         await ctx.send(f"Joined {channel.mention}.")
 
     @commands.hybrid_command(
-        name="resource",
+        name="resources",
+        aliases=["resource"],
         description="Find learning resources for a programming language.",
     )
     @app_commands.describe(language="Programming language to look up")
-    async def resource(self, ctx: commands.Context, *, language: str):
+    async def resources(self, ctx: commands.Context, *, language: str):
         """Show learning resources for a programming language."""
         if ctx.guild is None:
             await self._send_resource_response(

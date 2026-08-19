@@ -237,7 +237,7 @@ class Fun2OoshBot(commands.Bot):
         elif isinstance(error, commands.MissingRequiredArgument):
             command = getattr(ctx, "command", None)
             cog = getattr(command, "cog", None)
-            if command and command.qualified_name == "resource" and cog is not None:
+            if command and command.qualified_name == "resources" and cog is not None:
                 send_usage = getattr(cog, "_send_resource_usage", None)
                 if callable(send_usage):
                     await send_usage(ctx)
