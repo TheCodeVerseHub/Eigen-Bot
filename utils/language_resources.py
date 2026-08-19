@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from difflib import get_close_matches
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,7 @@ def _parse_channel_ids(raw: Any, *, resource_key: str) -> tuple[int, ...]:
     return tuple(ids)
 
 
-def _parse_language_entry(raw: Any) -> Optional[LanguageResource]:
+def _parse_language_entry(raw: Any) -> LanguageResource | None:
     if not isinstance(raw, dict):
         logger.warning("Skipping malformed language resource entry: %r", raw)
         return None
@@ -245,7 +245,7 @@ def get_supported_language_names() -> list[str]:
     return [resource.display_name for resource in load_language_resources()]
 
 
-def find_language_resource(query: str) -> Optional[LanguageResource]:
+def find_language_resource(query: str) -> LanguageResource | None:
     """Resolve a user query to a supported language resource."""
     normalized = _normalize(query)
     if not normalized:

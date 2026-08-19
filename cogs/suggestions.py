@@ -20,10 +20,9 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiosqlite
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -76,15 +75,14 @@ class Suggestions(commands.Cog):
 
             self._db_ready = True
 
-    async def _get_suggestions_channel_id(self, guild_id: int) -> Optional[int]:
+    async def _get_suggestions_channel_id(self, guild_id: int) -> int | None:
         await self._ensure_db()
 
-        async with aiosqlite.connect(self._db_path) as db:
-            async with db.execute(
-                "SELECT suggestions_channel_id FROM suggestions_config WHERE guild_id = ?",
-                (int(guild_id),),
-            ) as cursor:
-                row = await cursor.fetchone()
+        async with aiosqlite.connect(self._db_path) as db, db.execute(
+            "SELECT suggestions_channel_id FROM suggestions_config WHERE guild_id = ?",
+            (int(guild_id),),
+        ) as cursor:
+            row = await cursor.fetchone()
 
         if not row or row[0] is None:
             return None
@@ -116,9 +114,9 @@ class Suggestions(commands.Cog):
     async def _safe_respond(
         self,
         ctx: commands.Context,
-        content: Optional[str] = None,
+        content: str | None = None,
         *,
-        embed: Optional[discord.Embed] = None,
+        embed: discord.Embed | None = None,
         ephemeral: bool = False,
     ) -> None:
         """Respond without crashing on expired slash interactions.
@@ -127,7 +125,7 @@ class Suggestions(commands.Cog):
         a short window. If the interaction expires, fallback to channel send.
         """
         interaction = getattr(ctx, "interaction", None)
-        payload: Dict[str, Any] = {}
+        payload: dict[str, Any] = {}
         if content is not None:
             payload["content"] = content
         if embed is not None:

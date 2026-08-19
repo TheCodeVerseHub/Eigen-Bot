@@ -1,7 +1,9 @@
+import aiosqlite
 import discord
 from discord.ext import commands
-import aiosqlite
+
 from utils.helpers import EmbedBuilder
+
 
 def is_staff():
     async def predicate(ctx):

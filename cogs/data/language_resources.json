@@ -3,11 +3,7 @@
     {
       "key": "python",
       "display_name": "Python",
-      "aliases": [
-        "py",
-        "python3",
-        "python 3"
-      ],
+      "aliases": ["py", "python3", "python 3"],
       "description": "A beginner-friendly, versatile language used for automation, web development, data work, scripting, and more.",
       "documentation_url": "https://docs.python.org/3/tutorial/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/python",
@@ -30,12 +26,7 @@
     {
       "key": "javascript",
       "display_name": "JavaScript",
-      "aliases": [
-        "js",
-        "node",
-        "nodejs",
-        "node.js"
-      ],
+      "aliases": ["js", "node", "nodejs", "node.js"],
       "description": "The language of the web for interactive frontends, server-side apps, automation, and full-stack development.",
       "documentation_url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/javascript",
@@ -58,10 +49,7 @@
     {
       "key": "typescript",
       "display_name": "TypeScript",
-      "aliases": [
-        "ts",
-        "typescript"
-      ],
+      "aliases": ["ts", "typescript"],
       "description": "A typed superset of JavaScript that adds static analysis and better tooling for larger applications.",
       "documentation_url": "https://www.typescriptlang.org/docs/handbook/intro.html",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/typescript",
@@ -84,9 +72,7 @@
     {
       "key": "java",
       "display_name": "Java",
-      "aliases": [
-        "java"
-      ],
+      "aliases": ["java"],
       "description": "A widely used object-oriented language for backend systems, Android development, tooling, and enterprise software.",
       "documentation_url": "https://dev.java/learn/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/java",
@@ -109,11 +95,7 @@
     {
       "key": "cpp",
       "display_name": "CPP",
-      "aliases": [
-        "c++",
-        "cpp",
-        "cxx"
-      ],
+      "aliases": ["c++", "cpp", "cxx"],
       "description": "A powerful systems language used for performance-critical software, games, embedded work, and competitive programming.",
       "documentation_url": "https://en.cppreference.com/w/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/cpp",
@@ -136,12 +118,7 @@
     {
       "key": "csharp",
       "display_name": "CSharp",
-      "aliases": [
-        "c#",
-        "csharp",
-        "dotnet",
-        ".net"
-      ],
+      "aliases": ["c#", "csharp", "dotnet", ".net"],
       "description": "Microsoft's modern language for backend services, desktop apps, game development, and the .NET ecosystem.",
       "documentation_url": "https://learn.microsoft.com/en-us/dotnet/csharp/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/csharp",
@@ -164,9 +141,7 @@
     {
       "key": "go",
       "display_name": "Go",
-      "aliases": [
-        "golang"
-      ],
+      "aliases": ["golang"],
       "description": "A fast, simple language popular for services, CLI tools, cloud infrastructure, and concurrency-heavy backends.",
       "documentation_url": "https://go.dev/doc/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/go",
@@ -189,9 +164,7 @@
     {
       "key": "rust",
       "display_name": "Rust",
-      "aliases": [
-        "rust"
-      ],
+      "aliases": ["rust"],
       "description": "A systems language focused on memory safety, performance, and modern tooling for reliable software.",
       "documentation_url": "https://doc.rust-lang.org/book/",
       "codeverse_hub_url": "https://thecodeversehub.tech/pages/resources/rust",
@@ -214,9 +187,7 @@
     {
       "key": "c",
       "display_name": "C",
-      "aliases": [
-        "c"
-      ],
+      "aliases": ["c"],
       "description": "The foundational systems language behind operating systems, embedded devices, and most other languages' runtimes.",
       "documentation_url": "https://en.cppreference.com/w/c",
       "codeverse_hub_url": "",
@@ -235,10 +206,7 @@
     {
       "key": "objectivec",
       "display_name": "Objective-C",
-      "aliases": [
-        "objective-c",
-        "objc"
-      ],
+      "aliases": ["objective-c", "objc"],
       "description": "Apple's original object-oriented language for macOS and iOS, still found throughout legacy Apple codebases.",
       "documentation_url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/",
       "codeverse_hub_url": "",
@@ -257,9 +225,7 @@
     {
       "key": "swift",
       "display_name": "Swift",
-      "aliases": [
-        "swift"
-      ],
+      "aliases": ["swift"],
       "description": "Apple's modern, safe, and fast language for iOS, macOS, and server-side development.",
       "documentation_url": "https://docs.swift.org/swift-book/",
       "codeverse_hub_url": "",
@@ -278,9 +244,7 @@
     {
       "key": "kotlin",
       "display_name": "Kotlin",
-      "aliases": [
-        "kt"
-      ],
+      "aliases": ["kt"],
       "description": "A modern, concise JVM language and the preferred choice for Android development.",
       "documentation_url": "https://kotlinlang.org/docs/home.html",
       "codeverse_hub_url": "",
@@ -299,9 +263,7 @@
     {
       "key": "dart",
       "display_name": "Dart",
-      "aliases": [
-        "dart"
-      ],
+      "aliases": ["dart"],
       "description": "Google's client-optimized language best known as the engine behind Flutter apps.",
       "documentation_url": "https://dart.dev/guides",
       "codeverse_hub_url": "",
@@ -320,9 +282,7 @@
     {
       "key": "php",
       "display_name": "PHP",
-      "aliases": [
-        "php"
-      ],
+      "aliases": ["php"],
       "description": "A server-side scripting language that powers a huge share of the web, including WordPress and Laravel apps.",
       "documentation_url": "https://www.php.net/manual/en/tutorial.php",
       "codeverse_hub_url": "",
@@ -341,9 +301,7 @@
     {
       "key": "ruby",
       "display_name": "Ruby",
-      "aliases": [
-        "rb"
-      ],
+      "aliases": ["rb"],
       "description": "A friendly, expressive language famous for the Rails web framework and elegant syntax.",
       "documentation_url": "https://www.ruby-lang.org/en/documentation/",
       "codeverse_hub_url": "",
@@ -362,9 +320,7 @@
     {
       "key": "perl",
       "display_name": "Perl",
-      "aliases": [
-        "pl"
-      ],
+      "aliases": ["pl"],
       "description": "A powerful text-processing and scripting language with a long history in sysadmin and bioinformatics work.",
       "documentation_url": "https://learn.perl.org/",
       "codeverse_hub_url": "",
@@ -383,9 +339,7 @@
     {
       "key": "r",
       "display_name": "R",
-      "aliases": [
-        "r-lang"
-      ],
+      "aliases": ["r-lang"],
       "description": "A language built for statistics, data analysis, and visualization, widely used in academia and data science.",
       "documentation_url": "https://cran.r-project.org/manuals.html",
       "codeverse_hub_url": "",
@@ -404,9 +358,7 @@
     {
       "key": "lua",
       "display_name": "Lua",
-      "aliases": [
-        "lua"
-      ],
+      "aliases": ["lua"],
       "description": "A lightweight, embeddable scripting language popular in game engines like Roblox and Love2D.",
       "documentation_url": "https://www.lua.org/manual/5.4/",
       "codeverse_hub_url": "",
@@ -425,9 +377,7 @@
     {
       "key": "haskell",
       "display_name": "Haskell",
-      "aliases": [
-        "hs"
-      ],
+      "aliases": ["hs"],
       "description": "A purely functional language with strong static typing, popular for teaching functional programming concepts.",
       "documentation_url": "https://www.haskell.org/documentation/",
       "codeverse_hub_url": "",
@@ -446,10 +396,7 @@
     {
       "key": "elixir",
       "display_name": "Elixir",
-      "aliases": [
-        "ex",
-        "exs"
-      ],
+      "aliases": ["ex", "exs"],
       "description": "A functional language built on the Erlang VM, known for fault tolerance and use in scalable web apps via Phoenix.",
       "documentation_url": "https://elixir-lang.org/getting-started/introduction.html",
       "codeverse_hub_url": "",
@@ -468,9 +415,7 @@
     {
       "key": "erlang",
       "display_name": "Erlang",
-      "aliases": [
-        "erl"
-      ],
+      "aliases": ["erl"],
       "description": "The functional, concurrent language behind massively fault-tolerant telecom and messaging systems.",
       "documentation_url": "https://www.erlang.org/doc/",
       "codeverse_hub_url": "",
@@ -489,9 +434,7 @@
     {
       "key": "clojure",
       "display_name": "Clojure",
-      "aliases": [
-        "clj"
-      ],
+      "aliases": ["clj"],
       "description": "A modern Lisp dialect that runs on the JVM, emphasizing immutability and functional programming.",
       "documentation_url": "https://clojure.org/guides/getting_started",
       "codeverse_hub_url": "",
@@ -510,10 +453,7 @@
     {
       "key": "fsharp",
       "display_name": "F#",
-      "aliases": [
-        "f#",
-        "fsharp"
-      ],
+      "aliases": ["f#", "fsharp"],
       "description": "A functional-first language on .NET, great for data pipelines, correctness, and concise code.",
       "documentation_url": "https://learn.microsoft.com/en-us/dotnet/fsharp/",
       "codeverse_hub_url": "",
@@ -532,9 +472,7 @@
     {
       "key": "ocaml",
       "display_name": "OCaml",
-      "aliases": [
-        "ocaml"
-      ],
+      "aliases": ["ocaml"],
       "description": "A statically typed functional language known for speed and correctness, used in compilers and finance.",
       "documentation_url": "https://ocaml.org/docs",
       "codeverse_hub_url": "",
@@ -553,9 +491,7 @@
     {
       "key": "scala",
       "display_name": "Scala",
-      "aliases": [
-        "scala"
-      ],
+      "aliases": ["scala"],
       "description": "A hybrid object-oriented and functional language on the JVM, used heavily in big-data tools like Spark.",
       "documentation_url": "https://docs.scala-lang.org/",
       "codeverse_hub_url": "",
@@ -574,9 +510,7 @@
     {
       "key": "groovy",
       "display_name": "Groovy",
-      "aliases": [
-        "groovy"
-      ],
+      "aliases": ["groovy"],
       "description": "A dynamic JVM language often used for Gradle build scripts and Jenkins pipelines.",
       "documentation_url": "https://groovy-lang.org/documentation.html",
       "codeverse_hub_url": "",
@@ -595,9 +529,7 @@
     {
       "key": "julia",
       "display_name": "Julia",
-      "aliases": [
-        "jl"
-      ],
+      "aliases": ["jl"],
       "description": "A high-performance language for numerical and scientific computing that reads almost like Python.",
       "documentation_url": "https://docs.julialang.org/",
       "codeverse_hub_url": "",
@@ -616,9 +548,7 @@
     {
       "key": "matlab",
       "display_name": "MATLAB",
-      "aliases": [
-        "matlab"
-      ],
+      "aliases": ["matlab"],
       "description": "A numerical computing environment and language widely used in engineering, math, and academia.",
       "documentation_url": "https://www.mathworks.com/help/matlab/",
       "codeverse_hub_url": "",
@@ -637,11 +567,7 @@
     {
       "key": "sql",
       "display_name": "SQL",
-      "aliases": [
-        "mysql",
-        "postgres",
-        "postgresql"
-      ],
+      "aliases": ["mysql", "postgres", "postgresql"],
       "description": "The standard language for querying and managing relational databases.",
       "documentation_url": "https://www.w3schools.com/sql/",
       "codeverse_hub_url": "",
@@ -660,10 +586,7 @@
     {
       "key": "bash",
       "display_name": "Bash",
-      "aliases": [
-        "shell",
-        "sh"
-      ],
+      "aliases": ["shell", "sh"],
       "description": "The default Linux/macOS shell scripting language for automation and command-line tooling.",
       "documentation_url": "https://www.gnu.org/software/bash/manual/bash.html",
       "codeverse_hub_url": "",
@@ -682,10 +605,7 @@
     {
       "key": "powershell",
       "display_name": "PowerShell",
-      "aliases": [
-        "pwsh",
-        "ps1"
-      ],
+      "aliases": ["pwsh", "ps1"],
       "description": "Microsoft's object-oriented shell and scripting language for automating Windows and cloud tasks.",
       "documentation_url": "https://learn.microsoft.com/en-us/powershell/",
       "codeverse_hub_url": "",
@@ -704,10 +624,7 @@
     {
       "key": "assembly",
       "display_name": "Assembly (x86)",
-      "aliases": [
-        "asm",
-        "x86"
-      ],
+      "aliases": ["asm", "x86"],
       "description": "Low-level architecture-specific code that maps closely to a CPU's own instructions.",
       "documentation_url": "https://www.nasm.us/doc/",
       "codeverse_hub_url": "",
@@ -726,9 +643,7 @@
     {
       "key": "vhdl",
       "display_name": "VHDL",
-      "aliases": [
-        "vhdl"
-      ],
+      "aliases": ["vhdl"],
       "description": "A hardware description language used to design and simulate digital circuits.",
       "documentation_url": "https://nandland.com/learn-vhdl/",
       "codeverse_hub_url": "",
@@ -747,10 +662,7 @@
     {
       "key": "verilog",
       "display_name": "Verilog",
-      "aliases": [
-        "verilog",
-        "systemverilog"
-      ],
+      "aliases": ["verilog", "systemverilog"],
       "description": "A hardware description language used heavily in chip design, alongside VHDL and SystemVerilog.",
       "documentation_url": "https://www.asic-world.com/verilog/veritut.html",
       "codeverse_hub_url": "",
@@ -769,9 +681,7 @@
     {
       "key": "prolog",
       "display_name": "Prolog",
-      "aliases": [
-        "prolog"
-      ],
+      "aliases": ["prolog"],
       "description": "A logic programming language built around facts, rules, and queries, popular in AI coursework.",
       "documentation_url": "https://www.swi-prolog.org/pldoc/doc_for?object=manual",
       "codeverse_hub_url": "",
@@ -790,9 +700,7 @@
     {
       "key": "scheme",
       "display_name": "Scheme",
-      "aliases": [
-        "scheme"
-      ],
+      "aliases": ["scheme"],
       "description": "A minimalist Lisp dialect often used to teach core programming and language design concepts.",
       "documentation_url": "https://www.scheme.com/tspl4/",
       "codeverse_hub_url": "",
@@ -811,10 +719,7 @@
     {
       "key": "commonlisp",
       "display_name": "Common Lisp",
-      "aliases": [
-        "lisp",
-        "cl"
-      ],
+      "aliases": ["lisp", "cl"],
       "description": "A mature, powerful Lisp dialect used for symbolic computing, AI research, and rapid prototyping.",
       "documentation_url": "https://lisp-lang.org/learn/",
       "codeverse_hub_url": "",
@@ -833,9 +738,7 @@
     {
       "key": "racket",
       "display_name": "Racket",
-      "aliases": [
-        "racket"
-      ],
+      "aliases": ["racket"],
       "description": "A Lisp-family language designed for building and experimenting with other programming languages.",
       "documentation_url": "https://docs.racket-lang.org/",
       "codeverse_hub_url": "",
@@ -854,9 +757,7 @@
     {
       "key": "ada",
       "display_name": "Ada",
-      "aliases": [
-        "ada"
-      ],
+      "aliases": ["ada"],
       "description": "A strongly typed language designed for reliability, used in aviation, defense, and safety-critical systems.",
       "documentation_url": "https://learn.adacore.com/",
       "codeverse_hub_url": "",
@@ -875,10 +776,7 @@
     {
       "key": "fortran",
       "display_name": "Fortran",
-      "aliases": [
-        "fortran",
-        "f90"
-      ],
+      "aliases": ["fortran", "f90"],
       "description": "One of the oldest languages, still dominant in high-performance scientific and numerical computing.",
       "documentation_url": "https://fortran-lang.org/learn/",
       "codeverse_hub_url": "",
@@ -897,9 +795,7 @@
     {
       "key": "cobol",
       "display_name": "COBOL",
-      "aliases": [
-        "cobol"
-      ],
+      "aliases": ["cobol"],
       "description": "A verbose, business-oriented language that still runs a huge share of banking and government systems.",
       "documentation_url": "https://www.ibm.com/docs/en/cobol-zos",
       "codeverse_hub_url": "",
@@ -918,11 +814,7 @@
     {
       "key": "pascal",
       "display_name": "Pascal",
-      "aliases": [
-        "pascal",
-        "delphi",
-        "objectpascal"
-      ],
+      "aliases": ["pascal", "delphi", "objectpascal"],
       "description": "A structured, teaching-friendly language whose modern descendants (Free Pascal, Delphi) are still used commercially.",
       "documentation_url": "https://www.freepascal.org/docs.html",
       "codeverse_hub_url": "",
@@ -941,11 +833,7 @@
     {
       "key": "visualbasic",
       "display_name": "Visual Basic .NET",
-      "aliases": [
-        "vb",
-        "vbnet",
-        "vb.net"
-      ],
+      "aliases": ["vb", "vbnet", "vb.net"],
       "description": "A beginner-approachable .NET language known for rapid application and Windows desktop development.",
       "documentation_url": "https://learn.microsoft.com/en-us/dotnet/visual-basic/",
       "codeverse_hub_url": "",
@@ -964,9 +852,7 @@
     {
       "key": "d",
       "display_name": "D",
-      "aliases": [
-        "dlang"
-      ],
+      "aliases": ["dlang"],
       "description": "A systems language combining C++-level performance with modern conveniences like garbage collection.",
       "documentation_url": "https://dlang.org/documentation.html",
       "codeverse_hub_url": "",
@@ -985,9 +871,7 @@
     {
       "key": "nim",
       "display_name": "Nim",
-      "aliases": [
-        "nim"
-      ],
+      "aliases": ["nim"],
       "description": "A statically typed, Python-like language that compiles to fast native code.",
       "documentation_url": "https://nim-lang.org/documentation.html",
       "codeverse_hub_url": "",
@@ -1006,9 +890,7 @@
     {
       "key": "crystal",
       "display_name": "Crystal",
-      "aliases": [
-        "crystal"
-      ],
+      "aliases": ["crystal"],
       "description": "A Ruby-inspired language with static typing and compiled performance.",
       "documentation_url": "https://crystal-lang.org/reference/",
       "codeverse_hub_url": "",
@@ -1027,9 +909,7 @@
     {
       "key": "zig",
       "display_name": "Zig",
-      "aliases": [
-        "zig"
-      ],
+      "aliases": ["zig"],
       "description": "A modern systems language positioned as a simpler, safer alternative to C with manual memory control.",
       "documentation_url": "https://ziglang.org/documentation/master/",
       "codeverse_hub_url": "",
@@ -1048,9 +928,7 @@
     {
       "key": "v",
       "display_name": "V",
-      "aliases": [
-        "vlang"
-      ],
+      "aliases": ["vlang"],
       "description": "A simple, fast-compiling language aiming to combine Go's simplicity with C-like performance.",
       "documentation_url": "https://docs.vlang.io/",
       "codeverse_hub_url": "",
@@ -1069,9 +947,7 @@
     {
       "key": "odin",
       "display_name": "Odin",
-      "aliases": [
-        "odin"
-      ],
+      "aliases": ["odin"],
       "description": "A data-oriented systems language designed with game and simulation programmers in mind.",
       "documentation_url": "https://odin-lang.org/docs/overview/",
       "codeverse_hub_url": "",
@@ -1090,9 +966,7 @@
     {
       "key": "solidity",
       "display_name": "Solidity",
-      "aliases": [
-        "sol"
-      ],
+      "aliases": ["sol"],
       "description": "The primary smart contract language for Ethereum and other EVM-compatible blockchains.",
       "documentation_url": "https://docs.soliditylang.org/",
       "codeverse_hub_url": "",
@@ -1111,10 +985,7 @@
     {
       "key": "webassembly",
       "display_name": "WebAssembly",
-      "aliases": [
-        "wasm",
-        "wat"
-      ],
+      "aliases": ["wasm", "wat"],
       "description": "A low-level, portable binary format that runs at near-native speed in browsers and beyond.",
       "documentation_url": "https://webassembly.github.io/spec/core/",
       "codeverse_hub_url": "",
@@ -1133,9 +1004,7 @@
     {
       "key": "elm",
       "display_name": "Elm",
-      "aliases": [
-        "elm"
-      ],
+      "aliases": ["elm"],
       "description": "A purely functional language that compiles to JavaScript, prized for eliminating runtime errors in the browser.",
       "documentation_url": "https://guide.elm-lang.org/",
       "codeverse_hub_url": "",
@@ -1154,9 +1023,7 @@
     {
       "key": "purescript",
       "display_name": "PureScript",
-      "aliases": [
-        "purs"
-      ],
+      "aliases": ["purs"],
       "description": "A strongly-typed functional language that compiles to JavaScript, similar in spirit to Haskell.",
       "documentation_url": "https://book.purescript.org/",
       "codeverse_hub_url": "",
@@ -1175,9 +1042,7 @@
     {
       "key": "rescript",
       "display_name": "ReScript",
-      "aliases": [
-        "res"
-      ],
+      "aliases": ["res"],
       "description": "A strongly typed language that compiles to clean, readable JavaScript, built on OCaml's type system.",
       "documentation_url": "https://rescript-lang.org/docs/manual/latest/introduction",
       "codeverse_hub_url": "",
@@ -1196,10 +1061,7 @@
     {
       "key": "idris",
       "display_name": "Idris",
-      "aliases": [
-        "idris",
-        "idris2"
-      ],
+      "aliases": ["idris", "idris2"],
       "description": "A dependently typed functional language used to explore proofs and highly precise type systems.",
       "documentation_url": "https://idris2.readthedocs.io/",
       "codeverse_hub_url": "",
@@ -1218,9 +1080,7 @@
     {
       "key": "agda",
       "display_name": "Agda",
-      "aliases": [
-        "agda"
-      ],
+      "aliases": ["agda"],
       "description": "A dependently typed language and proof assistant used in programming language theory research.",
       "documentation_url": "https://agda.readthedocs.io/",
       "codeverse_hub_url": "",
@@ -1239,10 +1099,7 @@
     {
       "key": "coq",
       "display_name": "Coq",
-      "aliases": [
-        "coq",
-        "rocq"
-      ],
+      "aliases": ["coq", "rocq"],
       "description": "A formal proof assistant language used to verify mathematical theorems and software correctness.",
       "documentation_url": "https://coq.inria.fr/documentation",
       "codeverse_hub_url": "",
@@ -1261,10 +1118,7 @@
     {
       "key": "lean",
       "display_name": "Lean",
-      "aliases": [
-        "lean",
-        "lean4"
-      ],
+      "aliases": ["lean", "lean4"],
       "description": "A functional language and theorem prover increasingly used for formalized mathematics.",
       "documentation_url": "https://leanprover.github.io/theorem_proving_in_lean4/",
       "codeverse_hub_url": "",
@@ -1283,9 +1137,7 @@
     {
       "key": "standardml",
       "display_name": "Standard ML",
-      "aliases": [
-        "sml"
-      ],
+      "aliases": ["sml"],
       "description": "A classic statically typed functional language that heavily influenced OCaml, F#, and Haskell.",
       "documentation_url": "https://smlfamily.github.io/",
       "codeverse_hub_url": "",
@@ -1304,9 +1156,7 @@
     {
       "key": "haxe",
       "display_name": "Haxe",
-      "aliases": [
-        "haxe"
-      ],
+      "aliases": ["haxe"],
       "description": "A cross-compiling language that targets JavaScript, C++, Python, and more from one codebase, popular in game dev.",
       "documentation_url": "https://haxe.org/documentation/",
       "codeverse_hub_url": "",
@@ -1325,9 +1175,7 @@
     {
       "key": "vala",
       "display_name": "Vala",
-      "aliases": [
-        "vala"
-      ],
+      "aliases": ["vala"],
       "description": "A language with C#-like syntax that compiles to C and GObject, used in the GNOME desktop ecosystem.",
       "documentation_url": "https://vala.dev/",
       "codeverse_hub_url": "",
@@ -1346,9 +1194,7 @@
     {
       "key": "pony",
       "display_name": "Pony",
-      "aliases": [
-        "pony"
-      ],
+      "aliases": ["pony"],
       "description": "An actor-model language guaranteeing data-race-free and deadlock-free concurrent programs.",
       "documentation_url": "https://tutorial.ponylang.io/",
       "codeverse_hub_url": "",
@@ -1367,10 +1213,7 @@
     {
       "key": "chapel",
       "display_name": "Chapel",
-      "aliases": [
-        "chapel",
-        "chpl"
-      ],
+      "aliases": ["chapel", "chpl"],
       "description": "A language designed for productive parallel and high-performance computing across clusters.",
       "documentation_url": "https://chapel-lang.org/docs/",
       "codeverse_hub_url": "",
@@ -1389,9 +1232,7 @@
     {
       "key": "apl",
       "display_name": "APL",
-      "aliases": [
-        "apl"
-      ],
+      "aliases": ["apl"],
       "description": "An array-oriented language with a distinctive symbolic notation, powerful for concise mathematical code.",
       "documentation_url": "https://tryapl.org/",
       "codeverse_hub_url": "",
@@ -1410,9 +1251,7 @@
     {
       "key": "j",
       "display_name": "J",
-      "aliases": [
-        "jlang"
-      ],
+      "aliases": ["jlang"],
       "description": "A terse, array-oriented descendant of APL that uses standard ASCII characters instead of symbols.",
       "documentation_url": "https://www.jsoftware.com/help/learning/contents.htm",
       "codeverse_hub_url": "",
@@ -1431,9 +1270,7 @@
     {
       "key": "forth",
       "display_name": "Forth",
-      "aliases": [
-        "forth"
-      ],
+      "aliases": ["forth"],
       "description": "A minimalist, stack-based language often used in embedded systems and bootloaders like Open Firmware.",
       "documentation_url": "https://www.forth.com/starting-forth/",
       "codeverse_hub_url": "",
@@ -1452,10 +1289,7 @@
     {
       "key": "smalltalk",
       "display_name": "Smalltalk",
-      "aliases": [
-        "smalltalk",
-        "squeak"
-      ],
+      "aliases": ["smalltalk", "squeak"],
       "description": "One of the earliest pure object-oriented languages, highly influential on Ruby, Python, and Objective-C.",
       "documentation_url": "https://squeak.org/",
       "codeverse_hub_url": "",
@@ -1474,9 +1308,7 @@
     {
       "key": "tcl",
       "display_name": "Tcl",
-      "aliases": [
-        "tcl"
-      ],
+      "aliases": ["tcl"],
       "description": "A simple, embeddable scripting language commonly paired with the Tk GUI toolkit and used in EDA tools.",
       "documentation_url": "https://www.tcl.tk/man/",
       "codeverse_hub_url": "",
@@ -1495,10 +1327,7 @@
     {
       "key": "awk",
       "display_name": "AWK",
-      "aliases": [
-        "awk",
-        "gawk"
-      ],
+      "aliases": ["awk", "gawk"],
       "description": "A pattern-scanning and text-processing language built for quick one-liners over structured text.",
       "documentation_url": "https://www.gnu.org/software/gawk/manual/gawk.html",
       "codeverse_hub_url": "",
@@ -1517,9 +1346,7 @@
     {
       "key": "factor",
       "display_name": "Factor",
-      "aliases": [
-        "factor"
-      ],
+      "aliases": ["factor"],
       "description": "A concatenative, stack-based language with a full interactive development environment.",
       "documentation_url": "https://factorcode.org/",
       "codeverse_hub_url": "",
@@ -1538,9 +1365,7 @@
     {
       "key": "nix",
       "display_name": "Nix",
-      "aliases": [
-        "nixlang"
-      ],
+      "aliases": ["nixlang"],
       "description": "A purely functional language for building reproducible packages and systems, used by NixOS.",
       "documentation_url": "https://nix.dev/",
       "codeverse_hub_url": "",
@@ -1559,10 +1384,7 @@
     {
       "key": "hcl",
       "display_name": "Terraform (HCL)",
-      "aliases": [
-        "terraform",
-        "hcl"
-      ],
+      "aliases": ["terraform", "hcl"],
       "description": "HashiCorp Configuration Language, used to declaratively describe cloud infrastructure with Terraform.",
       "documentation_url": "https://developer.hashicorp.com/terraform/language",
       "codeverse_hub_url": "",
@@ -1581,9 +1403,7 @@
     {
       "key": "dhall",
       "display_name": "Dhall",
-      "aliases": [
-        "dhall"
-      ],
+      "aliases": ["dhall"],
       "description": "A programmable, non-Turing-complete configuration language designed to replace unsafe templated YAML/JSON.",
       "documentation_url": "https://docs.dhall-lang.org/",
       "codeverse_hub_url": "",
@@ -1602,9 +1422,7 @@
     {
       "key": "gleam",
       "display_name": "Gleam",
-      "aliases": [
-        "gleam"
-      ],
+      "aliases": ["gleam"],
       "description": "A friendly, statically typed language that runs on the Erlang VM, aiming for approachable BEAM development.",
       "documentation_url": "https://gleam.run/documentation/",
       "codeverse_hub_url": "",
@@ -1623,9 +1441,7 @@
     {
       "key": "unison",
       "display_name": "Unison",
-      "aliases": [
-        "unison"
-      ],
+      "aliases": ["unison"],
       "description": "A functional language where code is content-addressed, enabling novel distributed programming models.",
       "documentation_url": "https://www.unison-lang.org/docs/",
       "codeverse_hub_url": "",
@@ -1644,9 +1460,7 @@
     {
       "key": "eiffel",
       "display_name": "Eiffel",
-      "aliases": [
-        "eiffel"
-      ],
+      "aliases": ["eiffel"],
       "description": "An object-oriented language built around design-by-contract, embedding correctness checks into the code itself.",
       "documentation_url": "https://www.eiffel.org/doc/",
       "codeverse_hub_url": "",
@@ -1665,10 +1479,7 @@
     {
       "key": "gdscript",
       "display_name": "GDScript",
-      "aliases": [
-        "gdscript",
-        "godot"
-      ],
+      "aliases": ["gdscript", "godot"],
       "description": "A Python-like scripting language built into the Godot game engine.",
       "documentation_url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/index.html",
       "codeverse_hub_url": "",
@@ -1687,10 +1498,7 @@
     {
       "key": "tlaplus",
       "display_name": "TLA+",
-      "aliases": [
-        "tla+",
-        "tla"
-      ],
+      "aliases": ["tla+", "tla"],
       "description": "A formal specification language used to design and verify the correctness of concurrent and distributed systems.",
       "documentation_url": "https://lamport.azurewebsites.net/tla/tla.html",
       "codeverse_hub_url": "",
@@ -1709,9 +1517,7 @@
     {
       "key": "mojo",
       "display_name": "Mojo",
-      "aliases": [
-        "mojo"
-      ],
+      "aliases": ["mojo"],
       "description": "A new language from Modular combining Python's syntax with systems-level performance for AI workloads.",
       "documentation_url": "https://docs.modular.com/mojo/",
       "codeverse_hub_url": "",
@@ -1730,9 +1536,7 @@
     {
       "key": "coffeescript",
       "display_name": "CoffeeScript",
-      "aliases": [
-        "coffee"
-      ],
+      "aliases": ["coffee"],
       "description": "A concise language that compiles directly to JavaScript, popular before modern ES6+ syntax closed the gap.",
       "documentation_url": "https://coffeescript.org/#introduction",
       "codeverse_hub_url": "",
@@ -1751,10 +1555,7 @@
     {
       "key": "coldfusion",
       "display_name": "ColdFusion (CFML)",
-      "aliases": [
-        "cfml",
-        "coldfusion"
-      ],
+      "aliases": ["cfml", "coldfusion"],
       "description": "A tag-based server-side language for rapid web application development, still used in enterprise systems.",
       "documentation_url": "https://helpx.adobe.com/support/coldfusion.html",
       "codeverse_hub_url": "",
@@ -1773,9 +1574,7 @@
     {
       "key": "abap",
       "display_name": "ABAP",
-      "aliases": [
-        "abap"
-      ],
+      "aliases": ["abap"],
       "description": "SAP's proprietary language for customizing and extending enterprise resource planning systems.",
       "documentation_url": "https://help.sap.com/docs/abap-cloud",
       "codeverse_hub_url": "",
@@ -1794,9 +1593,7 @@
     {
       "key": "plsql",
       "display_name": "PL/SQL",
-      "aliases": [
-        "plsql"
-      ],
+      "aliases": ["plsql"],
       "description": "Oracle's procedural extension to SQL, used to write stored procedures and triggers.",
       "documentation_url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/",
       "codeverse_hub_url": "",
@@ -1815,9 +1612,7 @@
     {
       "key": "tsql",
       "display_name": "T-SQL",
-      "aliases": [
-        "transact-sql"
-      ],
+      "aliases": ["transact-sql"],
       "description": "Microsoft SQL Server's procedural extension to SQL for stored procedures and advanced queries.",
       "documentation_url": "https://learn.microsoft.com/en-us/sql/t-sql/language-reference",
       "codeverse_hub_url": "",
@@ -1836,9 +1631,7 @@
     {
       "key": "move",
       "display_name": "Move",
-      "aliases": [
-        "movelang"
-      ],
+      "aliases": ["movelang"],
       "description": "A resource-oriented smart contract language designed for safe digital asset ownership, used by Aptos and Sui.",
       "documentation_url": "https://move-language.github.io/move/",
       "codeverse_hub_url": "",
@@ -1857,9 +1650,7 @@
     {
       "key": "cairo",
       "display_name": "Cairo",
-      "aliases": [
-        "cairolang"
-      ],
+      "aliases": ["cairolang"],
       "description": "A language for writing provable programs, used to build StarkNet smart contracts.",
       "documentation_url": "https://book.cairo-lang.org/",
       "codeverse_hub_url": "",
@@ -1878,9 +1669,7 @@
     {
       "key": "ballerina",
       "display_name": "Ballerina",
-      "aliases": [
-        "bal"
-      ],
+      "aliases": ["bal"],
       "description": "A language purpose-built for integration and API-driven cloud-native applications.",
       "documentation_url": "https://ballerina.io/learn/",
       "codeverse_hub_url": "",
@@ -1899,9 +1688,7 @@
     {
       "key": "reasonml",
       "display_name": "ReasonML",
-      "aliases": [
-        "reason"
-      ],
+      "aliases": ["reason"],
       "description": "A syntax for OCaml designed to feel familiar to JavaScript developers while keeping OCaml's type safety.",
       "documentation_url": "https://reasonml.github.io/docs/en/what-and-why",
       "codeverse_hub_url": "",
@@ -1920,9 +1707,7 @@
     {
       "key": "brainfuck",
       "display_name": "Brainfuck",
-      "aliases": [
-        "bf"
-      ],
+      "aliases": ["bf"],
       "description": "An intentionally minimal esoteric language with only 8 commands, popular as a mind-bending programming puzzle.",
       "documentation_url": "https://esolangs.org/wiki/Brainfuck",
       "codeverse_hub_url": "",
@@ -1941,10 +1726,8 @@
     {
       "key": "whitespace",
       "display_name": "Whitespace",
-      "aliases": [
-        "ws"
-      ],
-      "description": "An esoteric language where only spaces, tabs, and linefeeds are meaningful — everything else is a comment.",
+      "aliases": ["ws"],
+      "description": "An esoteric language where only spaces, tabs, and linefeeds are meaningful everything else is a comment.",
       "documentation_url": "https://esolangs.org/wiki/Whitespace",
       "codeverse_hub_url": "",
       "related_channel_names": [],
@@ -1962,9 +1745,7 @@
     {
       "key": "malbolge",
       "display_name": "Malbolge",
-      "aliases": [
-        "malbolge"
-      ],
+      "aliases": ["malbolge"],
       "description": "A famously difficult esoteric language deliberately designed to be nearly impossible to program in.",
       "documentation_url": "https://esolangs.org/wiki/Malbolge",
       "codeverse_hub_url": "",
@@ -1983,9 +1764,7 @@
     {
       "key": "intercal",
       "display_name": "INTERCAL",
-      "aliases": [
-        "intercal"
-      ],
+      "aliases": ["intercal"],
       "description": "A satirical esoteric language created to parody the design decisions of other programming languages.",
       "documentation_url": "https://esolangs.org/wiki/INTERCAL",
       "codeverse_hub_url": "",
@@ -2004,9 +1783,7 @@
     {
       "key": "befunge",
       "display_name": "Befunge",
-      "aliases": [
-        "befunge"
-      ],
+      "aliases": ["befunge"],
       "description": "A stack-based esoteric language whose program flow moves in two dimensions across a grid of code.",
       "documentation_url": "https://esolangs.org/wiki/Befunge",
       "codeverse_hub_url": "",
@@ -2025,9 +1802,7 @@
     {
       "key": "lolcode",
       "display_name": "LOLCODE",
-      "aliases": [
-        "lolcode"
-      ],
+      "aliases": ["lolcode"],
       "description": "A joke language modeled on lolcat internet-speak, with keywords like HAI and KTHXBYE.",
       "documentation_url": "https://esolangs.org/wiki/LOLCODE",
       "codeverse_hub_url": "",
@@ -2046,10 +1821,8 @@
     {
       "key": "piet",
       "display_name": "Piet",
-      "aliases": [
-        "piet"
-      ],
-      "description": "An esoteric language whose programs are abstract art — instructions are encoded as grids of colored pixels.",
+      "aliases": ["piet"],
+      "description": "An esoteric language whose programs are abstract art instructions are encoded as grids of colored pixels.",
       "documentation_url": "https://www.dangermouse.net/esoteric/piet.html",
       "codeverse_hub_url": "",
       "related_channel_names": [],
@@ -2067,9 +1840,7 @@
     {
       "key": "shakespeare",
       "display_name": "Shakespeare Programming Language",
-      "aliases": [
-        "spl"
-      ],
+      "aliases": ["spl"],
       "description": "An esoteric language where valid programs read like Shakespearean stage dialogue between characters.",
       "documentation_url": "https://esolangs.org/wiki/Shakespeare",
       "codeverse_hub_url": "",
@@ -2088,9 +1859,7 @@
     {
       "key": "ook",
       "display_name": "Ook!",
-      "aliases": [
-        "ook"
-      ],
+      "aliases": ["ook"],
       "description": "A Brainfuck derivative that replaces every command with combinations of 'Ook.', 'Ook?', and 'Ook!'.",
       "documentation_url": "https://esolangs.org/wiki/Ook!",
       "codeverse_hub_url": "",
@@ -2109,9 +1878,7 @@
     {
       "key": "unlambda",
       "display_name": "Unlambda",
-      "aliases": [
-        "unlambda"
-      ],
+      "aliases": ["unlambda"],
       "description": "A minimalist functional esoteric language built entirely from higher-order functions and no named variables.",
       "documentation_url": "https://www.madore.org/~david/programs/unlambda/",
       "codeverse_hub_url": "",
@@ -2130,9 +1897,7 @@
     {
       "key": "arnoldc",
       "display_name": "ArnoldC",
-      "aliases": [
-        "arnoldc"
-      ],
+      "aliases": ["arnoldc"],
       "description": "A joke language whose keywords are all Arnold Schwarzenegger movie quotes, e.g. 'HEY CHRISTMAS TREE' for variables.",
       "documentation_url": "https://github.com/lhartikk/ArnoldC",
       "codeverse_hub_url": "",
@@ -2151,9 +1916,7 @@
     {
       "key": "chef",
       "display_name": "Chef",
-      "aliases": [
-        "chef"
-      ],
+      "aliases": ["chef"],
       "description": "An esoteric language where programs are written as cooking recipes, complete with ingredients and steps.",
       "documentation_url": "https://www.dangermouse.net/esoteric/chef.html",
       "codeverse_hub_url": "",
@@ -2172,9 +1935,7 @@
     {
       "key": "rockstar",
       "display_name": "Rockstar",
-      "aliases": [
-        "rockstar"
-      ],
+      "aliases": ["rockstar"],
       "description": "An esoteric language designed so valid programs read like power ballad lyrics.",
       "documentation_url": "https://codewithrockstar.com/",
       "codeverse_hub_url": "",
@@ -2193,9 +1954,7 @@
     {
       "key": "emojicode",
       "display_name": "Emojicode",
-      "aliases": [
-        "emojicode"
-      ],
+      "aliases": ["emojicode"],
       "description": "A real, statically typed language where every keyword and type is represented by an emoji.",
       "documentation_url": "https://www.emojicode.org/docs/reference/",
       "codeverse_hub_url": "",
@@ -2214,9 +1973,7 @@
     {
       "key": "retina",
       "display_name": "Retina",
-      "aliases": [
-        "retina"
-      ],
+      "aliases": ["retina"],
       "description": "An esoteric, regex-driven language where entire programs are built out of pattern-matching and replacement steps.",
       "documentation_url": "https://github.com/m-ender/retina/wiki",
       "codeverse_hub_url": "",
@@ -2235,9 +1992,7 @@
     {
       "key": "golfscript",
       "display_name": "GolfScript",
-      "aliases": [
-        "golfscript"
-      ],
+      "aliases": ["golfscript"],
       "description": "A stack-based esoteric language designed to write extremely short solutions for code golf challenges.",
       "documentation_url": "https://esolangs.org/wiki/GolfScript",
       "codeverse_hub_url": "",
@@ -2256,9 +2011,7 @@
     {
       "key": "deadfish",
       "display_name": "Deadfish",
-      "aliases": [
-        "deadfish"
-      ],
+      "aliases": ["deadfish"],
       "description": "An extremely minimal esoteric language with only four commands operating on a single number.",
       "documentation_url": "https://esolangs.org/wiki/Deadfish",
       "codeverse_hub_url": "",
@@ -2277,9 +2030,7 @@
     {
       "key": "false",
       "display_name": "FALSE",
-      "aliases": [
-        "false"
-      ],
+      "aliases": ["false"],
       "description": "A tiny stack-based esoteric language that inspired Brainfuck, fitting a whole compiler in about 1024 bytes.",
       "documentation_url": "https://esolangs.org/wiki/FALSE",
       "codeverse_hub_url": "",
@@ -2298,10 +2049,7 @@
     {
       "key": "fish",
       "display_name": "><> (Fish)",
-      "aliases": [
-        "fish",
-        "><>"
-      ],
+      "aliases": ["fish", "><>"],
       "description": "A 2D esoteric language (a Befunge relative) where the instruction pointer swims around the code like a fish.",
       "documentation_url": "https://esolangs.org/wiki/Fish",
       "codeverse_hub_url": "",
@@ -2320,9 +2068,7 @@
     {
       "key": "hq9plus",
       "display_name": "HQ9+",
-      "aliases": [
-        "hq9+"
-      ],
+      "aliases": ["hq9+"],
       "description": "A joke esoteric language with just four commands, mainly built to needle Turing-completeness purists.",
       "documentation_url": "https://esolangs.org/wiki/HQ9%2B",
       "codeverse_hub_url": "",

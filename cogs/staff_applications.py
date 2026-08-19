@@ -1,9 +1,8 @@
-import asyncio
 import logging
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import aiosqlite
 import discord
@@ -36,12 +35,11 @@ async def _ensure_settings_table() -> None:
 
 async def get_review_channel_id() -> int:
     await _ensure_settings_table()
-    async with aiosqlite.connect(DB_PATH) as db:
-        async with db.execute(
-            "SELECT value FROM settings WHERE key = ?",
-            ("review_channel_id",),
-        ) as cursor:
-            row = await cursor.fetchone()
+    async with aiosqlite.connect(DB_PATH) as db, db.execute(
+        "SELECT value FROM settings WHERE key = ?",
+        ("review_channel_id",),
+    ) as cursor:
+        row = await cursor.fetchone()
     if not row:
         return DEFAULT_REVIEW_CHANNEL_ID
     try:
@@ -111,7 +109,7 @@ class ApplicationReasonModal(discord.ui.Modal):
         user_id: int,
         bot: commands.Bot,
         view: discord.ui.View,
-        review_message: Optional[discord.Message] = None,
+        review_message: discord.Message | None = None,
     ):
         super().__init__(title=f"{action.capitalize()} Application")
         self.action = action
@@ -159,13 +157,12 @@ class ApplicationReasonModal(discord.ui.Modal):
                 embed.add_field(name="Reason", value=reason_text)
                 await member.send(embed=embed)
 
-                if status == "accepted":
-                    if guild:
-                        role = guild.get_role(STAFF_ROLE_ID)
-                        if role:
-                            await member.add_roles(role)
-                        else:
-                            logger.error(f"Role with ID {STAFF_ROLE_ID} not found.")
+                if status == "accepted" and guild:
+                    role = guild.get_role(STAFF_ROLE_ID)
+                    if role:
+                        await member.add_roles(role)
+                    else:
+                        logger.error(f"Role with ID {STAFF_ROLE_ID} not found.")
             except discord.Forbidden:
                 logger.warning(f"Could not DM user {self.user_id}")
 
@@ -287,16 +284,15 @@ class PanelView(discord.ui.View):
         user = interaction.user
 
         # Check active application
-        async with aiosqlite.connect(DB_PATH) as db:
-            async with db.execute(
-                "SELECT status FROM applications WHERE user_id = ? AND status = 'pending'",
-                (user.id,),
-            ) as cursor:
-                if await cursor.fetchone():
-                    await interaction.response.send_message(
-                        "You already have a pending application.", ephemeral=True
-                    )
-                    return
+        async with aiosqlite.connect(DB_PATH) as db, db.execute(
+            "SELECT status FROM applications WHERE user_id = ? AND status = 'pending'",
+            (user.id,),
+        ) as cursor:
+            if await cursor.fetchone():
+                await interaction.response.send_message(
+                    "You already have a pending application.", ephemeral=True
+                )
+                return
 
         # Check monthly limit
         if await self.check_monthly_limit(user.id):
@@ -335,7 +331,7 @@ class PanelView(discord.ui.View):
                     "Application cancelled. Please restart when you are ready."
                 )
                 return
-        except asyncio.TimeoutError:
+        except TimeoutError:
             await dm_channel.send(
                 "Time's up! You didn't reply in time. Application cancelled."
             )
@@ -462,7 +458,7 @@ class PanelView(discord.ui.View):
             else:
                 logger.error(f"Review channel not found: {review_channel_id}")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             await dm_channel.send("Application timed out. Please try again.")
 
 
@@ -518,7 +514,6 @@ class StaffApplications(commands.Cog):
         # Correct approach: implement `interaction_check` or `on_interaction`.
         # OR: Just accept current limitation.
         # BUT, let's try to do it right. I will add a listener for interactions.
-        pass
 
     @app_commands.command(
         name="setapps", description="Set the channel where staff applications are sent"
@@ -528,7 +523,7 @@ class StaffApplications(commands.Cog):
     async def setapps(
         self,
         interaction: discord.Interaction,
-        channel: Optional[discord.TextChannel] = None,
+        channel: discord.TextChannel | None = None,
     ):
         if not interaction.guild:
             return await interaction.response.send_message(
@@ -536,7 +531,7 @@ class StaffApplications(commands.Cog):
                 ephemeral=True,
             )
 
-        target_channel: Optional[discord.TextChannel]
+        target_channel: discord.TextChannel | None
         if channel is not None:
             target_channel = channel
         else:
@@ -563,9 +558,7 @@ class StaffApplications(commands.Cog):
             if not interaction.data or not isinstance(interaction.data, dict):
                 return
             custom_id = cast(dict, interaction.data).get("custom_id", "")
-            if custom_id.startswith("staff_app:accept:") or custom_id.startswith(
-                "staff_app:deny:"
-            ):
+            if custom_id.startswith(("staff_app:accept:", "staff_app:deny:")):
                 # This handles buttons from previous sessions if view is not found in memory (persistence)
                 # But to make it work, I need to respond.
                 # If the view was attached via `add_view`, it handles it. If not, this global listener does.
@@ -582,12 +575,11 @@ class StaffApplications(commands.Cog):
     async def register_persistent_views(self):
         # Fetch pending applications to restore views
         try:
-            async with aiosqlite.connect(DB_PATH) as db:
-                async with db.execute(
-                    "SELECT user_id FROM applications WHERE status = 'pending'"
-                ) as cursor:
-                    async for row in cursor:
-                        self.bot.add_view(ReviewView(row[0], self.bot))
+            async with aiosqlite.connect(DB_PATH) as db, db.execute(
+                "SELECT user_id FROM applications WHERE status = 'pending'"
+            ) as cursor:
+                async for row in cursor:
+                    self.bot.add_view(ReviewView(row[0], self.bot))
         except Exception as e:
             logger.error(f"Failed to load persistent views: {e}")
 

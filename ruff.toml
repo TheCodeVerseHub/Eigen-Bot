@@ -1,0 +1,38 @@
+line-length = 100
+target-version = "py314"
+
+[lint]
+select = ["E", "F", "I", "B", "S", "RUF", "UP", "SIM", "DTZ", "TRY", "PIE"]
+ignore = [
+    "BLE001",
+    "DTZ001",
+    "DTZ005",
+    "DTZ007",
+    "DTZ011",
+    "E501",
+    "E722",
+    "EXE002",
+    "F841",
+    "I001",
+    "PIE810",
+    "RUF034",
+    "RUF059",
+    "RUF001",
+    "S311",
+    "S310",
+    "S608",
+    "S110",
+    "S112",
+    "SIM102",
+    "SIM105",
+    "SIM108",
+    "SIM117",
+    "TRY003",
+    "TRY300",
+    "TRY301",
+    "TRY400",
+    "TRY401",
+    "UP015",
+    "UP017",
+    "UP007",
+]

@@ -1,7 +1,8 @@
 import os
 import random
-from typing import Optional, cast, TypedDict
 import time
+from typing import TypedDict, cast
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -34,10 +35,10 @@ class CodeBuddyQuizCog(commands.Cog):
         self.bot = bot
         self.channel_id = question_channel_id
 
-        self.current_question: Optional[str] = None
-        self.current_answer: Optional[str] = None
-        self.current_question_data: Optional[dict] = None
-        self.current_message: Optional[discord.Message] = None
+        self.current_question: str | None = None
+        self.current_answer: str | None = None
+        self.current_question_data: dict | None = None
+        self.current_message: discord.Message | None = None
         self.question_active = False
         self.ignored_users = set()
         self.bonus_active = False
@@ -72,7 +73,7 @@ class CodeBuddyQuizCog(commands.Cog):
         options_letters = ["a", "b", "c"]
         options_text = "\n".join(
             f"**{letter})** {option}"
-            for letter, option in zip(options_letters, q["options"])
+            for letter, option in zip(options_letters, q["options"], strict=True)
         )
 
         embed = discord.Embed(
@@ -204,7 +205,7 @@ class CodeBuddyQuizCog(commands.Cog):
                         lb = []
 
                     streak = 0
-                    for uid, score, s, best in lb:
+                    for uid, _score, s, _best in lb:
                         if uid == user_id:
                             streak = s
                             try:

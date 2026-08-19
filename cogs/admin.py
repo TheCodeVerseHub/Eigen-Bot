@@ -58,7 +58,7 @@ class Admin(commands.Cog):
         except Exception as e:
             embed = EmbedBuilder.error_embed(
                 "Failed to Reload",
-                f"Could not reload `{cog_name}`: {str(e)}"
+                f"Could not reload `{cog_name}`: {e!s}"
             )
             await ctx.send(embed=embed)
 
@@ -84,7 +84,7 @@ class Admin(commands.Cog):
         except Exception as e:
             embed = EmbedBuilder.error_embed(
                 "Failed to Reload",
-                f"Could not reload `{cog_name}`: {str(e)}"
+                f"Could not reload `{cog_name}`: {e!s}"
             )
             await interaction.response.send_message(embed=embed)
 
@@ -125,7 +125,7 @@ class Admin(commands.Cog):
         except Exception as e:
             embed = EmbedBuilder.error_embed(
                 "Sync Failed",
-                f"Failed to sync commands: {str(e)}"
+                f"Failed to sync commands: {e!s}"
             )
             await ctx.send(embed=embed)
 
@@ -174,7 +174,7 @@ class Admin(commands.Cog):
         except Exception as e:
             embed = EmbedBuilder.error_embed(
                 "Sync Failed",
-                f"Failed to sync commands: {str(e)}"
+                f"Failed to sync commands: {e!s}"
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
 

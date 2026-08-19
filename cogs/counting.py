@@ -3,7 +3,6 @@ import asyncio
 import math
 import operator
 import time
-from typing import Optional
 
 import aiosqlite
 import discord
@@ -12,9 +11,7 @@ from discord.ext import commands
 
 from utils.codebuddy_database import (
     DB_PATH,
-    MAX_SAVE_UNITS,
     add_guild_save_units,
-    get_guild_daily_award_info,
     get_guild_save_units,
     get_user_save_units,
     increment_guild_daily_count,
@@ -37,7 +34,7 @@ class Counting(commands.Cog):
             asyncio.Queue()
         )
         self._pending_reactions: set[tuple[int, str]] = set()
-        self._reaction_worker_task: Optional[asyncio.Task[None]] = None
+        self._reaction_worker_task: asyncio.Task[None] | None = None
 
     async def cog_unload(self) -> None:
         if self._reaction_worker_task and not self._reaction_worker_task.done():
@@ -146,12 +143,11 @@ class Counting(commands.Cog):
             print(f"Error loading counting channels: {e}")
 
     async def _get_warning_count(self, guild_id: int, user_id: int) -> int:
-        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
-            async with db.execute(
-                "SELECT warnings FROM counting_warnings WHERE guild_id = ? AND user_id = ?",
-                (guild_id, user_id),
-            ) as cursor:
-                row = await cursor.fetchone()
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
+            "SELECT warnings FROM counting_warnings WHERE guild_id = ? AND user_id = ?",
+            (guild_id, user_id),
+        ) as cursor:
+            row = await cursor.fetchone()
         return int(row[0]) if row else 0
 
     async def _set_warning_count(
@@ -224,17 +220,16 @@ class Counting(commands.Cog):
             )
             await db.commit()
 
-    async def _get_active_highscore_message_id(self, guild_id: int) -> Optional[int]:
-        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
-            async with db.execute(
-                "SELECT message_id FROM counting_active_highscore WHERE guild_id = ?",
-                (guild_id,),
-            ) as cursor:
-                row = await cursor.fetchone()
+    async def _get_active_highscore_message_id(self, guild_id: int) -> int | None:
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
+            "SELECT message_id FROM counting_active_highscore WHERE guild_id = ?",
+            (guild_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
         return int(row[0]) if row and row[0] is not None else None
 
     async def _set_active_highscore_message_id(
-        self, guild_id: int, message_id: Optional[int]
+        self, guild_id: int, message_id: int | None
     ) -> None:
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
             if message_id is None:
@@ -286,7 +281,6 @@ class Counting(commands.Cog):
             return
 
         guild_id = message.guild.id
-        channel = message.channel
 
         # Only add the trophy here.
         # The ✅ reaction is added for all valid counts in the main handler;
@@ -448,7 +442,7 @@ class Counting(commands.Cog):
         except Exception:
             return None
 
-    def _extract_leading_expression(self, text: str) -> Optional[str]:
+    def _extract_leading_expression(self, text: str) -> str | None:
         """Extract a safe-eval compatible expression from the start of a message.
 
         This allows messages like "43 is next" or "6*7 nice" to count as 43/42.
@@ -478,7 +472,7 @@ class Counting(commands.Cog):
         expr = "".join(expr_chars).strip()
         return expr or None
 
-    def _parse_count_number(self, message_content: str) -> Optional[int]:
+    def _parse_count_number(self, message_content: str) -> int | None:
         expr = self._extract_leading_expression(message_content)
         if not expr:
             return None
@@ -657,7 +651,7 @@ class Counting(commands.Cog):
                         (
                             awarded,
                             new_daily_count,
-                            reason,
+                            _reason,
                         ) = await increment_guild_daily_count(message.guild.id)
                         if awarded:
                             # Try to get current server save units for display (best-effort).
@@ -670,12 +664,12 @@ class Counting(commands.Cog):
 
                             if guild_units is not None:
                                 await message.channel.send(
-                                    f"Server reached **{new_daily_count}** counting numbers today — awarded **1.0** server save!\n"
+                                    f"Server reached **{new_daily_count}** counting numbers today, awarded **1.0** server save!\n"
                                     f"Server saves: **{guild_units / 10:.1f}**"
                                 )
                             else:
                                 await message.channel.send(
-                                    f"Server reached **{new_daily_count}** counting numbers today — awarded **1.0** server save!"
+                                    f"Server reached **{new_daily_count}** counting numbers today, awarded **1.0** server save!"
                                 )
                         else:
                             # Silent on non-award situations to avoid spamming the counting channel.
@@ -806,7 +800,7 @@ class Counting(commands.Cog):
             source = "your" if used_personal else "the server's"
             await message.channel.send(
                 f"{reason} {message.author.mention} messed up at **{current_count}**, "
-                f"but {source} save was used — the count is **saved**.\n"
+                f"but {source} save was used, the count is **saved**.\n"
                 f"Next number is **{current_count + 1}**.\n"
                 f"Your saves: **{remaining_user_units / 10:.1f}** • Server saves: **{remaining_guild_units / 10:.1f}**"
             )
@@ -849,7 +843,7 @@ class Counting(commands.Cog):
 
         await message.channel.send(
             f"{reason} {message.author.mention} messed up at **{current_count}**. "
-            "No saves were available — the count is **ruined** and has been reset to **0**.\n"
+            "No saves were available, the count is **ruined** and has been reset to **0**.\n"
             "Next number is **1**."
         )
 
@@ -948,18 +942,17 @@ class Counting(commands.Cog):
 
     @commands.command(name="mcl", aliases=["tc"])
     async def most_count_leaderboard(self, ctx):
-        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
-            async with db.execute(
-                """
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
+            """
                 SELECT user_id, total_counts
                 FROM counting_stats
                 WHERE guild_id = ?
                 ORDER BY total_counts DESC
                 LIMIT 10
             """,
-                (ctx.guild.id,),
-            ) as cursor:
-                rows = await cursor.fetchall()
+            (ctx.guild.id,),
+        ) as cursor:
+            rows = await cursor.fetchall()
 
         if not rows:
             await ctx.send("No counting stats yet.")
@@ -976,18 +969,17 @@ class Counting(commands.Cog):
 
     @commands.command(name="mrl")
     async def most_ruined_leaderboard(self, ctx):
-        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
-            async with db.execute(
-                """
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
+            """
                 SELECT user_id, ruined_counts
                 FROM counting_stats
                 WHERE guild_id = ?
                 ORDER BY ruined_counts DESC
                 LIMIT 10
             """,
-                (ctx.guild.id,),
-            ) as cursor:
-                rows = await cursor.fetchall()
+            (ctx.guild.id,),
+        ) as cursor:
+            rows = await cursor.fetchall()
 
         if not rows:
             await ctx.send("No ruined stats yet.")
@@ -1004,12 +996,11 @@ class Counting(commands.Cog):
 
     @commands.command(name="scs")
     async def server_count_stats(self, ctx):
-        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
-            async with db.execute(
-                "SELECT current_count, high_score FROM counting_config WHERE guild_id = ?",
-                (ctx.guild.id,),
-            ) as cursor:
-                row = await cursor.fetchone()
+        async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
+            "SELECT current_count, high_score FROM counting_config WHERE guild_id = ?",
+            (ctx.guild.id,),
+        ) as cursor:
+            row = await cursor.fetchone()
 
         if not row:
             await ctx.send("Counting channel not set up or no data.")

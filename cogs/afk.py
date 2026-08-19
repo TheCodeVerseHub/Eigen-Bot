@@ -3,14 +3,15 @@ AFK (Away From Keyboard) System
 Allows users to set AFK status with custom reasons and auto-responds to mentions
 """
 
-import discord
-from discord.ext import commands
-from discord import app_commands
-import aiosqlite
 import asyncio
 from datetime import datetime, timezone
-from typing import Optional, Dict, cast, Union
 from pathlib import Path
+from typing import cast
+
+import aiosqlite
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 
 class AFKSystem(commands.Cog):
@@ -19,7 +20,7 @@ class AFKSystem(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.database_path = Path("data/afk.db")
-        self.afk_cache: Dict[int, Dict] = {}  # Cache for quick lookups
+        self.afk_cache: dict[int, dict] = {}  # Cache for quick lookups
         self.ignored_channels_cache: set[int] = set() # Cache for ignored channels
         self.ready = asyncio.Event()
         
@@ -75,7 +76,7 @@ class AFKSystem(commands.Cog):
                     'mention_count': mention_count
                 }
                 
-    async def set_afk(self, user_id: int, guild_id: int, reason: Optional[str] = None):
+    async def set_afk(self, user_id: int, guild_id: int, reason: str | None = None):
         """Set a user as AFK"""
         current_time = datetime.now(timezone.utc).isoformat()
         afk_reason = reason or "No reason provided"
@@ -121,7 +122,7 @@ class AFKSystem(commands.Cog):
         """Check if a user is currently AFK"""
         return user_id in self.afk_cache
         
-    def get_afk_info(self, user_id: int) -> Optional[Dict]:
+    def get_afk_info(self, user_id: int) -> dict | None:
         """Get AFK information for a user"""
         return self.afk_cache.get(user_id)
         
@@ -152,7 +153,7 @@ class AFKSystem(commands.Cog):
     )
     @app_commands.describe(reason="The reason you're going AFK (optional)")
     @commands.guild_only()
-    async def set_afk_command(self, ctx: commands.Context, *, reason: Optional[str] = None):
+    async def set_afk_command(self, ctx: commands.Context, *, reason: str | None = None):
         """Set yourself as AFK"""
         await self.ready.wait()
         

@@ -1,9 +1,10 @@
+
+import aiosqlite
 import discord
 from discord.ext import commands
-from discord import app_commands
-import aiosqlite
-import random
+
 from utils.codebuddy_database import DB_PATH
+
 
 class TODView(discord.ui.View):
     def __init__(self):

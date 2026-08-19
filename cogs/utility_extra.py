@@ -1,53 +1,52 @@
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
-from discord.utils import escape_markdown, escape_mentions
+import math
 import random
 import re
-import math
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Dict, Union
+
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
+from discord.utils import escape_markdown, escape_mentions
 
 TIME_REGEX = re.compile(r"(\d+)([smhdw])")
-TIME_MULTIPLIERS = {
-    's': 1,
-    'm': 60,
-    'h': 3600,
-    'd': 86400,
-    'w': 604800
-}
+TIME_MULTIPLIERS = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
+
 
 class Reminder:
-    __slots__ = ("user_id", "channel_id", "end_time", "message")
+    __slots__ = ("channel_id", "end_time", "message", "user_id")
+
     def __init__(self, user_id: int, channel_id: int, end_time: datetime, message: str):
         self.user_id = user_id
         self.channel_id = channel_id
         self.end_time = end_time
         self.message = message
 
+
 class UtilityExtra(commands.Cog):
     """Additional utility commands (emotes, inviteinfo, membercount, randomcolor, remindme, roll)."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.reminders: List[Reminder] = []
+        self.reminders: list[Reminder] = []
         self.reminder_checker.start()
 
     def cog_unload(self):
         self.reminder_checker.cancel()
 
     # ============ INTERNAL HELPERS ============
-    def parse_time(self, time_str: str) -> Optional[int]:
+    def parse_time(self, time_str: str) -> int | None:
         total = 0
         for amount, unit in TIME_REGEX.findall(time_str.lower()):
             total += int(amount) * TIME_MULTIPLIERS[unit]
         return total if total > 0 else None
 
     # ============ COMMANDS ============
-    @commands.hybrid_command(name="emotes", help="Get a list of server emojis. Optional search.")
+    @commands.hybrid_command(
+        name="emotes", help="Get a list of server emojis. Optional search."
+    )
     @app_commands.describe(search="Optional search text")
     @commands.guild_only()
-    async def emotes(self, ctx: commands.Context, *, search: Optional[str] = None):
+    async def emotes(self, ctx: commands.Context, *, search: str | None = None):
         if not ctx.guild or not ctx.guild.emojis:
             return await ctx.reply("No custom emojis in this server.")
         emojis = ctx.guild.emojis
@@ -59,7 +58,9 @@ class UtilityExtra(commands.Cog):
         display = " ".join(str(e) for e in emojis[:100])  # limit to avoid overflow
         await ctx.reply(f"Emojis ({len(emojis)}):\n{display}")
 
-    @commands.hybrid_command(name="membercount", help="Get the member count of the current server.")
+    @commands.hybrid_command(
+        name="membercount", help="Get the member count of the current server."
+    )
     @commands.guild_only()
     @app_commands.guild_only()
     async def membercount(self, ctx: commands.Context):
@@ -72,7 +73,9 @@ class UtilityExtra(commands.Cog):
         value = random.randint(0, 0xFFFFFF)
         hex_code = f"#{value:06X}"
         embed = discord.Embed(title="Random Color", description=hex_code, color=value)
-        embed.set_thumbnail(url=f"https://singlecolorimage.com/get/{hex_code[1:]}/400x100")
+        embed.set_thumbnail(
+            url=f"https://singlecolorimage.com/get/{hex_code[1:]}/400x100"
+        )
         await ctx.reply(embed=embed)
 
     @commands.command(name="roll", help="Roll dice. Usage: ?roll [size] [count]")
@@ -83,16 +86,24 @@ class UtilityExtra(commands.Cog):
             return await ctx.reply("Count must be between 1 and 20.")
         rolls = [random.randint(1, size) for _ in range(count)]
         total = sum(rolls)
-        await ctx.reply(f"Rolled {count}d{size}: {', '.join(map(str, rolls))} (Total: {total})")
+        await ctx.reply(
+            f"Rolled {count}d{size}: {', '.join(map(str, rolls))} (Total: {total})"
+        )
 
-    @commands.hybrid_command(name="remindme", help="Set a reminder. Example: /remindme 10m Submit report")
+    @commands.hybrid_command(
+        name="remindme", help="Set a reminder. Example: /remindme 10m Submit report"
+    )
     @app_commands.describe(time="Time span like 10m, 2h, 1d", reminder="Reminder text")
     async def remindme(self, ctx: commands.Context, time: str, *, reminder: str):
         seconds = self.parse_time(time)
         if not seconds or seconds > 60 * 60 * 24 * 30:  # limit 30 days
-            return await ctx.reply("Invalid time. Use formats like 10m, 2h, 1d (max 30d).")
+            return await ctx.reply(
+                "Invalid time. Use formats like 10m, 2h, 1d (max 30d)."
+            )
         end_time = datetime.now(timezone.utc) + timedelta(seconds=seconds)
-        self.reminders.append(Reminder(ctx.author.id, ctx.channel.id, end_time, reminder))
+        self.reminders.append(
+            Reminder(ctx.author.id, ctx.channel.id, end_time, reminder)
+        )
         await ctx.reply(f"Reminder set for <t:{int(end_time.timestamp())}:R>.")
 
     @tasks.loop(seconds=30)
@@ -106,7 +117,15 @@ class UtilityExtra(commands.Cog):
         for r in due:
             channel = self.bot.get_channel(r.channel_id)
             # Only attempt to send if the channel is a type that supports sending messages
-            if isinstance(channel, (discord.TextChannel, discord.Thread, discord.DMChannel, discord.GroupChannel)):
+            if isinstance(
+                channel,
+                (
+                    discord.TextChannel,
+                    discord.Thread,
+                    discord.DMChannel,
+                    discord.GroupChannel,
+                ),
+            ):
                 try:
                     await channel.send(f"<@{r.user_id}> Reminder: {r.message}")
                 except Exception:
@@ -130,21 +149,39 @@ class UtilityExtra(commands.Cog):
         embed.add_field(name="Code", value=invite.code, inline=True)
         if invite.guild:
             # Use getattr to avoid attribute errors when guild is a partial/Object without these attributes
-            embed.add_field(name="Server", value=getattr(invite.guild, "name", "Unknown"), inline=True)
+            embed.add_field(
+                name="Server",
+                value=getattr(invite.guild, "name", "Unknown"),
+                inline=True,
+            )
             description = getattr(invite.guild, "description", None)
             if description:
-                embed.add_field(name="Description", value=description[:200], inline=False)
+                embed.add_field(
+                    name="Description", value=description[:200], inline=False
+                )
         if invite.approximate_member_count:
-            embed.add_field(name="Members", value=str(invite.approximate_member_count), inline=True)
+            embed.add_field(
+                name="Members", value=str(invite.approximate_member_count), inline=True
+            )
         if invite.expires_at:
-            embed.add_field(name="Expires", value=f"<t:{int(invite.expires_at.timestamp())}:R>", inline=True)
+            embed.add_field(
+                name="Expires",
+                value=f"<t:{int(invite.expires_at.timestamp())}:R>",
+                inline=True,
+            )
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="avatar", help="Get a user's avatar.")
     @app_commands.describe(user="The user to get the avatar of")
-    async def avatar(self, ctx: commands.Context, user: Optional[Union[discord.Member, discord.User]] = None):
+    async def avatar(
+        self,
+        ctx: commands.Context,
+        user: discord.Member | discord.User | None = None,
+    ):
         target = user or ctx.author
-        embed = discord.Embed(title=f"{target.display_name}'s Avatar", color=discord.Color.random())
+        embed = discord.Embed(
+            title=f"{target.display_name}'s Avatar", color=discord.Color.random()
+        )
         embed.set_image(url=target.display_avatar.url)
         await ctx.reply(embed=embed)
 
@@ -154,47 +191,66 @@ class UtilityExtra(commands.Cog):
         if ctx.guild is None:
             return await ctx.reply("This command can only be used in a server.")
         guild = ctx.guild
-        embed = discord.Embed(title=f"Server Info: {guild.name}", color=discord.Color.blue())
+        embed = discord.Embed(
+            title=f"Server Info: {guild.name}", color=discord.Color.blue()
+        )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
 
-        owner_mention = guild.owner.mention if guild.owner is not None else f"<@{guild.owner_id}>"
+        owner_mention = (
+            guild.owner.mention if guild.owner is not None else f"<@{guild.owner_id}>"
+        )
         embed.add_field(name="Owner", value=owner_mention, inline=True)
         embed.add_field(name="ID", value=str(guild.id), inline=True)
-        embed.add_field(name="Created At", value=discord.utils.format_dt(guild.created_at, 'R'), inline=True)
+        embed.add_field(
+            name="Created At",
+            value=discord.utils.format_dt(guild.created_at, "R"),
+            inline=True,
+        )
         embed.add_field(name="Members", value=str(guild.member_count), inline=True)
         embed.add_field(name="Roles", value=str(len(guild.roles)), inline=True)
         embed.add_field(name="Channels", value=str(len(guild.channels)), inline=True)
-        
+
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="color", help="Show a color using hex.")
     @app_commands.describe(hex_code="Hex color code (e.g., #FF0000)")
     async def color(self, ctx: commands.Context, hex_code: str):
-        hex_code = hex_code.strip('#')
+        hex_code = hex_code.strip("#")
         try:
             color_int = int(hex_code, 16)
         except ValueError:
             return await ctx.reply("Invalid hex code.")
-            
+
         if color_int > 0xFFFFFF:
-             return await ctx.reply("Invalid hex code range.")
+            return await ctx.reply("Invalid hex code range.")
 
         embed = discord.Embed(title=f"Color #{hex_code.upper()}", color=color_int)
         embed.set_thumbnail(url=f"https://singlecolorimage.com/get/{hex_code}/400x100")
         await ctx.reply(embed=embed)
 
-    @commands.command(name="distance", help="Get the distance between two sets of coordinates (x1,y1 x2,y2).")
+    @commands.command(
+        name="distance",
+        help="Get the distance between two sets of coordinates (x1,y1 x2,y2).",
+    )
     async def distance(self, ctx: commands.Context, coords1: str, coords2: str):
         try:
-            x1, y1 = map(float, coords1.split(','))
-            x2, y2 = map(float, coords2.split(','))
-            dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            await ctx.reply(f"Distance between ({x1},{y1}) and ({x2},{y2}) is **{dist:.2f}**")
+            x1, y1 = map(float, coords1.split(","))
+            x2, y2 = map(float, coords2.split(","))
+            dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            await ctx.reply(
+                f"Distance between ({x1},{y1}) and ({x2},{y2}) is **{dist:.2f}**"
+            )
         except ValueError:
-            await ctx.reply("Invalid format. Use `x,y` for coordinates. Example: `?distance 0,0 3,4`")
-            
-    @commands.command(name='grep', aliases=['search', 'find'], help='Search for a pattern in the last N messages. Usage: ?grep [-i] <pattern> [limit]')
+            await ctx.reply(
+                "Invalid format. Use `x,y` for coordinates. Example: `?distance 0,0 3,4`"
+            )
+
+    @commands.command(
+        name="grep",
+        aliases=["search", "find"],
+        help="Search for a pattern in the last N messages. Usage: ?grep [-i] <pattern> [limit]",
+    )
     @commands.guild_only()
     async def grep(self, ctx: commands.Context, *args):
         # use: ?grep [-i] <pattern> [limit]
@@ -205,7 +261,7 @@ class UtilityExtra(commands.Cog):
         clean_args = []
 
         for arg in args:
-            if arg == '-i':
+            if arg == "-i":
                 insensitive = True
             else:
                 clean_args.append(arg)
@@ -217,7 +273,7 @@ class UtilityExtra(commands.Cog):
         # Keep a safe-to-display version of the user pattern.
         safe_pattern = escape_mentions(escape_markdown(pattern))
         limit = 50
-        
+
         if len(clean_args) > 1:
             try:
                 parsed_limit = int(clean_args[1])
@@ -233,11 +289,11 @@ class UtilityExtra(commands.Cog):
 
         matches = []
         async for msg in ctx.channel.history(limit=limit + 10):
-            if len(matches) >= limit: 
+            if len(matches) >= limit:
                 break
             if msg.id == ctx.message.id:
                 continue
-            if msg.author.bot and 'grep result' in msg.content:
+            if msg.author.bot and "grep result" in msg.content:
                 continue
 
             if regex.search(msg.content):
@@ -253,10 +309,10 @@ class UtilityExtra(commands.Cog):
         # fix: d7a4ff1
         for author_name, content, jump_url in matches:
             safe_author_name = escape_mentions(escape_markdown(author_name))
-            clean_content = escape_mentions(escape_markdown(content.replace('\n', ' ')))
+            clean_content = escape_mentions(escape_markdown(content.replace("\n", " ")))
             if len(clean_content) > 50:
-                clean_content = clean_content[:50] + '...'
-                
+                clean_content = clean_content[:50] + "..."
+
             line = f"[{safe_author_name}]: {clean_content} ([Jump]({jump_url}))"
             results.append(line)
 
@@ -264,11 +320,11 @@ class UtilityExtra(commands.Cog):
         output_body = "\n".join(results)
 
         if len(output_body) > 1900:
-            output_body = output_body[:1900] + '\n...(truncated)'
+            output_body = output_body[:1900] + "\n...(truncated)"
 
         final_output = header + output_body
         await ctx.reply(final_output, allowed_mentions=discord.AllowedMentions.none())
 
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(UtilityExtra(bot))
-

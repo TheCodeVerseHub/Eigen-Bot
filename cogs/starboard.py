@@ -3,20 +3,18 @@ Starboard System - Track and display starred messages
 Similar to Dyno bot functionality with self-starring allowed
 """
 
-import discord
-import logging
-from discord.ext import commands
-from discord import app_commands
-import aiosqlite
 import asyncio
+import logging
 from datetime import datetime, timezone
-from typing import Optional, Dict, Tuple
-import os
 from pathlib import Path
-from utils.helpers import create_success_embed, create_error_embed, create_warning_embed
-from types import SimpleNamespace
 from typing import Any
-from collections import defaultdict
+
+import aiosqlite
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from utils.helpers import create_error_embed, create_success_embed, create_warning_embed
 
 
 class ReactionProxy:
@@ -74,9 +72,9 @@ class StarboardSystem(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.database_path = Path("data/starboard.db")
-        self.star_cache: Dict[int, Dict] = {}  # Cache for quick lookups
+        self.star_cache: dict[int, dict] = {}  # Cache for quick lookups
         # Locks to prevent race conditions creating duplicate starboard posts
-        self._locks: Dict[int, asyncio.Lock] = {}
+        self._locks: dict[int, asyncio.Lock] = {}
         self.ready = False
         
     async def cog_load(self):
@@ -150,7 +148,7 @@ class StarboardSystem(commands.Cog):
                     'self_star': bool(self_star)
                 }
                 
-    async def get_starboard_settings(self, guild_id: int) -> Optional[Dict]:
+    async def get_starboard_settings(self, guild_id: int) -> dict | None:
         """Get starboard settings for a guild"""
         # Check cache first
         if guild_id in self.star_cache:
@@ -197,9 +195,18 @@ class StarboardSystem(commands.Cog):
                         values.append(value)
                 
                 if set_clauses:
-                    query = f"UPDATE starboard_settings SET {', '.join(set_clauses)} WHERE guild_id = ?"
-                    values.append(guild_id)
-                    await db.execute(query, values)
+                    allowed_keys = {
+                        "channel_id",
+                        "threshold",
+                        "star_emoji",
+                        "enabled",
+                        "self_star",
+                    }
+                    if all(clause.split(" = ?", 1)[0] in allowed_keys for clause in set_clauses):
+                        query = "UPDATE starboard_settings SET " + ", ".join(set_clauses)
+                        query += " WHERE guild_id = ?"
+                        values.append(guild_id)
+                        await db.execute(query, values)
             else:
                 # Create new settings
                 await db.execute("""
@@ -506,7 +513,7 @@ class StarboardSystem(commands.Cog):
         
         # Top starred message info
         if top_message:
-            star_count, msg_id, author_id, content = top_message
+            star_count, _msg_id, author_id, content = top_message
             author = ctx.guild.get_member(author_id)
             author_name = author.display_name if author else "Unknown User"
             
@@ -641,6 +648,7 @@ class StarboardSystem(commands.Cog):
                 return
             # Cast to Messageable for type checkers
             from typing import cast
+
             from discord.abc import Messageable
             mchannel = cast(Messageable, channel)
             message = await mchannel.fetch_message(payload.message_id)
@@ -671,7 +679,7 @@ class StarboardSystem(commands.Cog):
 
         # Ensure user is a discord.User (convert Member if necessary)
         if hasattr(user, 'user'):
-            user_obj = getattr(user, 'user')
+            user_obj = user.user
         else:
             user_obj = user
 
@@ -702,6 +710,7 @@ class StarboardSystem(commands.Cog):
                 return
             # Cast to Messageable for type checkers
             from typing import cast
+
             from discord.abc import Messageable
             mchannel = cast(Messageable, channel)
             message = await mchannel.fetch_message(payload.message_id)
@@ -729,7 +738,7 @@ class StarboardSystem(commands.Cog):
                 return
 
         if hasattr(user, 'user'):
-            user_obj = getattr(user, 'user')
+            user_obj = user.user
         else:
             user_obj = user
 
@@ -846,7 +855,7 @@ class StarboardSystem(commands.Cog):
                         await db.execute("DELETE FROM starred_messages WHERE message_id = ?", (message.id,))
                         await db.commit()
             
-    async def create_starboard_message(self, message: discord.Message, star_count: int, settings: Dict) -> Optional[discord.Message]:
+    async def create_starboard_message(self, message: discord.Message, star_count: int, settings: dict) -> discord.Message | None:
         """Create a new starboard message"""
         if not message.guild:
             self.logger.error(f"❌ Starboard: Message {message.id} is not in a guild")
@@ -887,7 +896,7 @@ class StarboardSystem(commands.Cog):
             return None
             
     async def update_starboard_message(self, message: discord.Message, star_count: int, 
-                                     starboard_msg_id: int, settings: Dict):
+                                     starboard_msg_id: int, settings: dict):
         """Update an existing starboard message"""
         if not message.guild:
             return
@@ -919,7 +928,7 @@ class StarboardSystem(commands.Cog):
         except Exception:
             self.logger.exception(f"Error updating starboard message {starboard_msg_id} for original {message.id}")
             
-    async def remove_starboard_message(self, starboard_msg_id: int, settings: Dict):
+    async def remove_starboard_message(self, starboard_msg_id: int, settings: dict):
         """Remove a starboard message"""
         starboard_channel = self.bot.get_channel(settings['channel_id'])
         if not starboard_channel or not isinstance(starboard_channel, discord.TextChannel):
@@ -933,7 +942,7 @@ class StarboardSystem(commands.Cog):
         except Exception:
             self.logger.exception(f"Error removing starboard message {starboard_msg_id}")
             
-    async def create_starboard_embed(self, message: discord.Message, star_count: int, settings: Dict) -> discord.Embed:
+    async def create_starboard_embed(self, message: discord.Message, star_count: int, settings: dict) -> discord.Embed:
         """Create a beautiful, modern embed for starboard message"""
         star_emoji = settings.get('star_emoji', '⭐')
         # Keep the starboard embed compact: author, avatar, highlighted message, and jump link
@@ -1033,7 +1042,7 @@ class StarboardSystem(commands.Cog):
         # No extra footer or timestamp to keep it compact
         return embed
 
-    def _build_starboard_extra_content(self, message: discord.Message) -> Optional[str]:
+    def _build_starboard_extra_content(self, message: discord.Message) -> str | None:
         """Build additional message content for starboard posts.
 
         Discord renders a playable video preview when the CDN URL is in the message content.

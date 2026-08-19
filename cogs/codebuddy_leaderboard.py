@@ -1,9 +1,17 @@
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
-import datetime
 import asyncio
-from utils.codebuddy_database import get_weekly_leaderboard, get_streak_leaderboard, reset_weekly_leaderboard, get_current_week
+import datetime
+
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
+
+from utils.codebuddy_database import (
+    get_current_week,
+    get_streak_leaderboard,
+    get_weekly_leaderboard,
+    reset_weekly_leaderboard,
+)
+
 
 class CodeBuddyLeaderboardCog(commands.Cog):
     def __init__(self, bot):
@@ -42,7 +50,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
                 weekly_data = await asyncio.wait_for(get_weekly_leaderboard(10), timeout=10.0)
                 week_start, week_end = get_current_week()
                 weekly_list = list(weekly_data) if weekly_data else []
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await interaction.edit_original_response(content=" Database query timed out. Please try again.")
                 return
             
@@ -139,7 +147,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
                 weekly_data = await asyncio.wait_for(get_weekly_leaderboard(10), timeout=10.0)
                 week_start, week_end = get_current_week()
                 weekly_list = list(weekly_data) if weekly_data else []
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await msg.edit(content=" Database query timed out. Please try again.")
                 return
             
@@ -213,7 +221,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
             try:
                 streak_data = await asyncio.wait_for(get_streak_leaderboard(10), timeout=10.0)
                 streak_list = list(streak_data) if streak_data else []
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await interaction.edit_original_response(content=" Database query timed out. Please try again.")
                 return
             
@@ -317,7 +325,7 @@ class CodeBuddyLeaderboardCog(commands.Cog):
             try:
                 streak_data = await asyncio.wait_for(get_streak_leaderboard(10), timeout=10.0)
                 streak_list = list(streak_data) if streak_data else []
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await msg.edit(content=" Database query timed out. Please try again.")
                 return
             

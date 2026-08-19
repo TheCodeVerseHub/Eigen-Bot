@@ -3,12 +3,9 @@ Helper utilities for the bot.
 """
 
 import random
-from typing import Any, List, Optional
 
 import discord
 from discord import Embed
-
-from utils.config import Config
 
 
 class EmbedBuilder:

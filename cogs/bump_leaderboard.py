@@ -26,7 +26,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import aiosqlite
 import discord
@@ -49,7 +49,7 @@ def _utcnow() -> datetime:
     return discord.utils.utcnow()
 
 
-def _dt_to_iso(dt: Optional[datetime]) -> Optional[str]:
+def _dt_to_iso(dt: datetime | None) -> str | None:
     if dt is None:
         return None
     if dt.tzinfo is None:
@@ -57,7 +57,7 @@ def _dt_to_iso(dt: Optional[datetime]) -> Optional[str]:
     return dt.isoformat()
 
 
-def _iso_to_dt(value: Optional[str]) -> Optional[datetime]:
+def _iso_to_dt(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
@@ -81,7 +81,7 @@ class BumpEntry:
     user_id: int
     username: str
     total_bumps: int
-    last_bump_time: Optional[datetime]
+    last_bump_time: datetime | None
 
 
 class BumpLeaderboard(commands.Cog):
@@ -97,10 +97,10 @@ class BumpLeaderboard(commands.Cog):
         self._lock = asyncio.Lock()
 
         # In-memory cache to avoid repeatedly parsing ISO strings for cooldown checks.
-        self._last_bump_cache: Dict[int, Dict[int, datetime]] = {}
+        self._last_bump_cache: dict[int, dict[int, datetime]] = {}
 
         # Prevent double counting when the same bump message is edited/reposted.
-        self._processed_message_ids: Dict[int, float] = {}
+        self._processed_message_ids: dict[int, float] = {}
 
         # Ensure DB tables exist (no JSON migration).
         self.bot.loop.create_task(self.load_data())
@@ -119,7 +119,7 @@ class BumpLeaderboard(commands.Cog):
                 return True
 
         # Fallback: search embed text blob.
-        parts: List[str] = []
+        parts: list[str] = []
         if embed.title:
             parts.append(str(embed.title))
         if embed.description:
@@ -131,7 +131,9 @@ class BumpLeaderboard(commands.Cog):
                 parts.append(str(f.value))
         return _BUMP_CMD_RE.search("\n".join(parts) or "") is not None
 
-    def _extract_bumper_name_from_embeds(self, message: discord.Message) -> Optional[str]:
+    def _extract_bumper_name_from_embeds(
+        self, message: discord.Message
+    ) -> str | None:
         """Return bumper username from the bump embed title."""
         for emb in message.embeds or []:
             if not emb or not emb.title:
@@ -143,7 +145,9 @@ class BumpLeaderboard(commands.Cog):
                 return name
         return None
 
-    def _resolve_member_by_name(self, guild: discord.Guild, name: str) -> Optional[discord.Member]:
+    def _resolve_member_by_name(
+        self, guild: discord.Guild, name: str
+    ) -> discord.Member | None:
         """Resolve a guild member by display name / username (best-effort)."""
         # discord.py helper: matches nick / name / name#discrim..
         try:
@@ -155,7 +159,10 @@ class BumpLeaderboard(commands.Cog):
 
         needle = name.casefold()
         for member in guild.members:
-            if member.display_name.casefold() == needle or member.name.casefold() == needle:
+            if (
+                member.display_name.casefold() == needle
+                or member.name.casefold() == needle
+            ):
                 return member
         return None
 
@@ -166,7 +173,9 @@ class BumpLeaderboard(commands.Cog):
         for mid in stale:
             self._processed_message_ids.pop(mid, None)
 
-    async def _handle_possible_bump_reminder_bump(self, message: discord.Message) -> None:
+    async def _handle_possible_bump_reminder_bump(
+        self, message: discord.Message
+    ) -> None:
         if message.guild is None:
             return
 
@@ -223,7 +232,9 @@ class BumpLeaderboard(commands.Cog):
             logger.exception("Failed handling possible bump reminder message")
 
     @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         # Some apps may edit the confirmation message; handle edits too.
         if after.author and after.author.id == getattr(self.bot.user, "id", None):
             return
@@ -303,25 +314,23 @@ class BumpLeaderboard(commands.Cog):
 
     async def _get_cooldown_seconds(self) -> int:
         await self.load_data()
-        async with aiosqlite.connect(self._db_path) as db:
-            async with db.execute(
-                "SELECT value FROM bump_settings WHERE key = ?",
-                ("cooldown_seconds",),
-            ) as cursor:
-                row = await cursor.fetchone()
+        async with aiosqlite.connect(self._db_path) as db, db.execute(
+            "SELECT value FROM bump_settings WHERE key = ?",
+            ("cooldown_seconds",),
+        ) as cursor:
+            row = await cursor.fetchone()
 
         if not row or row[0] is None:
             return DEFAULT_COOLDOWN_SECONDS
         return _safe_int(row[0], DEFAULT_COOLDOWN_SECONDS)
 
-    async def _get_bump_channel_id(self, guild_id: int) -> Optional[int]:
+    async def _get_bump_channel_id(self, guild_id: int) -> int | None:
         await self.load_data()
-        async with aiosqlite.connect(self._db_path) as db:
-            async with db.execute(
-                "SELECT bump_channel_id FROM bump_guild_config WHERE guild_id = ?",
-                (int(guild_id),),
-            ) as cursor:
-                row = await cursor.fetchone()
+        async with aiosqlite.connect(self._db_path) as db, db.execute(
+            "SELECT bump_channel_id FROM bump_guild_config WHERE guild_id = ?",
+            (int(guild_id),),
+        ) as cursor:
+            row = await cursor.fetchone()
         if not row or row[0] is None:
             return None
         try:
@@ -342,7 +351,7 @@ class BumpLeaderboard(commands.Cog):
             )
             await db.commit()
 
-    def _format_relative_time(self, dt: Optional[datetime]) -> str:
+    def _format_relative_time(self, dt: datetime | None) -> str:
         if not dt:
             return "Never"
         if dt.tzinfo is None:
@@ -350,7 +359,7 @@ class BumpLeaderboard(commands.Cog):
         ts = int(dt.timestamp())
         return f"<t:{ts}:R>"
 
-    def _format_full_time(self, dt: Optional[datetime]) -> str:
+    def _format_full_time(self, dt: datetime | None) -> str:
         if not dt:
             return "Never"
         if dt.tzinfo is None:
@@ -367,10 +376,10 @@ class BumpLeaderboard(commands.Cog):
         guild: discord.Guild,
         user: discord.abc.User,
         *,
-        now: Optional[datetime] = None,
+        now: datetime | None = None,
         amount: int = 1,
         bypass_cooldown: bool = False,
-    ) -> Tuple[bool, Optional[float]]:
+    ) -> tuple[bool, float | None]:
         """Update a user's bump count.
 
         Returns:
@@ -395,7 +404,7 @@ class BumpLeaderboard(commands.Cog):
                     row = await cursor.fetchone()
 
                 current_total = _safe_int(row[0], 0) if row else 0
-                last_dt: Optional[datetime] = None
+                last_dt: datetime | None = None
 
                 # Prefer in-memory timestamp cache.
                 last_dt = self._last_bump_cache.get(guild.id, {}).get(user.id)
@@ -409,7 +418,9 @@ class BumpLeaderboard(commands.Cog):
                         return False, float(cooldown - elapsed)
 
                 new_total = max(0, current_total + int(amount))
-                new_last_bump_time = now_iso if amount > 0 else (row[1] if row else None)
+                new_last_bump_time = (
+                    now_iso if amount > 0 else (row[1] if row else None)
+                )
 
                 await db.execute(
                     """
@@ -420,7 +431,13 @@ class BumpLeaderboard(commands.Cog):
                         total_bumps = excluded.total_bumps,
                         last_bump_time = excluded.last_bump_time
                     """,
-                    (int(guild.id), int(user.id), str(username), int(new_total), new_last_bump_time),
+                    (
+                        int(guild.id),
+                        int(user.id),
+                        str(username),
+                        int(new_total),
+                        new_last_bump_time,
+                    ),
                 )
 
                 await db.execute(
@@ -452,25 +469,26 @@ class BumpLeaderboard(commands.Cog):
 
         return True, None
 
-    async def get_leaderboard(self, guild: discord.Guild, limit: int = 10) -> List[BumpEntry]:
+    async def get_leaderboard(
+        self, guild: discord.Guild, limit: int = 10
+    ) -> list[BumpEntry]:
         """Return sorted bump leaderboard for the guild."""
         await self.load_data()
         lim = max(1, int(limit))
 
-        async with aiosqlite.connect(self._db_path) as db:
-            async with db.execute(
-                """
+        async with aiosqlite.connect(self._db_path) as db, db.execute(
+            """
                 SELECT user_id, username, total_bumps, last_bump_time
                 FROM bump_user_stats
                 WHERE guild_id = ?
                 ORDER BY total_bumps DESC, COALESCE(last_bump_time, '') DESC
                 LIMIT ?
                 """,
-                (int(guild.id), int(lim)),
-            ) as cursor:
-                fetched = await cursor.fetchall()
+            (int(guild.id), int(lim)),
+        ) as cursor:
+            fetched = await cursor.fetchall()
 
-        rows: List[BumpEntry] = []
+        rows: list[BumpEntry] = []
         for user_id, username, total_bumps, last_bump_time in fetched or []:
             rows.append(
                 BumpEntry(
@@ -482,7 +500,9 @@ class BumpLeaderboard(commands.Cog):
             )
         return rows
 
-    async def get_my_stats(self, guild: discord.Guild, user: discord.abc.User) -> BumpEntry:
+    async def get_my_stats(
+        self, guild: discord.Guild, user: discord.abc.User
+    ) -> BumpEntry:
         await self.load_data()
         async with aiosqlite.connect(self._db_path) as db:
             async with db.execute(
@@ -494,7 +514,9 @@ class BumpLeaderboard(commands.Cog):
         if not row:
             return BumpEntry(
                 user_id=int(user.id),
-                username=str(getattr(user, "display_name", getattr(user, "name", str(user.id)))),
+                username=str(
+                    getattr(user, "display_name", getattr(user, "name", str(user.id)))
+                ),
                 total_bumps=0,
                 last_bump_time=None,
             )
@@ -502,12 +524,17 @@ class BumpLeaderboard(commands.Cog):
         username, total_bumps, last_bump_time = row
         return BumpEntry(
             user_id=int(user.id),
-            username=str(username or getattr(user, "display_name", getattr(user, "name", str(user.id)))),
+            username=str(
+                username
+                or getattr(user, "display_name", getattr(user, "name", str(user.id)))
+            ),
             total_bumps=_safe_int(total_bumps, 0),
             last_bump_time=_iso_to_dt(last_bump_time),
         )
 
-    async def get_bump_stats(self, guild: discord.Guild) -> Tuple[int, Optional[int], Optional[datetime]]:
+    async def get_bump_stats(
+        self, guild: discord.Guild
+    ) -> tuple[int, int | None, datetime | None]:
         await self.load_data()
         async with aiosqlite.connect(self._db_path) as db:
             await db.execute(
@@ -544,13 +571,19 @@ class BumpLeaderboard(commands.Cog):
             await ctx.send("Server member only.")
             return False
         if not self._is_manage_guild_member(ctx.author):
-            await ctx.send("You need the **Manage Server** permission to use this command.")
+            await ctx.send(
+                "You need the **Manage Server** permission to use this command."
+            )
             return False
         return True
 
-    async def _ensure_manage_guild_interaction(self, interaction: discord.Interaction) -> bool:
+    async def _ensure_manage_guild_interaction(
+        self, interaction: discord.Interaction
+    ) -> bool:
         if interaction.guild is None:
-            await interaction.response.send_message("Server-only command.", ephemeral=True)
+            await interaction.response.send_message(
+                "Server-only command.", ephemeral=True
+            )
             return False
         if isinstance(interaction.user, discord.Member):
             if interaction.user.guild_permissions.manage_guild:
@@ -564,7 +597,9 @@ class BumpLeaderboard(commands.Cog):
         try:
             member = await interaction.guild.fetch_member(interaction.user.id)
         except Exception:
-            await interaction.response.send_message("Could not verify permissions.", ephemeral=True)
+            await interaction.response.send_message(
+                "Could not verify permissions.", ephemeral=True
+            )
             return False
 
         if member.guild_permissions.manage_guild:
@@ -579,7 +614,9 @@ class BumpLeaderboard(commands.Cog):
     # Hybrid commands (slash + prefix)
     # ----------------------------
 
-    @commands.hybrid_command(name="bumplb", description="Show the bump leaderboard (top 10)")
+    @commands.hybrid_command(
+        name="bumplb", description="Show the bump leaderboard (top 10)"
+    )
     async def bumplb(self, ctx: commands.Context):
         if ctx.guild is None:
             return await ctx.send("Server-only command.")
@@ -597,18 +634,20 @@ class BumpLeaderboard(commands.Cog):
             embed.description = "No bumps recorded yet. Use Disboard's `/bump` in the bump channel to get started."
             return await ctx.send(embed=embed)
 
-        lines: List[str] = []
+        lines: list[str] = []
         medals = ["🥇", "🥈", "🥉"]
         for i, r in enumerate(rows, start=1):
             rank = medals[i - 1] if i <= 3 else f"`#{i}`"
             lines.append(
-                f"{rank} <@{r.user_id}> — **{r.total_bumps}** bumps · last: {self._format_relative_time(r.last_bump_time)}"
+                f"{rank} <@{r.user_id}> -> **{r.total_bumps}** bumps · last: {self._format_relative_time(r.last_bump_time)}"
             )
 
         embed.add_field(name="Rankings", value="\n".join(lines), inline=False)
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="bumpstats", description="Show total bumps and the most recent bumper")
+    @commands.hybrid_command(
+        name="bumpstats", description="Show total bumps and the most recent bumper"
+    )
     async def bumpstats(self, ctx: commands.Context):
         if ctx.guild is None:
             return await ctx.send("Server-only command.")
@@ -620,14 +659,22 @@ class BumpLeaderboard(commands.Cog):
         embed.add_field(name="Total bumps", value=str(total), inline=True)
 
         if last_bumper_id:
-            embed.add_field(name="Most recent bumper", value=f"<@{last_bumper_id}>", inline=True)
-            embed.add_field(name="Last bump", value=self._format_full_time(last_bump_time), inline=False)
+            embed.add_field(
+                name="Most recent bumper", value=f"<@{last_bumper_id}>", inline=True
+            )
+            embed.add_field(
+                name="Last bump",
+                value=self._format_full_time(last_bump_time),
+                inline=False,
+            )
         else:
             embed.add_field(name="Most recent bumper", value="None yet", inline=True)
 
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="setbumpchannel", description="Set the channel where bumps count")
+    @commands.hybrid_command(
+        name="setbumpchannel", description="Set the channel where bumps count"
+    )
     @app_commands.describe(channel="Channel where Disboard bumps should be counted")
     async def setbumpchannel(self, ctx: commands.Context, channel: discord.TextChannel):
         if not await self._ensure_manage_guild(ctx):
@@ -652,7 +699,9 @@ class BumpLeaderboard(commands.Cog):
             return await ctx.send("Amount must be between 1 and 100000.")
 
         await self.load_data()
-        ok, _ = await self.update_bump_count(ctx.guild, user, amount=int(amount), bypass_cooldown=True)  # type: ignore[arg-type]
+        ok, _ = await self.update_bump_count(
+            ctx.guild, user, amount=int(amount), bypass_cooldown=True
+        )  # type: ignore[arg-type]
         if not ok:
             # bypass_cooldown=True should always be ok
             pass
@@ -665,9 +714,13 @@ class BumpLeaderboard(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="removebumps", description="Admin: remove bumps from a user")
+    @commands.hybrid_command(
+        name="removebumps", description="Admin: remove bumps from a user"
+    )
     @app_commands.describe(user="User to modify", amount="Number of bumps to remove")
-    async def removebumps(self, ctx: commands.Context, user: discord.Member, amount: int):
+    async def removebumps(
+        self, ctx: commands.Context, user: discord.Member, amount: int
+    ):
         if not await self._ensure_manage_guild(ctx):
             return
 
@@ -675,7 +728,9 @@ class BumpLeaderboard(commands.Cog):
             return await ctx.send("Amount must be between 1 and 100000.")
 
         await self.load_data()
-        ok, _ = await self.update_bump_count(ctx.guild, user, amount=-int(amount), bypass_cooldown=True)  # type: ignore[arg-type]
+        ok, _ = await self.update_bump_count(
+            ctx.guild, user, amount=-int(amount), bypass_cooldown=True
+        )  # type: ignore[arg-type]
         if not ok:
             pass
 
@@ -702,7 +757,11 @@ class BumpLeaderboard(commands.Cog):
 
         embed = discord.Embed(title="🙋 Your bumps", color=discord.Color.blurple())
         embed.add_field(name="Total bumps", value=str(entry.total_bumps), inline=True)
-        embed.add_field(name="Last bump", value=self._format_full_time(entry.last_bump_time), inline=False)
+        embed.add_field(
+            name="Last bump",
+            value=self._format_full_time(entry.last_bump_time),
+            inline=False,
+        )
         await ctx.send(embed=embed)
 
     @commands.command(name="blb")
@@ -732,7 +791,7 @@ class BumpLeaderboard(commands.Cog):
         medals = ["🥇", "🥈", "🥉"]
         lines = []
         for i, r in enumerate(rows, start=1):
-            lines.append(f"{medals[i-1]} <@{r.user_id}> — **{r.total_bumps}**")
+            lines.append(f"{medals[i - 1]} <@{r.user_id}> -> **{r.total_bumps}**")
         embed.add_field(name="Top 3", value="\n".join(lines), inline=False)
         await ctx.send(embed=embed)
 
@@ -743,12 +802,16 @@ class BumpLeaderboard(commands.Cog):
     @addbumps.error
     @removebumps.error
     @setbumpchannel.error
-    async def _admin_prefix_error(self, ctx: commands.Context, error: commands.CommandError):
+    async def _admin_prefix_error(
+        self, ctx: commands.Context, error: commands.CommandError
+    ):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("You don't have permission to use this command.")
             return
         if isinstance(error, commands.BadArgument):
-            await ctx.send("Invalid argument. Please mention a valid user/channel and amount.")
+            await ctx.send(
+                "Invalid argument. Please mention a valid user/channel and amount."
+            )
             return
         await ctx.send("An error occurred while processing your command.")
 

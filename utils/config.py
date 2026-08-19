@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,17 +14,17 @@ class Config(BaseSettings):
 
     discord_token: str = Field(default='demo_token')
     # Backwards compatible single guild id
-    guild_id: Optional[int] = Field(default=None)
+    guild_id: int | None = Field(default=None)
     # Preferred: comma-separated list (or JSON list) of guild ids for fast per-guild slash-command sync
     guild_ids: list[int] = Field(default_factory=list)
     log_level: str = Field(default='INFO')
-    owner_id: Optional[int] = Field(default=None)
-    topgg_token: Optional[str] = Field(default=None)
-    topgg_webhook_secret: Optional[str] = Field(default=None)
-    redis_url: Optional[str] = Field(default=None)
+    owner_id: int | None = Field(default=None)
+    topgg_token: str | None = Field(default=None)
+    topgg_webhook_secret: str | None = Field(default=None)
+    redis_url: str | None = Field(default=None)
 
     # CodeBuddy settings
-    question_channel_id: Optional[int] = Field(default=None)
+    question_channel_id: int | None = Field(default=None)
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -34,7 +34,7 @@ class Config(BaseSettings):
 
     @field_validator('guild_id', mode='before')
     @classmethod
-    def _parse_guild_id(cls, v: Any) -> Optional[int]:
+    def _parse_guild_id(cls, v: Any) -> int | None:
         """Parse legacy single guild id.
 
         Some deployments mistakenly set `GUILD_ID` as a CSV / JSON list.
@@ -108,7 +108,7 @@ class Config(BaseSettings):
         raise TypeError('guild_ids must be a list, int, or string')
 
     @model_validator(mode='after')
-    def _coerce_single_guild_to_list(self) -> 'Config':
+    def _coerce_single_guild_to_list(self) -> Config:
         # If only legacy GUILD_ID is set, treat it as a single-item list.
         if not self.guild_ids and self.guild_id:
             self.guild_ids = [int(self.guild_id)]

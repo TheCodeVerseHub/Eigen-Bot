@@ -396,7 +396,7 @@ async def update_weekly_score(user_id: int, points: int = 1):
 
 async def reset_weekly_leaderboard():
     """Resets weekly leaderboard for new week."""
-    week_start, week_end = get_current_week()
+    week_start, _week_end = get_current_week()
 
     async with aiosqlite.connect(DB_PATH) as db:
         # Delete old weekly entries (older than current week)
@@ -408,7 +408,7 @@ async def reset_weekly_leaderboard():
 
 async def get_weekly_leaderboard(limit=10):
     """Gets current weekly leaderboard."""
-    week_start, week_end = get_current_week()
+    week_start, _week_end = get_current_week()
 
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
@@ -1092,7 +1092,7 @@ async def increment_guild_daily_count(guild_id: int):
             reason = "already_awarded"
         elif prev_for_today >= 10:
             # The guild reached the threshold earlier today. If the guild currently has no
-            # saves, we should not block further awarding — so don't set the threshold reason.
+            # saves, we should not block further awarding so don't set the threshold reason.
             if current_units == 0:
                 reason = None
             else:

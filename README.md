@@ -9,10 +9,10 @@ Eigen Bot is an all-in-one Discord bot designed for thriving communities. Built 
 ---
 
 ### Quick Links
-* **[Ticket System](./docs/TICKETS.md)** — Professional thread-based support management.
-* **[Gaming & Quests](./docs/GAMES.md)** — Counting game, CodeBuddy, and Daily Quests.
-* **[Full Feature List](./docs/FEATURES.md)** — Comprehensive command library.
-* **[Advanced Configuration](./docs/SETUP_GUIDE.md)** — Docker, Env Vars, and Database info.
+* **[Ticket System](./docs/TICKETS.md)** -> Professional thread-based support management.
+* **[Gaming & Quests](./docs/GAMES.md)** -> Counting game, CodeBuddy, and Daily Quests.
+* **[Full Feature List](./docs/FEATURES.md)** -> Comprehensive command library.
+* **[Advanced Configuration](./docs/SETUP_GUIDE.md)** -> Docker, Env Vars, and Database info.
 
 ---
 
@@ -92,16 +92,16 @@ DM-based application system with admin review channels.
 - `/timestamp`
 
 ### Admin utilities
-- `/say` — Make the bot send a message.
-- `/edit` — Edit a bot message sent via `/say` (by message ID; opens a modal).
-- `/react` — Add a reaction as the bot (emoji + optional message link; defaults to last message in the channel).
+- `/say` -> Make the bot send a message.
+- `/edit` -> Edit a bot message sent via `/say` (by message ID; opens a modal).
+- `/react` -> Add a reaction as the bot (emoji + optional message link; defaults to last message in the channel).
 
 ### Moderation
-- `?chowkidar` (alias: `?ch`) — Start tracking a user (staff only).
-- `?lc` (alias: `?listchowki`) — List currently tracked users (staff only).
+- `?chowkidar` (alias: `?ch`) -> Start tracking a user (staff only).
+- `?lc` (alias: `?listchowki`) -> List currently tracked users (staff only).
 
 ### CodeBuddy practice
-- `/question <category>` — Sends a practice MCQ; reply with `a`/`b`/`c` in that channel to get ✅/❌ feedback (no points).
+- `/question <category>` -> Sends a practice MCQ; reply with `a`/`b`/`c` in that channel to get ✅/❌ feedback (no points).
 
 ### Social
 - `?quote`

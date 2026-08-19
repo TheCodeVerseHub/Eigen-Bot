@@ -1,10 +1,9 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
-import aiosqlite
-from pathlib import Path
-from typing import Optional
 from datetime import datetime, timezone
+from pathlib import Path
+
+import aiosqlite
+from discord import app_commands
+from discord.ext import commands
 
 DB_PATH = Path("data/tags.db")
 
@@ -123,7 +122,7 @@ class Tags(commands.Cog):
     @tags_group.command(name="list", description="List tags (optional search)")
     @app_commands.describe(search="Optional search text")
     @commands.guild_only()
-    async def tags_list(self, ctx: commands.Context, search: Optional[str] = None):
+    async def tags_list(self, ctx: commands.Context, search: str | None = None):
         if ctx.guild is None:
             return await ctx.reply("This command can only be used in a server.")
         

@@ -9,8 +9,8 @@ import logging
 import random
 import time
 import urllib.request
+from urllib.parse import urlparse
 from datetime import datetime, timezone
-from typing import Optional, Union
 
 import discord
 from discord import app_commands
@@ -63,18 +63,21 @@ class Fun(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self._absolute_template_cache_bytes: Optional[bytes] = None
+        self._absolute_template_cache_bytes: bytes | None = None
         self._absolute_template_cache_expires_at = 0.0
         self._absolute_template_cache_lock = asyncio.Lock()
 
     @staticmethod
     def _download_bytes(url: str) -> bytes:
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https"}:
+            raise ValueError("Unsupported URL scheme")
         request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(request, timeout=20) as response:
             return response.read()
 
     @staticmethod
-    def _load_font(size: int) -> Union[ImageFont.FreeTypeFont, ImageFont.ImageFont]:
+    def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
         for font_name in ("arialbd.ttf", "Arial Bold.ttf", "DejaVuSans-Bold.ttf"):
             try:
                 return ImageFont.truetype(font_name, size=size)
@@ -237,7 +240,7 @@ class Fun(commands.Cog):
         name="compliment", help="Receive a professional programming compliment"
     )
     async def compliment(
-        self, ctx: commands.Context, member: Optional[discord.Member] = None
+        self, ctx: commands.Context, member: discord.Member | None = None
     ):
         """Give a professional compliment to yourself or another member."""
         """Give a professional compliment to yourself or another member."""
@@ -432,7 +435,7 @@ class Fun(commands.Cog):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="gif", help="Send a gif matching a query (prefix-only).")
-    async def gif(self, ctx: commands.Context, *, query: Optional[str] = None):
+    async def gif(self, ctx: commands.Context, *, query: str | None = None):
         """Return a gif URL from a fixed list matching the query or random if none."""
         gifs = [
             "https://tenor.com/view/patrick-spongebob-spongebob-meme-patrick-meme-dumb-patrick-gif-9974665538168463324",

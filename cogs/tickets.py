@@ -3,7 +3,6 @@ import io
 import logging
 import sqlite3
 from datetime import datetime, timezone
-from typing import Optional
 
 import discord
 from discord import app_commands
@@ -317,7 +316,7 @@ class Tickets(commands.Cog):
 
     def _get_ticket_log_channel(
         self, guild: discord.Guild
-    ) -> Optional[discord.TextChannel]:
+    ) -> discord.TextChannel | None:
         """Get the ticketlog channel for the guild if it exists"""
         # Check for hardcoded ticket log channel
         TICKET_LOGS_CHANNEL = 1438487366305190018
@@ -364,7 +363,7 @@ class Tickets(commands.Cog):
                 return channel
         return None
 
-    def _get_support_team_role(self, guild: discord.Guild) -> Optional[discord.Role]:
+    def _get_support_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the support team role for the guild if it exists"""
         try:
             conn = sqlite3.connect(DATABASE_NAME)
@@ -399,7 +398,7 @@ class Tickets(commands.Cog):
                 return role
         return None
 
-    def _get_report_team_role(self, guild: discord.Guild) -> Optional[discord.Role]:
+    def _get_report_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the report team role for the guild if it exists"""
         try:
             conn = sqlite3.connect(DATABASE_NAME)
@@ -431,7 +430,7 @@ class Tickets(commands.Cog):
         # Fall back to support team role if no report role set
         return self._get_support_team_role(guild)
 
-    def _get_partner_team_role(self, guild: discord.Guild) -> Optional[discord.Role]:
+    def _get_partner_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the partner team role for the guild if it exists"""
         try:
             conn = sqlite3.connect(DATABASE_NAME)
@@ -659,7 +658,7 @@ class Tickets(commands.Cog):
 
         except Exception as e:
             await interaction.followup.send(
-                embed=create_error_embed("Failed to Create Ticket", f"Error: {str(e)}"),
+                embed=create_error_embed("Failed to Create Ticket", f"Error: {e!s}"),
                 ephemeral=True,
             )
             return
@@ -875,7 +874,7 @@ class Tickets(commands.Cog):
             conn.close()
             return
 
-        ticket_id, user_id, claimed_by = result
+        ticket_id, _user_id, claimed_by = result
 
         if claimed_by:
             try:
@@ -919,7 +918,7 @@ class Tickets(commands.Cog):
 
     async def _generate_transcript(
         self, thread: discord.Thread, ticket_id: int, save_to_log: bool = False
-    ) -> Optional[str]:
+    ) -> str | None:
         """Generate a text transcript of the ticket"""
         try:
             messages = []
@@ -969,8 +968,8 @@ class Tickets(commands.Cog):
         ticket_id: int,
         thread: discord.Thread,
         user: discord.User | discord.Member,
-        category: Optional[str] = None,
-        reason: Optional[str] = None,
+        category: str | None = None,
+        reason: str | None = None,
     ):
         """Log ticket actions to the ticket log channel in the server (if it exists)"""
         if not thread.guild:
@@ -1025,10 +1024,10 @@ class Tickets(commands.Cog):
     async def ticket_panel(
         self,
         ctx,
-        channel: Optional[discord.TextChannel] = None,
-        support_role: Optional[discord.Role] = None,
-        report_role: Optional[discord.Role] = None,
-        partner_role: Optional[discord.Role] = None,
+        channel: discord.TextChannel | None = None,
+        support_role: discord.Role | None = None,
+        report_role: discord.Role | None = None,
+        partner_role: discord.Role | None = None,
     ):
         """Create a ticket panel with a button to open tickets"""
         target_channel = channel or ctx.channel
@@ -1159,7 +1158,7 @@ class Tickets(commands.Cog):
         channel="The channel to use for ticket logs (leave empty to view current setting)"
     )
     async def ticket_log_setup(
-        self, ctx, channel: Optional[discord.TextChannel] = None
+        self, ctx, channel: discord.TextChannel | None = None
     ):
         """Set up, view, or disable the ticket log channel for this server"""
         if not ctx.guild:
@@ -1281,7 +1280,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Setup Error", f"Failed to set up ticket logging: {str(e)}"
+                    "Setup Error", f"Failed to set up ticket logging: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1339,7 +1338,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Error", f"Failed to disable ticket logging: {str(e)}"
+                    "Error", f"Failed to disable ticket logging: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1349,7 +1348,7 @@ class Tickets(commands.Cog):
     @app_commands.describe(
         role="The role to ping when new tickets are created (leave empty to view current setting)"
     )
-    async def ticket_support_role(self, ctx, role: Optional[discord.Role] = None):
+    async def ticket_support_role(self, ctx, role: discord.Role | None = None):
         """Set up or view the support team role for ticket notifications"""
         if not ctx.guild:
             await ctx.send(
@@ -1435,7 +1434,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Setup Error", f"Failed to set support role: {str(e)}"
+                    "Setup Error", f"Failed to set support role: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1493,7 +1492,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Error", f"Failed to disable support role: {str(e)}"
+                    "Error", f"Failed to disable support role: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1505,7 +1504,7 @@ class Tickets(commands.Cog):
         user="Filter tickets by user",
     )
     async def tickets_list(
-        self, ctx, status: str = "open", user: Optional[discord.User] = None
+        self, ctx, status: str = "open", user: discord.User | None = None
     ):
         """View all tickets or filter by status/user"""
         conn = sqlite3.connect(DATABASE_NAME)
@@ -1789,7 +1788,7 @@ class Tickets(commands.Cog):
     @app_commands.describe(
         role="The role to ping when report tickets are created (leave empty to view current setting)"
     )
-    async def ticket_report_role(self, ctx, role: Optional[discord.Role] = None):
+    async def ticket_report_role(self, ctx, role: discord.Role | None = None):
         """Set up or view the report team role for report ticket notifications"""
         if not ctx.guild:
             await ctx.send(
@@ -1882,7 +1881,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Setup Error", f"Failed to set report role: {str(e)}"
+                    "Setup Error", f"Failed to set report role: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1935,7 +1934,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Database Error", f"Failed to disable report role: {str(e)}"
+                    "Database Error", f"Failed to disable report role: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -1945,7 +1944,7 @@ class Tickets(commands.Cog):
     @app_commands.describe(
         role="The role to ping when partnership tickets are created (leave empty to view current setting)"
     )
-    async def ticket_partner_role(self, ctx, role: Optional[discord.Role] = None):
+    async def ticket_partner_role(self, ctx, role: discord.Role | None = None):
         """Set up or view the partner team role for partnership ticket notifications"""
         if not ctx.guild:
             await ctx.send(
@@ -2038,7 +2037,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Setup Error", f"Failed to set partner role: {str(e)}"
+                    "Setup Error", f"Failed to set partner role: {e!s}"
                 ),
                 ephemeral=True,
             )
@@ -2091,7 +2090,7 @@ class Tickets(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=create_error_embed(
-                    "Database Error", f"Failed to disable partner role: {str(e)}"
+                    "Database Error", f"Failed to disable partner role: {e!s}"
                 ),
                 ephemeral=True,
             )

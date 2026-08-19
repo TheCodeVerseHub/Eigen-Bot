@@ -2,30 +2,29 @@ import copy
 import json
 import random
 from pathlib import Path
-from typing import Dict, List, Optional
 
 DATA_PATH = Path(__file__).parent / "../cogs/data/coding_questions.json"
 
 with open(DATA_PATH, "r", encoding="utf-8") as f:
-    HARD_QUESTIONS: List[Dict] = json.load(f)
+    HARD_QUESTIONS: list[dict] = json.load(f)
 
 if not HARD_QUESTIONS:
     raise RuntimeError("coding_questions.json is empty")
 
 # Keep a normalized language/category index for fast filtered retrieval.
 # Example key: "system design", "python", "java"
-_questions_by_language: Dict[str, List[Dict]] = {}
+_questions_by_language: dict[str, list[dict]] = {}
 for q in HARD_QUESTIONS:
     lang = str(q.get("language", "General")).strip().lower()
     _questions_by_language.setdefault(lang, []).append(q)
 
 # Non-repeating global question pool
-_question_pool: List[Dict] = HARD_QUESTIONS.copy()
+_question_pool: list[dict] = HARD_QUESTIONS.copy()
 random.shuffle(_question_pool)
 _index = 0
 
 
-def _normalize_category(category: Optional[str]) -> Optional[str]:
+def _normalize_category(category: str | None) -> str | None:
     """Normalize category/language user input."""
     if category is None:
         return None
@@ -33,12 +32,12 @@ def _normalize_category(category: Optional[str]) -> Optional[str]:
     return " ".join(normalized.split()) or None
 
 
-def get_available_categories() -> List[str]:
+def get_available_categories() -> list[str]:
     """Return sorted list of available language/category names."""
     return sorted(_questions_by_language.keys())
 
 
-def get_random_question() -> Dict:
+def get_random_question() -> dict:
     """Return a non-repeating randomized question from all questions."""
     global _index
 
@@ -51,7 +50,7 @@ def get_random_question() -> Dict:
     return fix_question(q)
 
 
-def get_random_question_by_category(category: str) -> Optional[Dict]:
+def get_random_question_by_category(category: str) -> dict | None:
     """
     Return one randomized question for a specific category/language.
 
@@ -70,7 +69,7 @@ def get_random_question_by_category(category: str) -> Optional[Dict]:
     return fix_question(q)
 
 
-def fix_question(question: Dict) -> Dict:
+def fix_question(question: dict) -> dict:
     """Randomize options while keeping the correct answer accurate."""
     correct_letter = question["correct"]
     correct_idx = ord(correct_letter) - ord("a")

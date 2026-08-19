@@ -7,7 +7,6 @@ Includes admin commands for manual sending, resending, and previewing the guide.
 """
 
 import logging
-from typing import Optional, Set
 
 import aiosqlite
 import discord
@@ -127,7 +126,7 @@ class StaffGuide(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self._processing: Set[int] = set()
+        self._processing: set[int] = set()
 
     async def cog_load(self) -> None:
         """Initialize database table on cog load."""
@@ -145,12 +144,11 @@ class StaffGuide(commands.Cog):
 
     async def _has_received_guide(self, user_id: int, guild_id: int) -> bool:
         """Check if a user has already received the staff guide."""
-        async with aiosqlite.connect(DATABASE_NAME) as db:
-            async with db.execute(
-                "SELECT 1 FROM staff_guide_sent WHERE user_id = ? AND guild_id = ?",
-                (user_id, guild_id),
-            ) as cursor:
-                return await cursor.fetchone() is not None
+        async with aiosqlite.connect(DATABASE_NAME) as db, db.execute(
+            "SELECT 1 FROM staff_guide_sent WHERE user_id = ? AND guild_id = ?",
+            (user_id, guild_id),
+        ) as cursor:
+            return await cursor.fetchone() is not None
 
     async def _mark_guide_sent(self, user_id: int, guild_id: int) -> None:
         """Mark a user as having received the staff guide."""
@@ -239,7 +237,7 @@ class StaffGuide(commands.Cog):
         member: discord.Member,
         triggered_by: str,
         status: str,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ) -> None:
         """Log a staff guide action to the log channel."""
         log_channel = self.bot.get_channel(LOG_CHANNEL_ID)
@@ -299,9 +297,9 @@ class StaffGuide(commands.Cog):
     async def _safe_respond(
         self,
         ctx: commands.Context,
-        content: Optional[str] = None,
+        content: str | None = None,
         *,
-        embed: Optional[discord.Embed] = None,
+        embed: discord.Embed | None = None,
         ephemeral: bool = False,
     ) -> None:
         """Respond without crashing on expired slash interactions.

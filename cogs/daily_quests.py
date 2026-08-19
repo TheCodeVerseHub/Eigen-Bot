@@ -3,14 +3,14 @@ Daily Quests System - Inspired by OWO bot
 Complete daily challenges to earn streak freezes and bonus hints!
 """
 
+
 import discord
-from discord.ext import commands
 from discord import app_commands
-from typing import Optional
+from discord.ext import commands
+
 from utils.codebuddy_database import (
-    get_daily_quest_progress, 
+    get_daily_quest_progress,
     get_quest_rewards,
-    use_streak_freeze
 )
 
 

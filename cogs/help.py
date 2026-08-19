@@ -1,9 +1,9 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
 from collections.abc import Iterable, Iterator
-from typing import Optional, Union, cast
+from typing import Union, cast
 
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 # Emoji mapping for each cog category
 COG_EMOJIS = {
@@ -493,13 +493,13 @@ class HelpCog(commands.Cog):
         self.bot = bot
 
     @commands.command(name="helpmenu", description="Show help for commands or a specific command/cog")
-    async def helpmenu(self, ctx: commands.Context, *, query: Optional[str] = None):
+    async def helpmenu(self, ctx: commands.Context, *, query: str | None = None):
         """Show interactive help menu or detailed help for a specific command/category."""
         await self._show_help(ctx, query)
     
     @app_commands.command(name="help", description="Show help for commands or a specific command/cog")
     @app_commands.describe(query="Optional command or cog name to show detailed help for")
-    async def help_slash(self, interaction: discord.Interaction, query: Optional[str] = None):
+    async def help_slash(self, interaction: discord.Interaction, query: str | None = None):
         """Show interactive help menu or detailed help for a specific command/category (slash version)."""
         # If a specific command or cog name was provided, show detailed help
         if query:
@@ -516,7 +516,7 @@ class HelpCog(commands.Cog):
         # Send with the view
         await interaction.response.send_message(embed=embed, view=view)
     
-    async def _show_help(self, ctx: commands.Context, query: Optional[str] = None):
+    async def _show_help(self, ctx: commands.Context, query: str | None = None):
         """Internal method to show help menu."""
         
         # If a specific command or cog name was provided, show detailed help

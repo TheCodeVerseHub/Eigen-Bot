@@ -5,7 +5,7 @@ Misc commands cog.
 import calendar
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, Union
+from typing import ClassVar
 
 import aiosqlite
 import discord
@@ -86,8 +86,8 @@ class Misc(commands.Cog):
         self.config = config
 
     def _resolve_resource_channel(
-        self, guild: discord.Guild, channel_name: str, channel_id: Optional[int] = None
-    ) -> Optional[discord.abc.GuildChannel]:
+        self, guild: discord.Guild, channel_name: str, channel_id: int | None = None
+    ) -> discord.abc.GuildChannel | None:
         """Resolve a configured channel by ID first, then by name."""
         if channel_id:
             channel = guild.get_channel(int(channel_id))
@@ -101,7 +101,7 @@ class Misc(commands.Cog):
         return None
 
     def _format_channel_mentions(
-        self, guild: Optional[discord.Guild], resource: LanguageResource
+        self, guild: discord.Guild | None, resource: LanguageResource
     ) -> str:
         """Format channel references for display, preferring clickable mentions."""
         if guild is None:
@@ -154,7 +154,7 @@ class Misc(commands.Cog):
         return "\n".join(f"• [{link.label}]({link.url})" for link in links)
 
     def _build_resource_embed(
-        self, guild: Optional[discord.Guild], resource: LanguageResource
+        self, guild: discord.Guild | None, resource: LanguageResource
     ) -> discord.Embed:
         embed = discord.Embed(
             title=f"{resource.display_name} Resources",
@@ -264,7 +264,7 @@ class Misc(commands.Cog):
 
     async def _is_say_message(
         self, guild_id: int, message_id: int
-    ) -> Optional[tuple[int, int]]:
+    ) -> tuple[int, int] | None:
         """Return (guild_id, channel_id) if message is tracked as /say."""
         try:
             async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
@@ -532,7 +532,7 @@ class Misc(commands.Cog):
         aliases=["sp", "spotify"],
         description="Show what you are currently listening to on Spotify",
     )
-    async def song(self, ctx: commands.Context, user: Optional[discord.Member] = None):
+    async def song(self, ctx: commands.Context, user: discord.Member | None = None):
         """Display the current song/music that a user is listening to on Spotify or other music apps."""
         target_user = user or ctx.author
 
@@ -796,7 +796,7 @@ class Misc(commands.Cog):
 
         except Exception as e:
             response = (
-                f"❌ An error occurred while submitting your bug report: {str(e)}\n\n"
+                f"❌ An error occurred while submitting your bug report: {e!s}\n\n"
             )
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
@@ -877,7 +877,7 @@ class Misc(commands.Cog):
 
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feature request: {str(e)}\n\n",
+                f"❌ An error occurred while submitting your feature request: {e!s}\n\n",
                 ephemeral=True,
             )
 
@@ -953,7 +953,7 @@ class Misc(commands.Cog):
 
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feedback: {str(e)}\n\n",
+                f"❌ An error occurred while submitting your feedback: {e!s}\n\n",
                 ephemeral=True,
             )
 
@@ -974,8 +974,8 @@ class Misc(commands.Cog):
         year: int,
         month: app_commands.Range[int, 1, 12],
         day: app_commands.Range[int, 1, 31],
-        hour: Optional[app_commands.Range[int, 0, 23]] = None,
-        minute: Optional[app_commands.Range[int, 0, 59]] = None,
+        hour: app_commands.Range[int, 0, 23] | None = None,
+        minute: app_commands.Range[int, 0, 59] | None = None,
         utc_offset: float = 0.0,
     ):
         """Generate Discord timestamps with all available formats."""
@@ -1063,11 +1063,11 @@ class Misc(commands.Cog):
 
         except ValueError as e:
             await interaction.response.send_message(
-                f"❌ Invalid date/time: {str(e)}", ephemeral=True
+                f"❌ Invalid date/time: {e!s}", ephemeral=True
             )
         except Exception as e:
             await interaction.response.send_message(
-                f"❌ An error occurred: {str(e)}", ephemeral=True
+                f"❌ An error occurred: {e!s}", ephemeral=True
             )
 
     @app_commands.command(
@@ -1209,7 +1209,7 @@ class Misc(commands.Cog):
         self,
         interaction: discord.Interaction,
         emoji: str,
-        message_link: Optional[str] = None,
+        message_link: str | None = None,
     ):
         if not interaction.guild:
             await interaction.response.send_message(
@@ -1235,8 +1235,7 @@ class Misc(commands.Cog):
             )
             return
 
-        target_channel: Optional[discord.abc.Messageable] = interaction.channel
-        target_message: Optional[discord.Message] = None
+        target_message: discord.Message | None = None
 
         if message_link:
             raw = message_link.strip().lstrip("<").rstrip(">")
@@ -1260,7 +1259,6 @@ class Misc(commands.Cog):
                         ephemeral=True,
                     )
                     return
-                target_channel = ch
                 try:
                     target_message = await ch.fetch_message(message_id)
                 except Exception:
@@ -1338,9 +1336,9 @@ class Misc(commands.Cog):
         await ctx.send(message)
 
     # ── Bot owner IDs authorised for ?todo ────────────────────────────────
-    _TODO_OWNER_IDS = {955695820999639120, 1286998001902030908}
-    _TODO_GUILD_ID = 1410939321812258928
-    _TODO_CHANNEL_ID = 1491280085808840724
+    _TODO_OWNER_IDS: ClassVar[set[int]] = {955695820999639120, 1286998001902030908}
+    _TODO_GUILD_ID: ClassVar[int] = 1410939321812258928
+    _TODO_CHANNEL_ID: ClassVar[int] = 1491280085808840724
 
     @commands.command(name="todo", hidden=True)
     async def todo_command(self, ctx: commands.Context, *, task: str):
