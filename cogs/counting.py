@@ -53,7 +53,9 @@ class Counting(commands.Cog):
             try:
                 try:
                     await message.add_reaction(emoji)
-                except Exception:
+                except Exception as e:
+                    #retry 
+                    print(f"Failed to add da reaction {emoji} with da error : {e}")
                     pass
                 try:
                     await asyncio.sleep(0.35)
@@ -266,7 +268,7 @@ class Counting(commands.Cog):
             await msg.remove_reaction("🏆", self.bot.user)
         except Exception:
             pass
-
+    
     async def _mark_highscore_message(
         self,
         message: discord.Message,
@@ -280,19 +282,23 @@ class Counting(commands.Cog):
         if not message.guild or not isinstance(message.channel, discord.TextChannel):
             return
 
-        guild_id = message.guild.id
 
+        guild_id = message.guild.id
+  
         # Only add the trophy here.
         # The ✅ reaction is added for all valid counts in the main handler;
         # adding it again here causes extra API calls and rate limits.
+        
         self._enqueue_reaction(message, "🏆")
+        
 
         # Track the latest highscore/tie message ID for bookkeeping.
         # (We no longer remove reactions from older messages.)
         await self._set_active_highscore_message_id(guild_id, message.id)
 
         # Record history only if it is a NEW record
-        if new_count > previous_high_score:
+        #Fix here: adding condition to capture ties too
+        if new_count >= previous_high_score:
             async with aiosqlite.connect(DB_PATH, timeout=30.0) as db:
                 await db.execute(
                     """
@@ -623,6 +629,10 @@ class Counting(commands.Cog):
 
                     # Side effects after commit to avoid duplicate reactions on retries.
                     self._enqueue_reaction(message, "✅")
+
+                    if(next_count % 100 == 0):
+                        self._enqueue_reaction(message, "💯")
+                        await message.channel.send(f"Server Milestone reached! Reached: **{next_count}** ", delete_after = 10);
 
                     # Count down active automatic-save cooldowns on each valid count (best-effort).
                     try:
