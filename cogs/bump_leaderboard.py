@@ -166,6 +166,28 @@ class BumpLeaderboard(commands.Cog):
                 return member
         return None
 
+    def _resolve_bumper_from_interaction(
+        self, message: discord.Message
+    ) -> discord.abc.User | None:
+        """Return the user who ran the slash command this message replies to.
+
+        Discord attaches interaction metadata to a bot's response message
+        when that message was sent in response to a slash command. This is
+        far more reliable than guessing the username from embed text, since
+        it comes directly from Discord rather than from Disboard's embed
+        formatting (which does not necessarily include the invoker's name).
+        """
+        metadata = getattr(message, "interaction_metadata", None)
+        if metadata is not None and metadata.user is not None:
+            return metadata.user
+
+        # Fallback for older payloads / discord.py versions.
+        interaction = getattr(message, "interaction", None)
+        if interaction is not None and interaction.user is not None:
+            return interaction.user
+
+        return None
+
     def _cleanup_processed_cache(self) -> None:
         # Keep ~10 minutes of ids; enough to cover edits/reposts.
         cutoff = time.monotonic() - 600
@@ -188,11 +210,22 @@ class BumpLeaderboard(commands.Cog):
         if message.channel.id != int(bump_channel_id):
             return
 
-        bumper_name = self._extract_bumper_name_from_embeds(message)
-        if not bumper_name:
+        if not message.embeds or not any(
+            self._looks_like_bump_reminder_embed(e) for e in message.embeds
+        ):
             return
 
-        bumper_member = self._resolve_member_by_name(message.guild, bumper_name)
+        # Prefer Discord's own interaction metadata: it tells us exactly who
+        # ran the slash command that produced this message, regardless of
+        # what Disboard's embed happens to say.
+        bumper_member = self._resolve_bumper_from_interaction(message)
+
+        if bumper_member is None:
+            bumper_name = self._extract_bumper_name_from_embeds(message)
+            if not bumper_name:
+                return
+            bumper_member = self._resolve_member_by_name(message.guild, bumper_name)
+
         if bumper_member is None:
             # If we can't resolve the member, do not guess.
             return
