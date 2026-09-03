@@ -685,6 +685,11 @@ class Counting(commands.Cog):
                         await self._mark_highscore_message(
                             message, next_count, high_score
                         )
+
+                    # Milestone marker: react 💯 on every multiple of 100.
+                    if next_count % 100 == 0:
+                        self._enqueue_reaction(message, "💯")
+
                     return  # Success
 
             except aiosqlite.OperationalError as e:
