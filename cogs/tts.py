@@ -128,7 +128,10 @@ class Say(commands.Cog):
     # LOGIN TTS NAME
     # ----------------------------
 
-    @commands.hybrid_command(name="logintts")
+    @commands.hybrid_command(
+        name="logintts",
+        description="Set the name TTS announces before your messages",
+    )
     async def logintts(self, ctx: Context, name: str):
         if len(name) > 32:
             return await ctx.send("Name too long. Max 32 characters.")
@@ -145,7 +148,9 @@ class Say(commands.Cog):
     # FORCE LEAVE VC
     # ----------------------------
 
-    @commands.hybrid_command(name="leavevc")
+    @commands.hybrid_command(
+        name="leavevc", description="Force the bot to leave its current voice channel"
+    )
     async def leavevc(self, ctx: Context):
         vc = ctx.voice_client
         if isinstance(vc, discord.VoiceClient) and vc.is_connected():
@@ -158,7 +163,9 @@ class Say(commands.Cog):
     # TTS COMMAND
     # ----------------------------
 
-    @commands.hybrid_command(name="tts")
+    @commands.hybrid_command(
+        name="tts", description="Speak your message aloud in your voice channel"
+    )
     @commands.cooldown(1, 2, commands.BucketType.user)
     async def tts(self, ctx: Context, *, text: str):
 

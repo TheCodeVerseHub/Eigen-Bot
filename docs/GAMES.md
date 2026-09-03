@@ -6,7 +6,7 @@ Eigen Bot integrates multiple systems to reward active members and foster friend
 An anti-grief counting system with highscore tracking.
 - **Anti-Double Count**: Prevents users from counting twice in a row (3 warnings = fail).
 - **Save Protection**: Uses **Personal Saves** or **Server Saves** to prevent a reset to 0.
-- **Commands**: `/setcountingchannel`, `?highscoretable`, `?donateguild` (Donate 1.0 personal save to gain 0.5 server save).
+- **Commands**: `/setcountingchannel`, `?highscoretable`, `?donateguild` (Donate 1.0 personal save to gain 0.5 server save), `?guildsaves` (View server save pool), `?mcl` (Most valid counts leaderboard), `?mrl` (Most ruined counts leaderboard), `?scs` (Server count stats).
 
 ## CodeBuddy Quizzes
 Automated coding challenges to test your community's knowledge.

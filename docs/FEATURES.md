@@ -21,5 +21,8 @@ Store and retrieve custom text snippets.
 - **Birthdays**: `?setbirthday <DD/MM>` - Automated birthday wishes.
 - **Suggestions**: `/suggest <text>` - Creates an embed with voting reactions and a discussion thread.
 - **Disboard Tracker**: `/bumplb` - View the leaderboard for users who bump the server.
+- **Bump Stats**: `/bumpstats` - Total bumps and the most recent bumper. Also `?mybumps` and `?topbump`.
+- **Text-to-Speech**: `?logintts <name>` then `?tts <text>` - Speak in your voice channel. Use `?leavevc` to disconnect.
+- **Truth or Dare**: `?tod`, `?truth`, `?dare` - Get a random Truth or Dare prompt.
 
 [← Back to README](../README.md)
