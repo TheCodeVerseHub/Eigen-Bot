@@ -109,6 +109,7 @@ class Fun2OoshBot(commands.Bot):
             "cogs.staff_applications",
             "cogs.tts",
             "cogs.chowkidar",
+            "cogs.migrate",
             "cogs.staff_guide",
         ]
 
