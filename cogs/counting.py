@@ -940,7 +940,9 @@ class Counting(commands.Cog):
         embed.description = "\n".join(lines)
         await ctx.send(embed=embed)
 
-    @commands.command(name="mcl", aliases=["tc"])
+    @commands.command(
+        name="mcl", aliases=["tc"], help="Show the top 10 users by valid counts"
+    )
     async def most_count_leaderboard(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
             """
@@ -967,7 +969,7 @@ class Counting(commands.Cog):
         embed.description = description
         await ctx.send(embed=embed)
 
-    @commands.command(name="mrl")
+    @commands.command(name="mrl", help="Show the top 10 users by ruined counts")
     async def most_ruined_leaderboard(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
             """
@@ -994,7 +996,9 @@ class Counting(commands.Cog):
         embed.description = description
         await ctx.send(embed=embed)
 
-    @commands.command(name="scs")
+    @commands.command(
+        name="scs", help="Show this server's current count and all-time high score"
+    )
     async def server_count_stats(self, ctx):
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(
             "SELECT current_count, high_score FROM counting_config WHERE guild_id = ?",
