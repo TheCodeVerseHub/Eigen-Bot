@@ -21,5 +21,6 @@ Store and retrieve custom text snippets.
 - **Birthdays**: `?setbirthday <DD/MM>` - Automated birthday wishes.
 - **Suggestions**: `/suggest <text>` - Creates an embed with voting reactions and a discussion thread.
 - **Disboard Tracker**: `/bumplb` - View the leaderboard for users who bump the server.
+- **Migrate Conversation**: `/migrate-conversation <destination> [count]` - Move the last few messages to another channel via webhook (requires Manage Messages).
 
 [← Back to README](../README.md)

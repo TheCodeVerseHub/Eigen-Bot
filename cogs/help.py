@@ -48,6 +48,7 @@ COG_DESCRIPTIONS = {
     "suggestions": "Submit suggestions with voting reactions + discussion threads",
     "bumpleaderboard": "Track Disboard /bump activity with leaderboards and stats",
     "chowkidar": "Watchlist / tracking: track a user and log their actions (staff only)",
+    "migrateconversation": "Move a recent conversation to another channel via webhook",
 }
 
 
