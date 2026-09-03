@@ -1,9 +1,9 @@
 import asyncio
 import io
 import logging
-import sqlite3
 from datetime import datetime, timezone
 
+import aiosqlite
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -117,14 +117,12 @@ class TicketPanelView(discord.ui.View):
     ):
         """Handle ticket creation button"""
         # Check if user already has an open ticket
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT ticket_thread_id FROM tickets WHERE user_id = ? AND status = "open"',
-            (interaction.user.id,),
-        )
-        existing = cursor.fetchone()
-        conn.close()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute(
+                'SELECT ticket_thread_id FROM tickets WHERE user_id = ? AND status = "open"',
+                (interaction.user.id,),
+            ) as cursor:
+                existing = await cursor.fetchone()
 
         if existing:
             await interaction.response.send_message(
@@ -153,7 +151,6 @@ class Tickets(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self._init_database()
 
         # Configuration
         self.ticket_channel_id = (
@@ -162,24 +159,28 @@ class Tickets(commands.Cog):
         # Note: Logs will be sent to #ticketlog channel in each server (optional)
         self.staff_role_id = 1417900662053671073  # Your staff role ID
 
-        # Ticket naming
-        self.ticket_counter = self._get_ticket_counter()
+        # Ticket naming; set properly once the DB is ready in cog_load
+        self.ticket_counter = 1
+
+    async def cog_load(self) -> None:
+        await self._init_database()
+        self.ticket_counter = await self._get_ticket_counter()
 
         # Register persistent views on bot startup
-        self.bot.loop.create_task(self._restore_persistent_views())
+        self._restore_views_task = asyncio.create_task(
+            self._restore_persistent_views()
+        )
 
     async def _restore_persistent_views(self):
         """Restore persistent views for all ticket panels on bot startup"""
         await self.bot.wait_until_ready()
 
         try:
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-
-            # Get all ticket panels from database
-            cursor.execute("SELECT guild_id, channel_id, message_id FROM ticket_panels")
-            panels = cursor.fetchall()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT guild_id, channel_id, message_id FROM ticket_panels"
+                ) as cursor:
+                    panels = await cursor.fetchall()
 
             # Re-register the view for each panel
             for guild_id, channel_id, message_id in panels:
@@ -204,14 +205,14 @@ class Tickets(commands.Cog):
                         )
                     except discord.NotFound:
                         # Message was deleted, remove from database
-                        conn = sqlite3.connect(DATABASE_NAME)
-                        cursor = conn.cursor()
-                        cursor.execute(
-                            "DELETE FROM ticket_panels WHERE message_id = ?",
-                            (message_id,),
-                        )
-                        conn.commit()
-                        conn.close()
+                        async with aiosqlite.connect(
+                            DATABASE_NAME, timeout=30.0
+                        ) as db:
+                            await db.execute(
+                                "DELETE FROM ticket_panels WHERE message_id = ?",
+                                (message_id,),
+                            )
+                            await db.commit()
                         logger.warning(
                             f"Ticket panel message {message_id} not found, removed from database"
                         )
@@ -230,91 +231,86 @@ class Tickets(commands.Cog):
         except Exception as e:
             logger.error(f"Error restoring persistent ticket views: {e}")
 
-    def _init_database(self):
+    async def _init_database(self):
         """Initialize tickets database table"""
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS tickets (
+                    ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ticket_thread_id INTEGER NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    category TEXT NOT NULL,
+                    status TEXT DEFAULT 'open',
+                    claimed_by INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    closed_at TIMESTAMP,
+                    close_reason TEXT
+                )
+            """)
 
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS tickets (
-                ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ticket_thread_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                category TEXT NOT NULL,
-                status TEXT DEFAULT 'open',
-                claimed_by INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                closed_at TIMESTAMP,
-                close_reason TEXT
-            )
-        """)
+            # Table for storing persistent ticket panels
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS ticket_panels (
+                    panel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    guild_id INTEGER NOT NULL,
+                    channel_id INTEGER NOT NULL,
+                    message_id INTEGER NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_by INTEGER NOT NULL,
+                    UNIQUE(guild_id, channel_id, message_id)
+                )
+            """)
 
-        # Table for storing persistent ticket panels
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ticket_panels (
-                panel_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                guild_id INTEGER NOT NULL,
-                channel_id INTEGER NOT NULL,
-                message_id INTEGER NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_by INTEGER NOT NULL,
-                UNIQUE(guild_id, channel_id, message_id)
-            )
-        """)
+            # Table for storing custom ticket log channel settings
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS ticket_log_channels (
+                    guild_id INTEGER PRIMARY KEY,
+                    channel_id INTEGER NOT NULL,
+                    set_by INTEGER NOT NULL,
+                    set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        # Table for storing custom ticket log channel settings
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ticket_log_channels (
-                guild_id INTEGER PRIMARY KEY,
-                channel_id INTEGER NOT NULL,
-                set_by INTEGER NOT NULL,
-                set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            # Table for storing ticket support team role settings
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS ticket_support_roles (
+                    guild_id INTEGER PRIMARY KEY,
+                    role_id INTEGER NOT NULL,
+                    set_by INTEGER NOT NULL,
+                    set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        # Table for storing ticket support team role settings
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ticket_support_roles (
-                guild_id INTEGER PRIMARY KEY,
-                role_id INTEGER NOT NULL,
-                set_by INTEGER NOT NULL,
-                set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            # Table for storing ticket report team role settings
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS ticket_report_roles (
+                    guild_id INTEGER PRIMARY KEY,
+                    role_id INTEGER NOT NULL,
+                    set_by INTEGER NOT NULL,
+                    set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        # Table for storing ticket report team role settings
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ticket_report_roles (
-                guild_id INTEGER PRIMARY KEY,
-                role_id INTEGER NOT NULL,
-                set_by INTEGER NOT NULL,
-                set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            # Table for storing ticket partner team role settings
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS ticket_partner_roles (
+                    guild_id INTEGER PRIMARY KEY,
+                    role_id INTEGER NOT NULL,
+                    set_by INTEGER NOT NULL,
+                    set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
 
-        # Table for storing ticket partner team role settings
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ticket_partner_roles (
-                guild_id INTEGER PRIMARY KEY,
-                role_id INTEGER NOT NULL,
-                set_by INTEGER NOT NULL,
-                set_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+            await db.commit()
 
-        conn.commit()
-        conn.close()
-
-    def _get_ticket_counter(self) -> int:
+    async def _get_ticket_counter(self) -> int:
         """Get the next ticket number"""
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM tickets")
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count + 1
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute("SELECT COUNT(*) FROM tickets") as cursor:
+                row = await cursor.fetchone()
+        return row[0] + 1
 
-    def _get_ticket_log_channel(
+    async def _get_ticket_log_channel(
         self, guild: discord.Guild
     ) -> discord.TextChannel | None:
         """Get the ticketlog channel for the guild if it exists"""
@@ -326,29 +322,24 @@ class Tickets(commands.Cog):
 
         # First check if a custom channel is set in database
         try:
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT channel_id FROM ticket_log_channels WHERE guild_id = ?",
-                (guild.id,),
-            )
-            result = cursor.fetchone()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT channel_id FROM ticket_log_channels WHERE guild_id = ?",
+                    (guild.id,),
+                ) as cursor:
+                    result = await cursor.fetchone()
 
-            if result:
-                channel = guild.get_channel(result[0])
-                if channel and isinstance(channel, discord.TextChannel):
-                    return channel
-                else:
-                    # Clean up invalid channel reference
-                    conn = sqlite3.connect(DATABASE_NAME)
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "DELETE FROM ticket_log_channels WHERE guild_id = ?",
-                        (guild.id,),
-                    )
-                    conn.commit()
-                    conn.close()
+                if result:
+                    channel = guild.get_channel(result[0])
+                    if channel and isinstance(channel, discord.TextChannel):
+                        return channel
+                    else:
+                        # Clean up invalid channel reference
+                        await db.execute(
+                            "DELETE FROM ticket_log_channels WHERE guild_id = ?",
+                            (guild.id,),
+                        )
+                        await db.commit()
         except Exception as e:
             print(f"[Tickets] Error checking custom log channel: {e}")
 
@@ -363,32 +354,27 @@ class Tickets(commands.Cog):
                 return channel
         return None
 
-    def _get_support_team_role(self, guild: discord.Guild) -> discord.Role | None:
+    async def _get_support_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the support team role for the guild if it exists"""
         try:
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT role_id FROM ticket_support_roles WHERE guild_id = ?",
-                (guild.id,),
-            )
-            result = cursor.fetchone()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT role_id FROM ticket_support_roles WHERE guild_id = ?",
+                    (guild.id,),
+                ) as cursor:
+                    result = await cursor.fetchone()
 
-            if result:
-                role = guild.get_role(result[0])
-                if role:
-                    return role
-                else:
-                    # Clean up invalid role reference
-                    conn = sqlite3.connect(DATABASE_NAME)
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "DELETE FROM ticket_support_roles WHERE guild_id = ?",
-                        (guild.id,),
-                    )
-                    conn.commit()
-                    conn.close()
+                if result:
+                    role = guild.get_role(result[0])
+                    if role:
+                        return role
+                    else:
+                        # Clean up invalid role reference
+                        await db.execute(
+                            "DELETE FROM ticket_support_roles WHERE guild_id = ?",
+                            (guild.id,),
+                        )
+                        await db.commit()
         except Exception as e:
             print(f"[Tickets] Error checking custom support role: {e}")
 
@@ -398,69 +384,59 @@ class Tickets(commands.Cog):
                 return role
         return None
 
-    def _get_report_team_role(self, guild: discord.Guild) -> discord.Role | None:
+    async def _get_report_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the report team role for the guild if it exists"""
         try:
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT role_id FROM ticket_report_roles WHERE guild_id = ?",
-                (guild.id,),
-            )
-            result = cursor.fetchone()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT role_id FROM ticket_report_roles WHERE guild_id = ?",
+                    (guild.id,),
+                ) as cursor:
+                    result = await cursor.fetchone()
 
-            if result:
-                role = guild.get_role(result[0])
-                if role:
-                    return role
-                else:
-                    # Clean up invalid role reference
-                    conn = sqlite3.connect(DATABASE_NAME)
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "DELETE FROM ticket_report_roles WHERE guild_id = ?",
-                        (guild.id,),
-                    )
-                    conn.commit()
-                    conn.close()
+                if result:
+                    role = guild.get_role(result[0])
+                    if role:
+                        return role
+                    else:
+                        # Clean up invalid role reference
+                        await db.execute(
+                            "DELETE FROM ticket_report_roles WHERE guild_id = ?",
+                            (guild.id,),
+                        )
+                        await db.commit()
         except Exception as e:
             print(f"[Tickets] Error checking report team role: {e}")
 
         # Fall back to support team role if no report role set
-        return self._get_support_team_role(guild)
+        return await self._get_support_team_role(guild)
 
-    def _get_partner_team_role(self, guild: discord.Guild) -> discord.Role | None:
+    async def _get_partner_team_role(self, guild: discord.Guild) -> discord.Role | None:
         """Get the partner team role for the guild if it exists"""
         try:
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT role_id FROM ticket_partner_roles WHERE guild_id = ?",
-                (guild.id,),
-            )
-            result = cursor.fetchone()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                async with db.execute(
+                    "SELECT role_id FROM ticket_partner_roles WHERE guild_id = ?",
+                    (guild.id,),
+                ) as cursor:
+                    result = await cursor.fetchone()
 
-            if result:
-                role = guild.get_role(result[0])
-                if role:
-                    return role
-                else:
-                    # Clean up invalid role reference
-                    conn = sqlite3.connect(DATABASE_NAME)
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "DELETE FROM ticket_partner_roles WHERE guild_id = ?",
-                        (guild.id,),
-                    )
-                    conn.commit()
-                    conn.close()
+                if result:
+                    role = guild.get_role(result[0])
+                    if role:
+                        return role
+                    else:
+                        # Clean up invalid role reference
+                        await db.execute(
+                            "DELETE FROM ticket_partner_roles WHERE guild_id = ?",
+                            (guild.id,),
+                        )
+                        await db.commit()
         except Exception as e:
             print(f"[Tickets] Error checking partner team role: {e}")
 
         # Fall back to support team role if no partner role set
-        return self._get_support_team_role(guild)
+        return await self._get_support_team_role(guild)
 
     async def show_ticket_info(self, interaction: discord.Interaction, category: str):
         """Show information about the selected ticket type"""
@@ -650,11 +626,11 @@ class Tickets(commands.Cog):
             # Add staff role members based on ticket category
             staff_role = None
             if category == "report":
-                staff_role = self._get_report_team_role(guild)
+                staff_role = await self._get_report_team_role(guild)
             elif category == "partnership":
-                staff_role = self._get_partner_team_role(guild)
+                staff_role = await self._get_partner_team_role(guild)
             else:
-                staff_role = self._get_support_team_role(guild)
+                staff_role = await self._get_support_team_role(guild)
 
         except Exception as e:
             await interaction.followup.send(
@@ -664,15 +640,13 @@ class Tickets(commands.Cog):
             return
 
         # Save to database
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO tickets (ticket_thread_id, user_id, category) VALUES (?, ?, ?)",
-            (thread.id, user.id, category),
-        )
-        ticket_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            cursor = await db.execute(
+                "INSERT INTO tickets (ticket_thread_id, user_id, category) VALUES (?, ?, ?)",
+                (thread.id, user.id, category),
+            )
+            ticket_id = cursor.lastrowid
+            await db.commit()
 
         # Send welcome message in thread
         embed = discord.Embed(
@@ -737,55 +711,54 @@ class Tickets(commands.Cog):
         thread = interaction.channel
 
         # Get ticket info from database
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT ticket_id, user_id, category FROM tickets WHERE ticket_thread_id = ? AND status = "open"',
-            (thread.id,),
-        )
-        result = cursor.fetchone()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute(
+                'SELECT ticket_id, user_id, category FROM tickets WHERE ticket_thread_id = ? AND status = "open"',
+                (thread.id,),
+            ) as cursor:
+                result = await cursor.fetchone()
 
-        if not result:
-            await interaction.response.send_message(
-                embed=create_error_embed(
-                    "Not a Ticket", "This is not an open ticket thread."
-                ),
-                ephemeral=True,
+            if not result:
+                await interaction.response.send_message(
+                    embed=create_error_embed(
+                        "Not a Ticket", "This is not an open ticket thread."
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+            ticket_id, user_id, category = result
+
+            # Check permissions (ticket owner or staff)
+            has_permission = False
+            if isinstance(interaction.user, discord.Member):
+                has_permission = (
+                    interaction.user.id == user_id
+                    or any(
+                        role.id == self.staff_role_id
+                        for role in interaction.user.roles
+                    )
+                    or interaction.user.guild_permissions.administrator
+                )
+            elif interaction.user.id == user_id:
+                has_permission = True
+
+            if not has_permission:
+                await interaction.response.send_message(
+                    embed=create_error_embed(
+                        "No Permission",
+                        "Only the ticket owner or staff can close this ticket.",
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+            # Update database
+            await db.execute(
+                'UPDATE tickets SET status = "closed", closed_at = CURRENT_TIMESTAMP, close_reason = ? WHERE ticket_id = ?',
+                (f"Closed by {interaction.user}", ticket_id),
             )
-            conn.close()
-            return
-
-        ticket_id, user_id, category = result
-
-        # Check permissions (ticket owner or staff)
-        has_permission = False
-        if isinstance(interaction.user, discord.Member):
-            has_permission = (
-                interaction.user.id == user_id
-                or any(role.id == self.staff_role_id for role in interaction.user.roles)
-                or interaction.user.guild_permissions.administrator
-            )
-        elif interaction.user.id == user_id:
-            has_permission = True
-
-        if not has_permission:
-            await interaction.response.send_message(
-                embed=create_error_embed(
-                    "No Permission",
-                    "Only the ticket owner or staff can close this ticket.",
-                ),
-                ephemeral=True,
-            )
-            conn.close()
-            return
-
-        # Update database
-        cursor.execute(
-            'UPDATE tickets SET status = "closed", closed_at = CURRENT_TIMESTAMP, close_reason = ? WHERE ticket_id = ?',
-            (f"Closed by {interaction.user}", ticket_id),
-        )
-        conn.commit()
-        conn.close()
+            await db.commit()
 
         # Send closure message
         embed = discord.Embed(
@@ -856,53 +829,50 @@ class Tickets(commands.Cog):
             return
 
         # Get ticket info
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT ticket_id, user_id, claimed_by FROM tickets WHERE ticket_thread_id = ? AND status = "open"',
-            (thread.id,),
-        )
-        result = cursor.fetchone()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute(
+                'SELECT ticket_id, user_id, claimed_by FROM tickets WHERE ticket_thread_id = ? AND status = "open"',
+                (thread.id,),
+            ) as cursor:
+                result = await cursor.fetchone()
 
-        if not result:
-            await interaction.response.send_message(
-                embed=create_error_embed(
-                    "Not a Ticket", "This is not an open ticket thread."
-                ),
-                ephemeral=True,
+            if not result:
+                await interaction.response.send_message(
+                    embed=create_error_embed(
+                        "Not a Ticket", "This is not an open ticket thread."
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+            ticket_id, _user_id, claimed_by = result
+
+            if claimed_by:
+                try:
+                    claimer = await self.bot.fetch_user(claimed_by)
+                    await interaction.response.send_message(
+                        embed=create_info_embed(
+                            "Already Claimed",
+                            f"This ticket is already claimed by {claimer.mention}",
+                        ),
+                        ephemeral=True,
+                    )
+                except:
+                    await interaction.response.send_message(
+                        embed=create_info_embed(
+                            "Already Claimed",
+                            "This ticket is already claimed by someone.",
+                        ),
+                        ephemeral=True,
+                    )
+                return
+
+            # Claim ticket
+            await db.execute(
+                "UPDATE tickets SET claimed_by = ? WHERE ticket_id = ?",
+                (interaction.user.id, ticket_id),
             )
-            conn.close()
-            return
-
-        ticket_id, _user_id, claimed_by = result
-
-        if claimed_by:
-            try:
-                claimer = await self.bot.fetch_user(claimed_by)
-                await interaction.response.send_message(
-                    embed=create_info_embed(
-                        "Already Claimed",
-                        f"This ticket is already claimed by {claimer.mention}",
-                    ),
-                    ephemeral=True,
-                )
-            except:
-                await interaction.response.send_message(
-                    embed=create_info_embed(
-                        "Already Claimed", "This ticket is already claimed by someone."
-                    ),
-                    ephemeral=True,
-                )
-            conn.close()
-            return
-
-        # Claim ticket
-        cursor.execute(
-            "UPDATE tickets SET claimed_by = ? WHERE ticket_id = ?",
-            (interaction.user.id, ticket_id),
-        )
-        conn.commit()
-        conn.close()
+            await db.commit()
 
         # Send claim message
         embed = discord.Embed(
@@ -941,7 +911,7 @@ class Tickets(commands.Cog):
 
             # Save to log channel if requested
             if save_to_log and thread.guild:
-                log_channel = self._get_ticket_log_channel(thread.guild)
+                log_channel = await self._get_ticket_log_channel(thread.guild)
                 if log_channel:
                     file = discord.File(
                         io.BytesIO(transcript.encode("utf-8")),
@@ -975,7 +945,7 @@ class Tickets(commands.Cog):
         if not thread.guild:
             return
 
-        log_channel = self._get_ticket_log_channel(thread.guild)
+        log_channel = await self._get_ticket_log_channel(thread.guild)
         if not log_channel:
             print(
                 f"[Tickets] No #ticketlog channel found in {thread.guild.name} - skipping log"
@@ -1057,19 +1027,20 @@ class Tickets(commands.Cog):
         # Save panel to database for persistence
         if ctx.guild:
             try:
-                conn = sqlite3.connect(DATABASE_NAME)
-                cursor = conn.cursor()
-
-                cursor.execute(
-                    """
-                    INSERT OR IGNORE INTO ticket_panels (guild_id, channel_id, message_id, created_by)
-                    VALUES (?, ?, ?, ?)
-                """,
-                    (ctx.guild.id, target_channel.id, panel_message.id, ctx.author.id),
-                )
-
-                conn.commit()
-                conn.close()
+                async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                    await db.execute(
+                        """
+                        INSERT OR IGNORE INTO ticket_panels (guild_id, channel_id, message_id, created_by)
+                        VALUES (?, ?, ?, ?)
+                    """,
+                        (
+                            ctx.guild.id,
+                            target_channel.id,
+                            panel_message.id,
+                            ctx.author.id,
+                        ),
+                    )
+                    await db.commit()
             except Exception as e:
                 logger.error(f"Error saving ticket panel to database: {e}")
 
@@ -1080,53 +1051,50 @@ class Tickets(commands.Cog):
         roles_saved = []
         if ctx.guild:
             try:
-                conn = sqlite3.connect(DATABASE_NAME)
-                cursor = conn.cursor()
+                async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                    # Save support role
+                    if support_role:
+                        await db.execute(
+                            """
+                            INSERT OR REPLACE INTO ticket_support_roles (guild_id, role_id, set_by, set_at)
+                            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        """,
+                            (ctx.guild.id, support_role.id, ctx.author.id),
+                        )
+                        roles_saved.append(f"**Support:** {support_role.mention}")
 
-                # Save support role
-                if support_role:
-                    cursor.execute(
-                        """
-                        INSERT OR REPLACE INTO ticket_support_roles (guild_id, role_id, set_by, set_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                    """,
-                        (ctx.guild.id, support_role.id, ctx.author.id),
-                    )
-                    roles_saved.append(f"**Support:** {support_role.mention}")
+                    # Save report role
+                    if report_role:
+                        await db.execute(
+                            """
+                            INSERT OR REPLACE INTO ticket_report_roles (guild_id, role_id, set_by, set_at)
+                            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        """,
+                            (ctx.guild.id, report_role.id, ctx.author.id),
+                        )
+                        roles_saved.append(f"**Report:** {report_role.mention}")
 
-                # Save report role
-                if report_role:
-                    cursor.execute(
-                        """
-                        INSERT OR REPLACE INTO ticket_report_roles (guild_id, role_id, set_by, set_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                    """,
-                        (ctx.guild.id, report_role.id, ctx.author.id),
-                    )
-                    roles_saved.append(f"**Report:** {report_role.mention}")
+                    # Save partner role
+                    if partner_role:
+                        await db.execute(
+                            """
+                            INSERT OR REPLACE INTO ticket_partner_roles (guild_id, role_id, set_by, set_at)
+                            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                        """,
+                            (ctx.guild.id, partner_role.id, ctx.author.id),
+                        )
+                        roles_saved.append(f"**Partner:** {partner_role.mention}")
 
-                # Save partner role
-                if partner_role:
-                    cursor.execute(
-                        """
-                        INSERT OR REPLACE INTO ticket_partner_roles (guild_id, role_id, set_by, set_at)
-                        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                    """,
-                        (ctx.guild.id, partner_role.id, ctx.author.id),
-                    )
-                    roles_saved.append(f"**Partner:** {partner_role.mention}")
-
-                conn.commit()
-                conn.close()
+                    await db.commit()
 
                 if roles_saved:
                     role_info = "\n".join(roles_saved)
                     success_message = f"Ticket panel created in {target_channel.mention}\nTickets will be created as threads in that channel.\n\n{role_info}"
                 else:
                     # Show current role settings
-                    current_support = self._get_support_team_role(ctx.guild)
-                    current_report = self._get_report_team_role(ctx.guild)
-                    current_partner = self._get_partner_team_role(ctx.guild)
+                    current_support = await self._get_support_team_role(ctx.guild)
+                    current_report = await self._get_report_team_role(ctx.guild)
+                    current_partner = await self._get_partner_team_role(ctx.guild)
 
                     current_roles = []
                     if current_support:
@@ -1172,7 +1140,7 @@ class Tickets(commands.Cog):
 
         if channel is None:
             # View current setting
-            current_log_channel = self._get_ticket_log_channel(ctx.guild)
+            current_log_channel = await self._get_ticket_log_channel(ctx.guild)
             if current_log_channel:
                 embed = discord.Embed(
                     title="📋 Ticket Log Channel",
@@ -1219,17 +1187,15 @@ class Tickets(commands.Cog):
             await test_message.delete()
 
             # Save the channel to database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO ticket_log_channels (guild_id, channel_id, set_by, set_at)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-                (ctx.guild.id, channel.id, ctx.author.id),
-            )
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    INSERT OR REPLACE INTO ticket_log_channels (guild_id, channel_id, set_by, set_at)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                """,
+                    (ctx.guild.id, channel.id, ctx.author.id),
+                )
+                await db.commit()
 
             # Update the helper function to recognize this specific channel
             # We'll store it in a simple way by checking if it's the designated channel
@@ -1300,14 +1266,13 @@ class Tickets(commands.Cog):
 
         try:
             # Remove custom log channel setting from database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "DELETE FROM ticket_log_channels WHERE guild_id = ?", (ctx.guild.id,)
-            )
-            deleted = cursor.rowcount > 0
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                cursor = await db.execute(
+                    "DELETE FROM ticket_log_channels WHERE guild_id = ?",
+                    (ctx.guild.id,),
+                )
+                deleted = cursor.rowcount > 0
+                await db.commit()
 
             if deleted:
                 embed = discord.Embed(
@@ -1361,7 +1326,7 @@ class Tickets(commands.Cog):
 
         if role is None:
             # View current setting
-            current_role = self._get_support_team_role(ctx.guild)
+            current_role = await self._get_support_team_role(ctx.guild)
             if current_role:
                 embed = discord.Embed(
                     title="👥 Ticket Support Role",
@@ -1397,17 +1362,15 @@ class Tickets(commands.Cog):
         # Set new support role
         try:
             # Save the role to database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO ticket_support_roles (guild_id, role_id, set_by, set_at)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-                (ctx.guild.id, role.id, ctx.author.id),
-            )
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    INSERT OR REPLACE INTO ticket_support_roles (guild_id, role_id, set_by, set_at)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                """,
+                    (ctx.guild.id, role.id, ctx.author.id),
+                )
+                await db.commit()
 
             success_embed = discord.Embed(
                 title="✅ Support Role Set",
@@ -1454,14 +1417,13 @@ class Tickets(commands.Cog):
 
         try:
             # Remove support role setting from database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "DELETE FROM ticket_support_roles WHERE guild_id = ?", (ctx.guild.id,)
-            )
-            deleted = cursor.rowcount > 0
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                cursor = await db.execute(
+                    "DELETE FROM ticket_support_roles WHERE guild_id = ?",
+                    (ctx.guild.id,),
+                )
+                deleted = cursor.rowcount > 0
+                await db.commit()
 
             if deleted:
                 embed = discord.Embed(
@@ -1507,9 +1469,6 @@ class Tickets(commands.Cog):
         self, ctx, status: str = "open", user: discord.User | None = None
     ):
         """View all tickets or filter by status/user"""
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-
         query = "SELECT ticket_id, ticket_thread_id, user_id, category, status, claimed_by, created_at FROM tickets"
         params = []
 
@@ -1526,9 +1485,9 @@ class Tickets(commands.Cog):
 
         query += " ORDER BY created_at DESC LIMIT 20"
 
-        cursor.execute(query, params)
-        tickets = cursor.fetchall()
-        conn.close()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute(query, params) as cursor:
+                tickets = await cursor.fetchall()
 
         if not tickets:
             await ctx.send(
@@ -1586,25 +1545,25 @@ class Tickets(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def ticket_stats(self, ctx):
         """View ticket statistics"""
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            # Get various stats
+            async with db.execute("SELECT COUNT(*) FROM tickets") as cursor:
+                total_tickets = (await cursor.fetchone())[0]
 
-        # Get various stats
-        cursor.execute("SELECT COUNT(*) FROM tickets")
-        total_tickets = cursor.fetchone()[0]
+            async with db.execute(
+                'SELECT COUNT(*) FROM tickets WHERE status = "open"'
+            ) as cursor:
+                open_tickets = (await cursor.fetchone())[0]
 
-        cursor.execute('SELECT COUNT(*) FROM tickets WHERE status = "open"')
-        open_tickets = cursor.fetchone()[0]
+            async with db.execute(
+                'SELECT COUNT(*) FROM tickets WHERE status = "closed"'
+            ) as cursor:
+                closed_tickets = (await cursor.fetchone())[0]
 
-        cursor.execute('SELECT COUNT(*) FROM tickets WHERE status = "closed"')
-        closed_tickets = cursor.fetchone()[0]
-
-        cursor.execute(
-            "SELECT category, COUNT(*) FROM tickets GROUP BY category ORDER BY COUNT(*) DESC"
-        )
-        categories = cursor.fetchall()
-
-        conn.close()
+            async with db.execute(
+                "SELECT category, COUNT(*) FROM tickets GROUP BY category ORDER BY COUNT(*) DESC"
+            ) as cursor:
+                categories = await cursor.fetchall()
 
         embed = discord.Embed(title="📊 Ticket Statistics", color=0x5865F2)
 
@@ -1640,45 +1599,42 @@ class Tickets(commands.Cog):
     ):
         """Force close a ticket by its ID (Staff only)"""
         # Get ticket info from database
-        conn = sqlite3.connect(DATABASE_NAME)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT ticket_thread_id, user_id, category FROM tickets WHERE ticket_id = ? AND status = "open"',
-            (ticket_id,),
-        )
-        result = cursor.fetchone()
+        async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+            async with db.execute(
+                'SELECT ticket_thread_id, user_id, category FROM tickets WHERE ticket_id = ? AND status = "open"',
+                (ticket_id,),
+            ) as cursor:
+                result = await cursor.fetchone()
 
-        if not result:
-            await ctx.send(
-                embed=create_error_embed(
-                    "Ticket Not Found", f"No open ticket found with ID #{ticket_id}"
-                ),
-                ephemeral=True,
+            if not result:
+                await ctx.send(
+                    embed=create_error_embed(
+                        "Ticket Not Found", f"No open ticket found with ID #{ticket_id}"
+                    ),
+                    ephemeral=True,
+                )
+                return
+
+            thread_id, user_id, category = result
+
+            # Get the thread
+            if ctx.guild:
+                thread = ctx.guild.get_thread(thread_id)
+                if not thread:
+                    # Try to fetch the thread if not in cache
+                    try:
+                        thread = await ctx.guild.fetch_channel(thread_id)
+                    except:
+                        thread = None
+            else:
+                thread = None
+
+            # Update database to mark as closed
+            await db.execute(
+                'UPDATE tickets SET status = "closed", closed_at = CURRENT_TIMESTAMP, close_reason = ? WHERE ticket_id = ?',
+                (f"Force closed by {ctx.author}: {reason}", ticket_id),
             )
-            conn.close()
-            return
-
-        thread_id, user_id, category = result
-
-        # Get the thread
-        if ctx.guild:
-            thread = ctx.guild.get_thread(thread_id)
-            if not thread:
-                # Try to fetch the thread if not in cache
-                try:
-                    thread = await ctx.guild.fetch_channel(thread_id)
-                except:
-                    thread = None
-        else:
-            thread = None
-
-        # Update database to mark as closed
-        cursor.execute(
-            'UPDATE tickets SET status = "closed", closed_at = CURRENT_TIMESTAMP, close_reason = ? WHERE ticket_id = ?',
-            (f"Force closed by {ctx.author}: {reason}", ticket_id),
-        )
-        conn.commit()
-        conn.close()
+            await db.commit()
 
         # Send confirmation to command channel
         embed = discord.Embed(
@@ -1801,8 +1757,8 @@ class Tickets(commands.Cog):
 
         if role is None:
             # View current setting
-            current_role = self._get_report_team_role(ctx.guild)
-            support_role = self._get_support_team_role(ctx.guild)
+            current_role = await self._get_report_team_role(ctx.guild)
+            support_role = await self._get_support_team_role(ctx.guild)
 
             if current_role and current_role != support_role:
                 embed = discord.Embed(
@@ -1844,17 +1800,15 @@ class Tickets(commands.Cog):
         # Set new report role
         try:
             # Save the role to database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO ticket_report_roles (guild_id, role_id, set_by, set_at)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-                (ctx.guild.id, role.id, ctx.author.id),
-            )
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    INSERT OR REPLACE INTO ticket_report_roles (guild_id, role_id, set_by, set_at)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                """,
+                    (ctx.guild.id, role.id, ctx.author.id),
+                )
+                await db.commit()
 
             success_embed = discord.Embed(
                 title="✅ Report Role Set",
@@ -1901,14 +1855,13 @@ class Tickets(commands.Cog):
 
         try:
             # Remove report role setting from database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "DELETE FROM ticket_report_roles WHERE guild_id = ?", (ctx.guild.id,)
-            )
-            deleted = cursor.rowcount > 0
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                cursor = await db.execute(
+                    "DELETE FROM ticket_report_roles WHERE guild_id = ?",
+                    (ctx.guild.id,),
+                )
+                deleted = cursor.rowcount > 0
+                await db.commit()
 
             if deleted:
                 embed = discord.Embed(
@@ -1957,8 +1910,8 @@ class Tickets(commands.Cog):
 
         if role is None:
             # View current setting
-            current_role = self._get_partner_team_role(ctx.guild)
-            support_role = self._get_support_team_role(ctx.guild)
+            current_role = await self._get_partner_team_role(ctx.guild)
+            support_role = await self._get_support_team_role(ctx.guild)
 
             if current_role and current_role != support_role:
                 embed = discord.Embed(
@@ -2000,17 +1953,15 @@ class Tickets(commands.Cog):
         # Set new partner role
         try:
             # Save the role to database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO ticket_partner_roles (guild_id, role_id, set_by, set_at)
-                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            """,
-                (ctx.guild.id, role.id, ctx.author.id),
-            )
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                await db.execute(
+                    """
+                    INSERT OR REPLACE INTO ticket_partner_roles (guild_id, role_id, set_by, set_at)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                """,
+                    (ctx.guild.id, role.id, ctx.author.id),
+                )
+                await db.commit()
 
             success_embed = discord.Embed(
                 title="✅ Partner Role Set",
@@ -2057,14 +2008,13 @@ class Tickets(commands.Cog):
 
         try:
             # Remove partner role setting from database
-            conn = sqlite3.connect(DATABASE_NAME)
-            cursor = conn.cursor()
-            cursor.execute(
-                "DELETE FROM ticket_partner_roles WHERE guild_id = ?", (ctx.guild.id,)
-            )
-            deleted = cursor.rowcount > 0
-            conn.commit()
-            conn.close()
+            async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
+                cursor = await db.execute(
+                    "DELETE FROM ticket_partner_roles WHERE guild_id = ?",
+                    (ctx.guild.id,),
+                )
+                deleted = cursor.rowcount > 0
+                await db.commit()
 
             if deleted:
                 embed = discord.Embed(
