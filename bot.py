@@ -15,16 +15,17 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from utils.config import Config
+from utils.logger import (
+    log_command_error,
+    register_command_logging,
+    setup_logging,
+)
 
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=getattr(logging, os.getenv("LOG_LEVEL", "INFO")),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler("bot.log"), logging.StreamHandler()],
-)
+# Configure logging (console + rotating file under logs/)
+setup_logging(os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 
@@ -65,6 +66,8 @@ class Fun2OoshBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """Setup hook called before the bot starts."""
+        register_command_logging(self)
+
         # Initialize CodeBuddy database
         try:
             from utils.codebuddy_database import init_db
@@ -185,6 +188,13 @@ class Fun2OoshBot(commands.Bot):
         if isinstance(error, commands.CommandNotFound):
             return
 
+        log_command_error(
+            ctx.author.id,
+            ctx.command.qualified_name if ctx.command else "unknown",
+            ctx.guild.id if ctx.guild else None,
+            error,
+        )
+
         # If a command/cog-level error handler (e.g. `cog_command_error`)
         # already handled the error, don't send a generic message on top.
         command = ctx.command
@@ -257,6 +267,14 @@ class Fun2OoshBot(commands.Bot):
         """Handle slash command errors."""
         # Silence unknown slash/app commands.
         # `app_commands` doesn't expose a stable CommandNotFound across versions, so be conservative.
+
+        command = interaction.command
+        log_command_error(
+            interaction.user.id,
+            command.qualified_name if command else "unknown",
+            interaction.guild_id,
+            error,
+        )
 
         # If it's a cooldown, inform user
         if isinstance(error, app_commands.CommandOnCooldown):
