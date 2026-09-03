@@ -15,6 +15,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from utils.config import Config
+from utils.cooldowns import (
+    GlobalCooldown,
+    app_command_interaction_check,
+    prefix_command_check,
+)
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +33,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class EigenCommandTree(app_commands.CommandTree):
+    """Command tree with a fallback per-user cooldown for slash-only commands."""
+
+    def __init__(self, bot: commands.Bot, cooldown: GlobalCooldown):
+        super().__init__(bot)
+        self._cooldown_check = app_command_interaction_check(cooldown)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return await self._cooldown_check(interaction)
+
+
 class Fun2OoshBot(commands.Bot):
     """Main bot class for Eigen Bot."""
 
@@ -37,6 +53,10 @@ class Fun2OoshBot(commands.Bot):
         intents.message_content = True  # For message commands
         intents.presences = True  # For seeing user activities (Spotify, games, etc.)
         intents.voice_states = True  # For join/leave voice channel features
+
+        self.default_cooldown = GlobalCooldown(
+            rate=1, per=config.default_command_cooldown_seconds
+        )
 
         # Disable the built-in help_command so a custom help cog can register `?helpmenu` and `/help`
         super().__init__(
@@ -48,7 +68,10 @@ class Fun2OoshBot(commands.Bot):
             allowed_mentions=discord.AllowedMentions(
                 everyone=False, roles=False, users=True, replied_user=False
             ),
+            tree_cls=lambda bot: EigenCommandTree(bot, self.default_cooldown),
         )
+
+        self.add_check(prefix_command_check(self.default_cooldown))
 
         self.start_time = discord.utils.utcnow()
         self.config = config

@@ -18,6 +18,8 @@ class Config(BaseSettings):
     # Preferred: comma-separated list (or JSON list) of guild ids for fast per-guild slash-command sync
     guild_ids: list[int] = Field(default_factory=list)
     log_level: str = Field(default='INFO')
+    # Fallback per-user cooldown (seconds) for commands with no cooldown of their own.
+    default_command_cooldown_seconds: float = Field(default=3.0)
     owner_id: int | None = Field(default=None)
     topgg_token: str | None = Field(default=None)
     topgg_webhook_secret: str | None = Field(default=None)
