@@ -308,7 +308,7 @@ class Tickets(commands.Cog):
         async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
             async with db.execute("SELECT COUNT(*) FROM tickets") as cursor:
                 row = await cursor.fetchone()
-        return row[0] + 1
+        return (row[0] if row else 0) + 1
 
     async def _get_ticket_log_channel(
         self, guild: discord.Guild
@@ -1487,7 +1487,7 @@ class Tickets(commands.Cog):
 
         async with aiosqlite.connect(DATABASE_NAME, timeout=30.0) as db:
             async with db.execute(query, params) as cursor:
-                tickets = await cursor.fetchall()
+                tickets = list(await cursor.fetchall())
 
         if not tickets:
             await ctx.send(
