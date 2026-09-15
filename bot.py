@@ -15,6 +15,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from utils.config import Config
+from utils.cooldown import CooldownManager
 
 # Load environment variables
 load_dotenv()
@@ -52,6 +53,9 @@ class Fun2OoshBot(commands.Bot):
 
         self.start_time = discord.utils.utcnow()
         self.config = config
+        self.cooldown_manager = CooldownManager(config.command_cooldown_seconds)
+        self.tree.on_error = self.on_app_command_error
+        self._setup_cooldowns()
         # Discover available cog modules from the cogs directory
         from pathlib import Path
 
@@ -62,6 +66,57 @@ class Fun2OoshBot(commands.Bot):
                 if p.suffix == ".py" and p.stem != "__init__":
                     self.available_cogs.append(p.stem)
         logger.info(f"Available cogs discovered: {self.available_cogs}")
+
+    def _setup_cooldowns(self) -> None:
+        """Register global cooldown checks for prefix and slash commands."""
+
+        @self.check
+        async def prefix_cooldown_check(ctx: commands.Context) -> bool:
+            if self.config.owner_id and ctx.author.id == self.config.owner_id:
+                return True
+
+            # If command defines its own cooldown, let discord.py handle it
+            cmd = ctx.command
+            if cmd is not None and cmd._buckets and cmd._buckets.valid:
+                return True
+
+            retry_after = self.cooldown_manager.trigger(ctx.author.id)
+            if retry_after is not None:
+                raise commands.CommandOnCooldown(
+                    commands.Cooldown(1, self.cooldown_manager.cooldown_seconds),
+                    retry_after,
+                    commands.BucketType.user,
+                )
+            return True
+
+        async def app_command_cooldown_check(
+            interaction: discord.Interaction,
+        ) -> bool:
+            # Only rate-limit application command executions (not autocomplete or components)
+            if interaction.type != discord.InteractionType.application_command:
+                return True
+
+            if self.config.owner_id and interaction.user.id == self.config.owner_id:
+                return True
+
+            cmd = interaction.command
+            if cmd is not None:
+                # Let commands with custom checks or hybrid cooldowns handle their own rate limits
+                if getattr(cmd, "checks", None):
+                    return True
+                wrapped = getattr(cmd, "wrapped", None)
+                if wrapped and getattr(wrapped, "_buckets", None) and wrapped._buckets.valid:
+                    return True
+
+            retry_after = self.cooldown_manager.trigger(interaction.user.id)
+            if retry_after is not None:
+                raise app_commands.CommandOnCooldown(
+                    app_commands.Cooldown(1, self.cooldown_manager.cooldown_seconds),
+                    retry_after,
+                )
+            return True
+
+        self.tree.interaction_check = app_command_cooldown_check
 
     async def setup_hook(self) -> None:
         """Setup hook called before the bot starts."""
