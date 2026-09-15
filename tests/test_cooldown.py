@@ -20,12 +20,14 @@ class TestCooldownManager(unittest.TestCase):
         with patch("time.monotonic", side_effect=[100.0, 101.0, 101.0]):
             manager.trigger(12345)
             retry_after = manager.get_retry_after(12345)
-            self.assertIsNotNone(retry_after)
-            self.assertAlmostEqual(retry_after, 2.0, places=2)  # type: ignore[arg-type]
+            if retry_after is None:
+                self.fail("Expected retry_after to be not None")
+            self.assertAlmostEqual(retry_after, 2.0, places=2)
 
             retry = manager.trigger(12345)
-            self.assertIsNotNone(retry)
-            self.assertAlmostEqual(retry, 2.0, places=2)  # type: ignore[arg-type]
+            if retry is None:
+                self.fail("Expected retry to be not None")
+            self.assertAlmostEqual(retry, 2.0, places=2)
 
     def test_invocation_after_cooldown_window_is_allowed(self) -> None:
         manager = CooldownManager(cooldown_seconds=3.0)

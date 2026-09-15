@@ -44,9 +44,7 @@ class CooldownManager:
         # Prevent unbounded memory growth by pruning expired entries when large
         if len(self._last_used) > 5000:
             cutoff = now - self.cooldown_seconds
-            self._last_used = {
-                uid: ts for uid, ts in self._last_used.items() if ts > cutoff
-            }
+            self._last_used = {uid: ts for uid, ts in self._last_used.items() if ts > cutoff}
 
         return None
 
