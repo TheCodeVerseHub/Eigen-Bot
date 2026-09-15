@@ -22,6 +22,7 @@ class Config(BaseSettings):
     topgg_token: str | None = Field(default=None)
     topgg_webhook_secret: str | None = Field(default=None)
     redis_url: str | None = Field(default=None)
+    command_cooldown_seconds: float = Field(default=3.0)
 
     # CodeBuddy settings
     question_channel_id: int | None = Field(default=None)
