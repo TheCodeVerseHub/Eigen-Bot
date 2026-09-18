@@ -10,7 +10,7 @@ from utils.helpers import get_random_quote, sanitize_input
 
 class TestSmoke(unittest.TestCase):
     def test_config_parses_guild_ids_from_csv(self) -> None:
-        config = Config(discord_token="real-token-for-test", guild_ids="1, 2, 3")
+        config = Config(discord_token="real-token-for-test", guild_ids="1, 2, 3")  # noqa: S106
 
         self.assertEqual(config.guild_ids, [1, 2, 3])
 
