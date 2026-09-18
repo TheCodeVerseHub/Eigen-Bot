@@ -13,6 +13,9 @@ class Config(BaseSettings):
     """Bot configuration settings."""
 
     discord_token: str = Field(default='demo_token')
+
+    # Known placeholder tokens that should not be used in production.
+    _PLACEHOLDER_TOKENS: frozenset[str] = frozenset({"demo_token", "your_token_here", "your-discord-token"})
     # Backwards compatible single guild id
     guild_id: int | None = Field(default=None)
     # Preferred: comma-separated list (or JSON list) of guild ids for fast per-guild slash-command sync
@@ -112,4 +115,13 @@ class Config(BaseSettings):
         # If only legacy GUILD_ID is set, treat it as a single-item list.
         if not self.guild_ids and self.guild_id:
             self.guild_ids = [int(self.guild_id)]
+        return self
+
+    @model_validator(mode='after')
+    def _reject_placeholder_token(self) -> Config:
+        if self.discord_token and self.discord_token in self._PLACEHOLDER_TOKENS:
+            raise ValueError(
+                f"DISCORD_TOKEN is set to a placeholder value ('{self.discord_token}'). "
+                "Please set a real Discord bot token in your .env file."
+            )
         return self

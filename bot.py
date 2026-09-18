@@ -52,6 +52,8 @@ class Fun2OoshBot(commands.Bot):
 
         self.start_time = discord.utils.utcnow()
         self.config = config
+        self.loaded_cogs: list[str] = []
+        self.failed_cogs: list[tuple[str, str]] = []  # (cog_name, error_message)
         # Discover available cog modules from the cogs directory
         from pathlib import Path
 
@@ -74,19 +76,22 @@ class Fun2OoshBot(commands.Bot):
         except Exception as e:
             logger.error(f"Failed to initialize CodeBuddy database: {e}")
 
-        # Load core cogs
-        core_cogs = [
+        # Load core cogs (required — abort startup if any fail)
+        required_cogs = [
             "cogs.misc",
             "cogs.admin",
             "cogs.tickets",
         ]
 
-        for ext in core_cogs:
+        for ext in required_cogs:
             try:
                 await self.load_extension(ext)
                 logger.info(f"Loaded {ext}")
+                self.loaded_cogs.append(ext)
             except Exception as e:
-                logger.error(f"Failed to load {ext}: {e}")
+                logger.critical(f"Required cog {ext} failed to load: {e}")
+                self.failed_cogs.append((ext, str(e)))
+                raise RuntimeError(f"Required cog {ext} failed to load: {e}") from e
 
         # Load feature cogs (new/renamed)
         feature_cogs = [
@@ -116,8 +121,10 @@ class Fun2OoshBot(commands.Bot):
             try:
                 await self.load_extension(ext)
                 logger.info(f"Loaded {ext}")
+                self.loaded_cogs.append(ext)
             except Exception as e:
                 logger.error(f"Failed to load {ext}: {e}")
+                self.failed_cogs.append((ext, str(e)))
 
         # Load modmail cog
         # try:
@@ -337,6 +344,45 @@ class Fun2OoshBot(commands.Bot):
             await _safe_interaction_send(
                 "Something went wrong while running that command. Please try again later."
             )
+
+
+    # ── Owner-only health command ──────────────────────────────────────
+    @commands.command(name="health", hidden=True)
+    async def health_command(self, ctx: commands.Context):
+        """Show bot health summary (bot owner only)."""
+        if self.config.owner_id is not None and ctx.author.id != self.config.owner_id:
+            return
+
+        total = len(self.loaded_cogs) + len(self.failed_cogs)
+        loaded = len(self.loaded_cogs)
+        failed = len(self.failed_cogs)
+
+        embed = discord.Embed(
+            title="Bot Health",
+            color=discord.Color.green() if failed == 0 else discord.Color.orange(),
+        )
+        embed.add_field(name="Cogs Loaded", value=str(loaded), inline=True)
+        embed.add_field(name="Cogs Failed", value=str(failed), inline=True)
+        embed.add_field(name="Total Discovered", value=str(total), inline=True)
+
+        latency_ms = round(self.latency * 1000)
+        embed.add_field(name="Latency", value=f"{latency_ms}ms", inline=True)
+        embed.add_field(name="Guilds", value=str(len(self.guilds)), inline=True)
+        embed.add_field(
+            name="Uptime",
+            value=discord.utils.format_dt(self.start_time, "R"),
+            inline=True,
+        )
+
+        if self.failed_cogs:
+            lines = [f"• `{name}` — {err[:80]}" for name, err in self.failed_cogs]
+            embed.add_field(
+                name="Failed Cogs",
+                value="\n".join(lines),
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
 
 
 async def main():
