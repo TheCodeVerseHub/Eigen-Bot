@@ -103,6 +103,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
+report.md
 
 # mypy
 .mypy_cache/
@@ -131,4 +132,3 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
-

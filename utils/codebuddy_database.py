@@ -2,11 +2,14 @@ import datetime
 
 import aiosqlite
 
-DB_PATH = "botdata.db"
+from utils.database import DATABASE_NAME, ensure_database_directory
+
+DB_PATH = DATABASE_NAME
 
 
 async def init_db():
     """Initialisiert die Datenbank und erstellt die Tabelle, falls sie nicht existiert."""
+    ensure_database_directory()
     async with aiosqlite.connect(DB_PATH) as db:
         # Enable Write-Ahead Logging for better concurrency
         await db.execute("PRAGMA journal_mode=WAL")

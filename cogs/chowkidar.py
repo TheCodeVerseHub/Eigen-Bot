@@ -2,6 +2,7 @@ import aiosqlite
 import discord
 from discord.ext import commands
 
+from utils.database import DATABASE_NAME, ensure_database_directory
 from utils.helpers import EmbedBuilder
 
 
@@ -19,7 +20,8 @@ class Chowkidar(commands.Cog):
         self.log_channel_id = None
 
     async def cog_load(self):
-        async with aiosqlite.connect("botdata.db") as db:
+        ensure_database_directory()
+        async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_config (guild_id INTEGER PRIMARY KEY, channel_id INTEGER)")
             await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_tracked (user_id INTEGER PRIMARY KEY)")
             await db.commit()
@@ -48,7 +50,7 @@ class Chowkidar(commands.Cog):
             return
         
         self.log_channel_id = ctx.channel.id
-        async with aiosqlite.connect("botdata.db") as db:
+        async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("INSERT OR REPLACE INTO chowkidar_config (guild_id, channel_id) VALUES (?, ?)", (ctx.guild.id, ctx.channel.id))
             await db.commit()
         
@@ -66,7 +68,7 @@ class Chowkidar(commands.Cog):
             return
 
         self.watched_users.add(user.id)
-        async with aiosqlite.connect("botdata.db") as db:
+        async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("INSERT OR IGNORE INTO chowkidar_tracked (user_id) VALUES (?)", (user.id,))
             await db.commit()
 
@@ -127,7 +129,7 @@ class Chowkidar(commands.Cog):
     @is_staff()
     async def endwl(self, ctx, user: discord.Member):
         self.watched_users.discard(user.id)
-        async with aiosqlite.connect("botdata.db") as db:
+        async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ?", (user.id,))
             await db.commit()
             
@@ -266,10 +268,9 @@ class Chowkidar(commands.Cog):
         await self.send_log(embed)
         
         self.watched_users.discard(member.id)
-        async with aiosqlite.connect("botdata.db") as db:
+        async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ?", (member.id,))
             await db.commit()
 
 async def setup(bot):
     await bot.add_cog(Chowkidar(bot))
-

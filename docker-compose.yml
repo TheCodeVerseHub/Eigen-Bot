@@ -6,6 +6,7 @@ services:
     env_file: .env
     restart: unless-stopped
     volumes:
+      - ./data:/app/data
       - ./logs:/app/logs
     depends_on:
       - postgres

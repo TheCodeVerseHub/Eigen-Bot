@@ -1,27 +1,32 @@
 import asyncio
+import logging
 import os
 import sqlite3
+from contextlib import suppress
 from io import BytesIO
-from queue import Queue
 
 import discord
 import edge_tts
 from discord.ext import commands
 from discord.ext.commands import Context
 
+from utils.database import DATABASE_NAME, ensure_database_directory
+
+logger = logging.getLogger(__name__)
+
 
 class Say(commands.Cog):
-    """Edge TTS with queue, cooldown, persistent login and auto leave."""
+    """Edge TTS with per-guild queues, cooldown, persistent login and auto leave."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.queue: Queue[str] = Queue()
-        self.playing: bool = False
-        self.leave_task: asyncio.Task | None = None
+        self.queues: dict[int, asyncio.Queue[str]] = {}
+        self.worker_tasks: dict[int, asyncio.Task[None]] = {}
 
         # Persistent SQLite storage
+        ensure_database_directory()
         self.db: sqlite3.Connection = sqlite3.connect(
-            "botdata.db", check_same_thread=False
+            DATABASE_NAME, check_same_thread=False
         )
 
         self.db.execute(
@@ -35,33 +40,15 @@ class Say(commands.Cog):
         self.db.commit()
 
     # ----------------------------
-    # AUTO LEAVE
-    # ----------------------------
-
-    async def schedule_leave(self, vc: discord.VoiceClient) -> None:
-        if self.leave_task and not self.leave_task.done():
-            self.leave_task.cancel()
-
-        async def leave_later():
-            try:
-                timeout = float(os.getenv("TTS_VC_LEAVE_TIMEOUT", "240"))
-                try:
-                    await asyncio.sleep(timeout)
-                except asyncio.CancelledError:
-                    # Task was cancelled (shutdown or reschedule). No action needed.
-                    return
-
-                if vc.is_connected() and not vc.is_playing():
-                    await vc.disconnect()
-            except asyncio.CancelledError:
-                # Outer CancelledError catch for safety; ignore
-                pass
-
-        self.leave_task = asyncio.create_task(leave_later())
-
-    # ----------------------------
     # QUEUE PROCESSOR
     # ----------------------------
+
+    @staticmethod
+    def _idle_timeout() -> float:
+        try:
+            return max(float(os.getenv("TTS_VC_LEAVE_TIMEOUT", "240")), 1.0)
+        except ValueError:
+            return 240.0
 
     async def edge_to_bytes(self, text: str) -> BytesIO:
         voice = os.getenv(
@@ -77,21 +64,29 @@ class Say(commands.Cog):
         fp.seek(0)
         return fp
 
-    async def process_queue(self, vc: discord.VoiceClient) -> None:
-        if self.playing:
-            return
-
-        self.playing = True
-
+    async def process_queue(self, guild_id: int) -> None:
+        queue = self.queues[guild_id]
         try:
-            while not self.queue.empty():
+            while True:
+                try:
+                    text = await asyncio.wait_for(
+                        queue.get(), timeout=self._idle_timeout()
+                    )
+                except TimeoutError:
+                    guild = self.bot.get_guild(guild_id)
+                    vc = guild.voice_client if guild else None
+                    if isinstance(vc, discord.VoiceClient) and vc.is_connected():
+                        await vc.disconnect()
+                    return
+
+                guild = self.bot.get_guild(guild_id)
+                vc = guild.voice_client if guild else None
+                if not isinstance(vc, discord.VoiceClient):
+                    queue.task_done()
+                    continue
                 if not vc.is_connected():
-                    break
-
-                text = self.queue.get()
-
-                if self.leave_task:
-                    self.leave_task.cancel()
+                    queue.task_done()
+                    continue
 
                 try:
                     audio = await self.edge_to_bytes(text)
@@ -105,24 +100,35 @@ class Say(commands.Cog):
                     vc.play(source, after=after_playing)
 
                     while vc.is_playing():
-                        try:
-                            await asyncio.sleep(0.5)
-                        except asyncio.CancelledError:
-                            # If the bot is shutting down, abort loop early
-                            break
+                        await asyncio.sleep(0.5)
                         if not vc.is_connected():
                             break
 
-                except Exception as e:
-                    print(f"Error processing TTS: {e}")
+                except Exception:
+                    logger.exception("Error processing TTS for guild %s", guild_id)
                 finally:
-                    self.queue.task_done()
+                    queue.task_done()
+        except asyncio.CancelledError:
+            raise
         finally:
-            self.playing = False
-            await self.schedule_leave(vc)
+            self.worker_tasks.pop(guild_id, None)
+            if queue.empty():
+                self.queues.pop(guild_id, None)
 
-        # ----------------------------
-        await self.schedule_leave(vc)
+    async def _stop_guild_worker(self, guild_id: int) -> None:
+        worker = self.worker_tasks.pop(guild_id, None)
+        if worker and not worker.done():
+            worker.cancel()
+            with suppress(asyncio.CancelledError):
+                await worker
+        self.queues.pop(guild_id, None)
+
+    def cog_unload(self) -> None:
+        for worker in self.worker_tasks.values():
+            worker.cancel()
+        self.worker_tasks.clear()
+        self.queues.clear()
+        self.db.close()
 
     # ----------------------------
     # LOGIN TTS NAME
@@ -147,6 +153,8 @@ class Say(commands.Cog):
 
     @commands.hybrid_command(name="leavevc")
     async def leavevc(self, ctx: Context):
+        if ctx.guild is not None:
+            await self._stop_guild_worker(ctx.guild.id)
         vc = ctx.voice_client
         if isinstance(vc, discord.VoiceClient) and vc.is_connected():
             await vc.disconnect(force=True)
@@ -207,13 +215,17 @@ class Say(commands.Cog):
             for channel_ in ctx.message.channel_mentions:
                 content = content.replace(f"<#{channel_.id}>", f"#{channel_.name}")
 
-        self.queue.put(f"{tts_name} said {content}")
+        queue = self.queues.setdefault(ctx.guild.id, asyncio.Queue())
+        queue.put_nowait(f"{tts_name} said {content}")
 
         await ctx.send(f'"{tts_name}" is saying: {text}')
 
         # Do not block the command, process in background
-        if not self.playing:
-            self.bot.loop.create_task(self.process_queue(vc))
+        worker = self.worker_tasks.get(ctx.guild.id)
+        if worker is None or worker.done():
+            self.worker_tasks[ctx.guild.id] = asyncio.create_task(
+                self.process_queue(ctx.guild.id)
+            )
 
     # ----------------------------
     # COOLDOWN ERROR HANDLER
