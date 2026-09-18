@@ -38,7 +38,40 @@ class Tags(commands.Cog):
     @commands.guild_only()
     async def tags_group(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
-            await ctx.send("Use /tags list or /tag <name>")
+            await self.send_tag_list(ctx)
+
+    async def send_tag_list(self, ctx: commands.Context, search: str | None = None):
+        if ctx.guild is None:
+            return await ctx.reply("This command can only be used in a server.")
+
+        async with aiosqlite.connect(DB_PATH) as db:
+            if search:
+                like = f"%{search.lower()}%"
+                cursor = await db.execute(
+                    "SELECT name FROM tags WHERE guild_id = ? AND name LIKE ? ORDER BY name ASC",
+                    (ctx.guild.id, like),
+                )
+            else:
+                cursor = await db.execute(
+                    "SELECT name FROM tags WHERE guild_id = ? ORDER BY name ASC",
+                    (ctx.guild.id,),
+                )
+            rows = await cursor.fetchall()
+
+        if not rows:
+            return await ctx.reply("No tags found.")
+
+        messages = ["# List of all Available tags"]
+        for (name,) in rows:
+            line = f"- {name}"
+            if len(messages[-1]) + len(line) + 1 > 2000:
+                messages.append(line)
+            else:
+                messages[-1] += f"\n{line}"
+
+        await ctx.reply(messages[0])
+        for message in messages[1:]:
+            await ctx.send(message)
 
     @commands.hybrid_command(name="tag", help="Get a tag by name.")
     @app_commands.describe(name="Tag name to fetch")
@@ -123,20 +156,7 @@ class Tags(commands.Cog):
     @app_commands.describe(search="Optional search text")
     @commands.guild_only()
     async def tags_list(self, ctx: commands.Context, search: str | None = None):
-        if ctx.guild is None:
-            return await ctx.reply("This command can only be used in a server.")
-        
-        async with aiosqlite.connect(DB_PATH) as db:
-            if search:
-                like = f"%{search.lower()}%"
-                cursor = await db.execute("SELECT name, uses FROM tags WHERE guild_id = ? AND name LIKE ? ORDER BY uses DESC LIMIT 50", (ctx.guild.id, like))
-            else:
-                cursor = await db.execute("SELECT name, uses FROM tags WHERE guild_id = ? ORDER BY uses DESC LIMIT 50", (ctx.guild.id,))
-            rows = await cursor.fetchall()
-        if not rows:
-            return await ctx.reply("No tags found.")
-        lines = [f"{name} ({uses})" for name, uses in rows]
-        await ctx.reply("Tags:\n" + "\n".join(lines))
+        await self.send_tag_list(ctx, search)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Tags(bot))
