@@ -347,7 +347,7 @@ class Fun2OoshBot(commands.Bot):
 
 
     # ── Owner-only health command ──────────────────────────────────────
-    @commands.command(name="health", hidden=True)
+    @commands.command(name="health", hidden=True)  # type: ignore[type-var]
     async def health_command(self, ctx: commands.Context):
         """Show bot health summary (bot owner only)."""
         if self.config.owner_id is not None and ctx.author.id != self.config.owner_id:
