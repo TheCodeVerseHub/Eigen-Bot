@@ -51,7 +51,7 @@ class CommunityCommands(commands.Cog):
             ]
 
     @commands.hybrid_command(
-        name="quote", help="Get a random motivational/programming quote"
+        name="quote", aliases=["inspire"], help="Get a random motivational/programming quote"
     )
     async def quote(self, ctx: commands.Context):
         if not self.quotes:
@@ -94,7 +94,7 @@ class CommunityCommands(commands.Cog):
         await ctx.reply(embed=embed, mention_author=False)
 
     @commands.hybrid_command(
-        name="reload-data", help="Reload quotes & questions (Admin only)"
+        name="reload-data", aliases=["reloaddata"], help="Reload quotes & questions (Admin only)"
     )
     @commands.has_permissions(administrator=True)
     async def reload_data(self, ctx: commands.Context):

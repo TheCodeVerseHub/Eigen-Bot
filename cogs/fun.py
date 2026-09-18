@@ -181,7 +181,7 @@ class Fun(commands.Cog):
             )
             return template_bytes
 
-    @commands.hybrid_command(name="fridge", help="Send a fridge image")
+    @commands.hybrid_command(name="fridge", aliases=["fridgepic"], help="Send a fridge image")
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def fridge(self, ctx: commands.Context):
         """Send a fridge image (simple utility)."""
@@ -237,7 +237,7 @@ class Fun(commands.Cog):
         await ctx.reply(gif_url, mention_author=False)
 
     @commands.hybrid_command(
-        name="compliment", help="Receive a professional programming compliment"
+        name="compliment", aliases=["comp"], help="Receive a professional programming compliment"
     )
     async def compliment(
         self, ctx: commands.Context, member: discord.Member | None = None
@@ -270,7 +270,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Community Fun")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="fortune", help="Get a programming fortune")
+    @commands.hybrid_command(name="fortune", aliases=["8ball"], help="Get a programming fortune")
     async def fortune(self, ctx: commands.Context):
         """Receive a programming-themed fortune message."""
         fortune = random.choice(FORTUNE_MESSAGES)
@@ -284,7 +284,7 @@ class Fun(commands.Cog):
         embed.set_footer(text="CodeVerse Bot | Daily Inspiration")
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.hybrid_command(name="flip", help="Flip a coin")
+    @commands.hybrid_command(name="flip", aliases=["coin"], help="Flip a coin")
     async def flip(self, ctx: commands.Context):
         """Flip a virtual coin."""
         result = random.choice(["Heads", "Tails"])

@@ -42,6 +42,7 @@ class BirthdaySystem(commands.Cog):
 
     @commands.hybrid_command(
         name="birthday",
+        aliases=["bday"],
         help="Set your birthday to receive a wish!",
         usage="birthday <day> <month> <year>"
     )

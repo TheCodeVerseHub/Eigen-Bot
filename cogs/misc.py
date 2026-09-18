@@ -333,7 +333,7 @@ class Misc(commands.Cog):
             print(f"[Misc] Error recording /say message: {e}")
 
     @commands.hybrid_command(
-        name="join-vc", description="Join your voice channel for fun"
+        name="join-vc", aliases=["join"], description="Join your voice channel for fun"
     )
     async def join_vc(self, ctx: commands.Context):
         """Join the invoker's voice channel (only if it is not empty)."""
@@ -378,7 +378,7 @@ class Misc(commands.Cog):
 
     @commands.hybrid_command(
         name="resources",
-        aliases=["resource"],
+        aliases=["resource", "res"],
         description="Find learning resources for a programming language.",
     )
     @app_commands.describe(language="Programming language to look up")
@@ -554,8 +554,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
-        name="song",
-        aliases=["sp", "spotify"],
+        name="song", aliases=["music", "sp", "spotify"],
         description="Show what you are currently listening to on Spotify",
     )
     async def song(self, ctx: commands.Context, user: discord.Member | None = None):
@@ -763,7 +762,7 @@ class Misc(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
-        name="bug", description="Report a bug to the bot dev - Only for small bugs"
+        name="bug", aliases=["reportbug"], description="Report a bug to the bot dev - Only for small bugs"
     )
     @app_commands.describe(bug="Describe the bug you encountered")
     async def bug_report(self, ctx: commands.Context, *, bug: str):
@@ -835,7 +834,7 @@ class Misc(commands.Cog):
                 await ctx.send(response)
 
     @commands.hybrid_command(
-        name="support", description="Get the support server invite link"
+        name="support", aliases=["sup"], description="Get the support server invite link"
     )
     async def support(self, ctx: commands.Context):
         """Send the support server invite link."""
