@@ -30,6 +30,15 @@ class Chowkidar(commands.Cog):
             await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_tracked (user_id INTEGER NOT NULL, guild_id INTEGER NOT NULL, PRIMARY KEY (user_id, guild_id))")
             await db.commit()
 
+            # Migrate legacy chowkidar_tracked table (user_id PK only) to include guild_id.
+            columns = {row[1] async for row in await db.execute("PRAGMA table_info(chowkidar_tracked)")}
+            if "guild_id" not in columns:
+                logger.info("Migrating chowkidar_tracked: adding guild_id column")
+                await db.execute("ALTER TABLE chowkidar_tracked ADD COLUMN guild_id INTEGER NOT NULL DEFAULT 0")
+                # Legacy rows have no guild context; remove them to avoid collisions.
+                await db.execute("DELETE FROM chowkidar_tracked WHERE guild_id = 0")
+                await db.commit()
+
             async with db.execute("SELECT guild_id, channel_id FROM chowkidar_config") as cursor:
                 async for row in cursor:
                     self.log_channel_ids[row[0]] = row[1]
