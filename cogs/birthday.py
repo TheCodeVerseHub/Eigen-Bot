@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, time, timezone
 from pathlib import Path
 
@@ -5,6 +6,8 @@ import aiosqlite
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+
+logger = logging.getLogger(__name__)
 
 
 class BirthdaySystem(commands.Cog):
@@ -107,9 +110,9 @@ class BirthdaySystem(commands.Cog):
                         try:
                             await user.send(embed=embed)
                         except discord.Forbidden:
-                            print(f"Could not DM birthday wish to user {user_id}")
-                except Exception as e:
-                    print(f"Failed to process birthday for {user_id}: {e}")
+                            logger.warning("Could not DM birthday wish to user %s", user_id)
+                except Exception:
+                    logger.exception("Failed to process birthday for %s", user_id)
 
     @check_birthdays_task.before_loop
     async def before_check_birthdays(self):

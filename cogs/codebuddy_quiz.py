@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 import time
@@ -22,6 +23,8 @@ from utils.codingquestions import (
     get_random_question,
     get_random_question_by_category,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class _PracticeSession(TypedDict):
@@ -91,15 +94,13 @@ class CodeBuddyQuizCog(commands.Cog):
                     await self.current_message.delete()
                 except discord.NotFound:
                     pass
-                except Exception as e:
-                    print(f"[Error deleting old message]: {e}")
+                except Exception:
+                    logger.exception("Error deleting old quiz message")
                 self._reset_question_state()
 
             channel = self.bot.get_channel(self.channel_id)
             if not isinstance(channel, discord.abc.Messageable):
-                print(
-                    f"[Error] Channel ID {self.channel_id} not found or not messageable."
-                )
+                logger.error("Channel ID %s not found or not messageable", self.channel_id)
                 return
 
             channel = cast(discord.abc.Messageable, channel)
@@ -112,8 +113,8 @@ class CodeBuddyQuizCog(commands.Cog):
                 self.question_active = True
                 self.ignored_users.clear()
                 self.bonus_active = random.random() < 0.1
-            except Exception as e:
-                print(f"[Error fetching question]: {e}")
+            except Exception:
+                logger.exception("Error fetching quiz question")
                 return
 
             embed = self._build_question_embed(q)
@@ -127,11 +128,11 @@ class CodeBuddyQuizCog(commands.Cog):
 
             try:
                 self.current_message = await channel.send(embed=embed)
-            except Exception as e:
-                print(f"[Error sending question message]: {e}")
+            except Exception:
+                logger.exception("Error sending quiz question message")
 
-        except Exception as e:
-            print(f"[Unexpected error in post_question_loop]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in post_question_loop")
 
     def _reset_question_state(self):
         self.question_active = False
@@ -174,8 +175,8 @@ class CodeBuddyQuizCog(commands.Cog):
 
                     try:
                         await increment_user_score(user_id, points)
-                    except Exception as e:
-                        print(f"[Error incrementing user score]: {e}")
+                    except Exception:
+                        logger.exception("Error incrementing user score")
 
                     try:
                         quest_completed = await increment_quest_quiz_count(user_id)
@@ -193,15 +194,15 @@ class CodeBuddyQuizCog(commands.Cog):
                                     color=0x000000,
                                 )
                                 await message.channel.send(embed=quest_embed)
-                            except Exception as e:
-                                print(f"[Error sending quest completion message]: {e}")
-                    except Exception as e:
-                        print(f"[Error updating quest progress]: {e}")
+                            except Exception:
+                                logger.exception("Error sending quest completion message")
+                    except Exception:
+                        logger.exception("Error updating quest progress")
 
                     try:
                         lb = await get_leaderboard(100)
-                    except Exception as e:
-                        print(f"[Error fetching leaderboard]: {e}")
+                    except Exception:
+                        logger.exception("Error fetching leaderboard")
                         lb = []
 
                     streak = 0
@@ -215,8 +216,8 @@ class CodeBuddyQuizCog(commands.Cog):
                                 elif streak == 5:
                                     extra_bonus = 2
                                     await increment_user_score(user_id, extra_bonus)
-                            except Exception as e:
-                                print(f"[Error applying streak bonus]: {e}")
+                            except Exception:
+                                logger.exception("Error applying streak bonus")
                             break
 
                     total_points = points + extra_bonus
@@ -234,8 +235,8 @@ class CodeBuddyQuizCog(commands.Cog):
                         embed.set_footer(text="Bonus Question!")
                     try:
                         await message.channel.send(embed=embed)
-                    except Exception as e:
-                        print(f"[Error sending success embed]: {e}")
+                    except Exception:
+                        logger.exception("Error sending success embed")
 
                     self._reset_question_state()
                 else:
@@ -257,14 +258,14 @@ class CodeBuddyQuizCog(commands.Cog):
                                     f"❌ {message.author.mention} The correct answer was **{self.current_answer}**: {correct_text}",
                                     delete_after=3,
                                 )
-                        except Exception as e:
-                            print(f"[Error revealing correct answer]: {e}")
+                        except Exception:
+                            logger.exception("Error revealing correct answer")
 
                     freeze_used = False
                     try:
                         freeze_used = await use_streak_freeze(user_id)
-                    except Exception as e:
-                        print(f"[Error checking streak freeze]: {e}")
+                    except Exception:
+                        logger.exception("Error checking streak freeze")
 
                     if freeze_used:
                         try:
@@ -280,13 +281,13 @@ class CodeBuddyQuizCog(commands.Cog):
                                 text="Earn more freezes by completing daily quests!"
                             )
                             await message.channel.send(embed=freeze_embed)
-                        except Exception as e:
-                            print(f"[Error sending freeze message]: {e}")
+                        except Exception:
+                            logger.exception("Error sending freeze message")
                     else:
                         try:
                             await reset_user_streak(user_id)
-                        except Exception as e:
-                            print(f"[Error resetting user streak]: {e}")
+                        except Exception:
+                            logger.exception("Error resetting user streak")
 
                         try:
                             await message.channel.send(
@@ -294,8 +295,8 @@ class CodeBuddyQuizCog(commands.Cog):
                             )
                         except discord.Forbidden:
                             pass
-                        except Exception as e:
-                            print(f"[Error sending wrong answer message]: {e}")
+                        except Exception:
+                            logger.exception("Error sending wrong answer message")
 
                 return
 
@@ -366,8 +367,8 @@ class CodeBuddyQuizCog(commands.Cog):
                 # One attempt per practice question.
                 self._practice_sessions.pop(session_key, None)
 
-        except Exception as e:
-            print(f"[Unexpected error in on_message]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in on_message")
 
     @app_commands.command(
         name="question",
@@ -408,8 +409,8 @@ class CodeBuddyQuizCog(commands.Cog):
                     "interaction": interaction,
                 }
 
-        except Exception as e:
-            print(f"[Unexpected error in /question]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in /question")
             if not interaction.response.is_done():
                 await interaction.response.send_message(
                     "Could not fetch a practice question right now.",
@@ -446,8 +447,8 @@ class CodeBuddyQuizCog(commands.Cog):
                 f"CodeBuddy quiz frequency updated to **{minutes} minute(s)**.",
                 ephemeral=True,
             )
-        except Exception as e:
-            print(f"[Unexpected error in /frequency]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in /frequency")
             if not interaction.response.is_done():
                 await interaction.response.send_message(
                     "Could not update quiz frequency.",
@@ -505,8 +506,8 @@ class CodeBuddyQuizCog(commands.Cog):
             except Exception:
                 pass
 
-        except Exception as e:
-            print(f"[Unexpected error in leaderboard command]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in leaderboard command")
             try:
                 if not interaction.response.is_done():
                     await interaction.response.send_message(
@@ -561,8 +562,8 @@ class CodeBuddyQuizCog(commands.Cog):
 
             await msg.edit(embed=final_embed)
 
-        except Exception as e:
-            print(f"[Unexpected error in codeleaderboard command]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in codeleaderboard command")
             await ctx.send("Error fetching leaderboard.")
 
     @app_commands.command(
@@ -576,7 +577,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 rank = await get_user_rank(user_id)
                 gap, higher_id = await get_score_gap(user_id)
             except Exception as e:
-                print(f"[Error fetching user stats]: {e}")
+                logger.exception("Error fetching user stats")
                 await interaction.response.send_message(
                     "Error fetching your stats.", ephemeral=True
                 )
@@ -610,8 +611,8 @@ class CodeBuddyQuizCog(commands.Cog):
 
             await interaction.response.send_message(embed=embed)
 
-        except Exception as e:
-            print(f"[Unexpected error in codestats command]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in codestats command")
             try:
                 await interaction.response.send_message(
                     "Error displaying your stats.", ephemeral=True
@@ -629,7 +630,7 @@ class CodeBuddyQuizCog(commands.Cog):
                 rank = await get_user_rank(user_id)
                 gap, higher_id = await get_score_gap(user_id)
             except Exception as e:
-                print(f"[Error fetching user stats]: {e}")
+                logger.exception("Error fetching user stats")
                 await ctx.send("Error fetching your stats.")
                 return
 
@@ -661,16 +662,16 @@ class CodeBuddyQuizCog(commands.Cog):
 
             await ctx.send(embed=embed)
 
-        except Exception as e:
-            print(f"[Unexpected error in codestats command]: {e}")
+        except Exception:
+            logger.exception("Unexpected error in codestats command")
             await ctx.send("Error displaying your stats.")
 
 
 async def setup(bot: commands.Bot):
     question_channel_id = int(os.getenv("QUESTION_CHANNEL_ID", "0"))
     if question_channel_id == 0:
-        print("[Warning] QUESTION_CHANNEL_ID not set. QuizCog will not work correctly.")
+        logger.warning("QUESTION_CHANNEL_ID not set. QuizCog will not work correctly.")
     try:
         await bot.add_cog(CodeBuddyQuizCog(bot, question_channel_id))
-    except Exception as e:
-        print(f"[Error setting up QuizCog]: {e}")
+    except Exception:
+        logger.exception("Error setting up QuizCog")

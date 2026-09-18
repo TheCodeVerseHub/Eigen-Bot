@@ -1,5 +1,6 @@
 import ast
 import asyncio
+import logging
 import math
 import operator
 import time
@@ -19,6 +20,8 @@ from utils.codebuddy_database import (
     try_use_guild_save,
     try_use_user_save,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Counting(commands.Cog):
@@ -134,13 +137,11 @@ class Counting(commands.Cog):
                         rows = await cursor.fetchall()
                         for guild_id, channel_id in rows:
                             self.counting_channels[guild_id] = channel_id
-                    print(f"Loaded {len(self.counting_channels)} counting channels")
+                    logger.info("Loaded %d counting channels", len(self.counting_channels))
                 except aiosqlite.OperationalError:
-                    print(
-                        "counting_config table not found during cog load (likely first run)"
-                    )
-        except Exception as e:
-            print(f"Error loading counting channels: {e}")
+                    logger.info("counting_config table not found during cog load (likely first run)")
+        except Exception:
+            logger.exception("Error loading counting channels")
 
     async def _get_warning_count(self, guild_id: int, user_id: int) -> int:
         async with aiosqlite.connect(DB_PATH, timeout=30.0) as db, db.execute(

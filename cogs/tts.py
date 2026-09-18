@@ -108,8 +108,6 @@ class Say(commands.Cog):
                     logger.exception("Error processing TTS for guild %s", guild_id)
                 finally:
                     queue.task_done()
-        except asyncio.CancelledError:
-            raise
         finally:
             self.worker_tasks.pop(guild_id, None)
             if queue.empty():

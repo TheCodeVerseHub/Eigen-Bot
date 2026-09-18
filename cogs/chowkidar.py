@@ -1,9 +1,13 @@
+import logging
+
 import aiosqlite
 import discord
 from discord.ext import commands
 
 from utils.database import DATABASE_NAME, ensure_database_directory
 from utils.helpers import EmbedBuilder
+
+logger = logging.getLogger(__name__)
 
 
 def is_staff():
@@ -16,29 +20,29 @@ def is_staff():
 class Chowkidar(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.watched_users = set()
-        self.log_channel_id = None
+        self.watched_users: dict[int, set[int]] = {}  # guild_id -> set of user_ids
+        self.log_channel_ids: dict[int, int] = {}  # guild_id -> channel_id
 
     async def cog_load(self):
         ensure_database_directory()
         async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_config (guild_id INTEGER PRIMARY KEY, channel_id INTEGER)")
-            await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_tracked (user_id INTEGER PRIMARY KEY)")
+            await db.execute("CREATE TABLE IF NOT EXISTS chowkidar_tracked (user_id INTEGER NOT NULL, guild_id INTEGER NOT NULL, PRIMARY KEY (user_id, guild_id))")
             await db.commit()
-            
-            async with db.execute("SELECT channel_id FROM chowkidar_config LIMIT 1") as cursor:
-                row = await cursor.fetchone()
-                if row:
-                    self.log_channel_id = row[0]
-            
-            async with db.execute("SELECT user_id FROM chowkidar_tracked") as cursor:
-                rows = await cursor.fetchall()
-                self.watched_users = {row[0] for row in rows}
 
-    async def send_log(self, embed: discord.Embed):
-        if not self.log_channel_id:
+            async with db.execute("SELECT guild_id, channel_id FROM chowkidar_config") as cursor:
+                async for row in cursor:
+                    self.log_channel_ids[row[0]] = row[1]
+
+            async with db.execute("SELECT user_id, guild_id FROM chowkidar_tracked") as cursor:
+                async for row in cursor:
+                    self.watched_users.setdefault(row[1], set()).add(row[0])
+
+    async def send_log(self, guild_id: int, embed: discord.Embed):
+        channel_id = self.log_channel_ids.get(guild_id)
+        if not channel_id:
             return
-        channel = self.bot.get_channel(self.log_channel_id)
+        channel = self.bot.get_channel(channel_id)
         if channel:
             await channel.send(embed=embed)
 
@@ -49,7 +53,7 @@ class Chowkidar(commands.Cog):
             await ctx.send(embed=EmbedBuilder.error_embed("Invalid Channel", "This command can only be used in a standard text channel."))
             return
         
-        self.log_channel_id = ctx.channel.id
+        self.log_channel_ids[ctx.guild.id] = ctx.channel.id
         async with aiosqlite.connect(DATABASE_NAME) as db:
             await db.execute("INSERT OR REPLACE INTO chowkidar_config (guild_id, channel_id) VALUES (?, ?)", (ctx.guild.id, ctx.channel.id))
             await db.commit()
@@ -67,9 +71,9 @@ class Chowkidar(commands.Cog):
             await ctx.send(embed=EmbedBuilder.error_embed("Invalid Target", "You cannot track another staff member."))
             return
 
-        self.watched_users.add(user.id)
+        self.watched_users.setdefault(ctx.guild.id, set()).add(user.id)
         async with aiosqlite.connect(DATABASE_NAME) as db:
-            await db.execute("INSERT OR IGNORE INTO chowkidar_tracked (user_id) VALUES (?)", (user.id,))
+            await db.execute("INSERT OR IGNORE INTO chowkidar_tracked (user_id, guild_id) VALUES (?, ?)", (user.id, ctx.guild.id))
             await db.commit()
 
         await ctx.send(embed=EmbedBuilder.success_embed("Tracking Initiated", f"Now tracking actions for {user.mention}."))
@@ -87,7 +91,8 @@ class Chowkidar(commands.Cog):
             )
             return
 
-        if not self.watched_users:
+        guild_watched = self.watched_users.get(ctx.guild.id, set())
+        if not guild_watched:
             await ctx.send(
                 embed=EmbedBuilder.error_embed(
                     "No Tracked Users",
@@ -97,7 +102,7 @@ class Chowkidar(commands.Cog):
             return
 
         lines: list[str] = []
-        for user_id in sorted(self.watched_users):
+        for user_id in sorted(guild_watched):
             member = ctx.guild.get_member(user_id)
             if member is not None:
                 display = f"{member}"
@@ -128,9 +133,9 @@ class Chowkidar(commands.Cog):
     @commands.hybrid_command(name="endwl", description="Stop tracking a user.")
     @is_staff()
     async def endwl(self, ctx, user: discord.Member):
-        self.watched_users.discard(user.id)
+        self.watched_users.get(ctx.guild.id, set()).discard(user.id)
         async with aiosqlite.connect(DATABASE_NAME) as db:
-            await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ?", (user.id,))
+            await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ? AND guild_id = ?", (user.id, ctx.guild.id))
             await db.commit()
             
         await ctx.send(embed=EmbedBuilder.success_embed("Tracking Terminated", f"Stopped tracking {user.mention}."))
@@ -138,11 +143,12 @@ class Chowkidar(commands.Cog):
     @commands.hybrid_command(name="purgewl", description="Delete all watchlogs for a specific user.")
     @is_staff()
     async def purgewl(self, ctx, user: discord.Member):
-        if not self.log_channel_id:
+        channel_id = self.log_channel_ids.get(ctx.guild.id)
+        if not channel_id:
             await ctx.send(embed=EmbedBuilder.error_embed("Configuration Error", "Watchlog channel is not set."))
             return
         
-        log_channel = self.bot.get_channel(self.log_channel_id)
+        log_channel = self.bot.get_channel(channel_id)
         if not log_channel:
             await ctx.send(embed=EmbedBuilder.error_embed("Configuration Error", "Watchlog channel could not be found."))
             return
@@ -164,7 +170,7 @@ class Chowkidar(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or message.author.id not in self.watched_users:
+        if message.author.bot or not message.guild or message.author.id not in self.watched_users.get(message.guild.id, set()):
             return
 
         action = "Message Replied" if message.reference else "Message Sent"
@@ -175,11 +181,11 @@ class Chowkidar(commands.Cog):
         embed.add_field(name="Message Link", value=f"[Jump to Message]({message.jump_url})", inline=False)
         embed.set_footer(text=f"User ID: {message.author.id}")
         
-        await self.send_log(embed)
+        await self.send_log(message.guild.id, embed)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before, after):
-        if after.author.bot or after.author.id not in self.watched_users or before.content == after.content:
+        if after.author.bot or not after.guild or after.author.id not in self.watched_users.get(after.guild.id, set()) or before.content == after.content:
             return
 
         embed = discord.Embed(title="Message Edited", color=discord.Color.yellow(), timestamp=discord.utils.utcnow())
@@ -191,11 +197,11 @@ class Chowkidar(commands.Cog):
         embed.add_field(name="Message Link", value=f"[Jump to Message]({after.jump_url})", inline=False)
         embed.set_footer(text=f"User ID: {after.author.id}")
         
-        await self.send_log(embed)
+        await self.send_log(after.guild.id, embed)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        if message.author.bot or message.author.id not in self.watched_users:
+        if message.author.bot or not message.guild or message.author.id not in self.watched_users.get(message.guild.id, set()):
             return
 
         embed = discord.Embed(title="Message Deleted", description=message.content, color=discord.Color.red(), timestamp=discord.utils.utcnow())
@@ -204,11 +210,11 @@ class Chowkidar(commands.Cog):
         embed.add_field(name="Message ID", value=str(message.id))
         embed.set_footer(text=f"User ID: {message.author.id}")
         
-        await self.send_log(embed)
+        await self.send_log(message.guild.id, embed)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        if member.bot or member.id not in self.watched_users:
+        if member.bot or member.id not in self.watched_users.get(member.guild.id, set()):
             return
 
         embed = discord.Embed(color=discord.Color.purple(), timestamp=discord.utils.utcnow())
@@ -228,11 +234,11 @@ class Chowkidar(commands.Cog):
         else:
             return
 
-        await self.send_log(embed)
+        await self.send_log(member.guild.id, embed)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.user_id not in self.watched_users:
+        if payload.user_id not in self.watched_users.get(payload.guild_id, set()):
             return
             
         guild = self.bot.get_guild(payload.guild_id)
@@ -254,22 +260,22 @@ class Chowkidar(commands.Cog):
         embed.add_field(name="Message Link", value=f"[Jump to Message]({message_link})", inline=False)
         embed.set_footer(text=f"User ID: {member.id}")
         
-        await self.send_log(embed)
+        await self.send_log(payload.guild_id, embed)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if member.id not in self.watched_users:
+        if not member.guild or member.id not in self.watched_users.get(member.guild.id, set()):
             return
 
         embed = discord.Embed(title="Left Server", color=discord.Color.dark_grey(), timestamp=discord.utils.utcnow())
         embed.set_author(name=str(member), icon_url=member.display_avatar.url)
         embed.set_footer(text=f"User ID: {member.id}")
         
-        await self.send_log(embed)
+        await self.send_log(member.guild.id, embed)
         
-        self.watched_users.discard(member.id)
+        self.watched_users.get(member.guild.id, set()).discard(member.id)
         async with aiosqlite.connect(DATABASE_NAME) as db:
-            await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ?", (member.id,))
+            await db.execute("DELETE FROM chowkidar_tracked WHERE user_id = ? AND guild_id = ?", (member.id, member.guild.id))
             await db.commit()
 
 async def setup(bot):

@@ -3,6 +3,7 @@ Misc commands cog.
 """
 
 import calendar
+import logging
 import re
 from datetime import datetime, timedelta, timezone
 from typing import ClassVar
@@ -37,6 +38,8 @@ from utils.language_resources import (
     get_supported_language_names,
     suggest_language_names,
 )
+
+logger = logging.getLogger(__name__)
 
 GENERAL_PRACTICE_RESOURCES: tuple[ResourceLink, ...] = (
     ResourceLink(label="Exercism", url="https://exercism.org/"),
@@ -81,9 +84,10 @@ class _EditSayModal(discord.ui.Modal, title="Edit Bot Message"):
                 ephemeral=True,
             )
             return
-        except Exception as e:
+        except Exception:
+            logger.exception("Error editing bot message via modal")
             await interaction.response.send_message(
-                f"❌ Could not edit message: {e}",
+                "❌ Could not edit that message. Please try again later.",
                 ephemeral=True,
             )
             return
@@ -298,8 +302,8 @@ class Misc(commands.Cog):
                     "CREATE INDEX IF NOT EXISTS idx_say_messages_channel ON say_messages (channel_id)"
                 )
                 await db.commit()
-        except Exception as e:
-            print(f"[Misc] Error ensuring say_messages table: {e}")
+        except Exception:
+            logger.exception("Error ensuring say_messages table")
 
     async def _is_say_message(
         self, guild_id: int, message_id: int
@@ -343,8 +347,8 @@ class Misc(commands.Cog):
                     ),
                 )
                 await db.commit()
-        except Exception as e:
-            print(f"[Misc] Error recording /say message: {e}")
+        except Exception:
+            logger.exception("Error recording /say message")
 
     @commands.hybrid_command(
         name="join-vc", aliases=["join"], description="Join your voice channel for fun"
@@ -835,10 +839,9 @@ class Misc(commands.Cog):
             else:
                 await ctx.send(response)
 
-        except Exception as e:
-            response = (
-                f"❌ An error occurred while submitting your bug report: {e!s}\n\n"
-            )
+        except Exception:
+            logger.exception("Error submitting bug report")
+            response = "❌ An error occurred while submitting your bug report. Please try again later.\n\n"
             if ctx.interaction:
                 if not ctx.interaction.response.is_done():
                     await ctx.interaction.response.send_message(
@@ -916,9 +919,10 @@ class Misc(commands.Cog):
                 ephemeral=True,
             )
 
-        except Exception as e:
+        except Exception:
+            logger.exception("Error submitting feature request")
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feature request: {e!s}\n\n",
+                "❌ An error occurred while submitting your feature request. Please try again later.",
                 ephemeral=True,
             )
 
@@ -992,9 +996,10 @@ class Misc(commands.Cog):
 
             await interaction.response.send_message(message, ephemeral=True)
 
-        except Exception as e:
+        except Exception:
+            logger.exception("Error submitting feedback")
             await interaction.response.send_message(
-                f"❌ An error occurred while submitting your feedback: {e!s}\n\n",
+                "❌ An error occurred while submitting your feedback. Please try again later.",
                 ephemeral=True,
             )
 
@@ -1104,11 +1109,13 @@ class Misc(commands.Cog):
 
         except ValueError as e:
             await interaction.response.send_message(
-                f"❌ Invalid date/time: {e!s}", ephemeral=True
+                f"❌ Invalid date/time: {e}", ephemeral=True
             )
-        except Exception as e:
+        except Exception:
+            logger.exception("Error generating timestamp")
             await interaction.response.send_message(
-                f"❌ An error occurred: {e!s}", ephemeral=True
+                "❌ An error occurred while generating timestamps. Please try again later.",
+                ephemeral=True
             )
 
     @app_commands.command(
@@ -1219,9 +1226,10 @@ class Misc(commands.Cog):
                 ephemeral=True,
             )
             return
-        except Exception as e:
+        except Exception:
+            logger.exception("Error fetching message for /edit")
             await interaction.response.send_message(
-                f"❌ Could not fetch message: {e}",
+                "❌ Could not fetch that message. Please try again later.",
                 ephemeral=True,
             )
             return
@@ -1353,9 +1361,10 @@ class Misc(commands.Cog):
                 ephemeral=True,
             )
             return
-        except Exception as e:
+        except Exception:
+            logger.exception("Error adding reaction via /react")
             await interaction.response.send_message(
-                f"❌ Failed to react: {e}",
+                "❌ Failed to add that reaction. Please try again later.",
                 ephemeral=True,
             )
             return
