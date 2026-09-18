@@ -242,14 +242,44 @@ class Fun2OoshBot(commands.Bot):
                 if callable(send_usage):
                     await send_usage(ctx)
                     return
-            await _safe_ctx_send("A required argument is missing.")
+            usage = f"?{command.qualified_name} {command.signature}".strip()
+            await _safe_ctx_send(f"Missing required input. Usage: `{usage}`")
         elif isinstance(error, commands.MissingPermissions):
-            await _safe_ctx_send("You don't have permission to use this command.")
+            permissions = ", ".join(permission.replace("_", " ") for permission in error.missing_permissions)
+            await _safe_ctx_send(f"You need the following permission(s): {permissions}.")
+        elif isinstance(error, commands.BotMissingPermissions):
+            permissions = ", ".join(permission.replace("_", " ") for permission in error.missing_permissions)
+            await _safe_ctx_send(f"I need the following permission(s): {permissions}.")
+        elif isinstance(error, commands.NoPrivateMessage):
+            await _safe_ctx_send("This command can only be used in a server.")
+        elif isinstance(error, commands.DisabledCommand):
+            await _safe_ctx_send("This command is currently disabled.")
+        elif isinstance(error, commands.MaxConcurrencyReached):
+            await _safe_ctx_send("This command is already running. Please wait for it to finish.")
+        elif isinstance(error, commands.CheckFailure):
+            await _safe_ctx_send("You cannot use this command here or do not meet its requirements.")
         elif isinstance(error, commands.BadArgument):
-            await _safe_ctx_send("Invalid argument provided.")
+            usage = f"?{command.qualified_name} {command.signature}".strip()
+            await _safe_ctx_send(f"Invalid input. Usage: `{usage}`")
+        elif isinstance(error, commands.CommandInvokeError):
+            if isinstance(error.original, discord.Forbidden):
+                await _safe_ctx_send(
+                    "I don't have permission to complete that action in this channel."
+                )
+            elif isinstance(error.original, discord.HTTPException):
+                await _safe_ctx_send(
+                    "Discord could not process that request. Please try again shortly."
+                )
+            else:
+                logger.exception("Command failed", exc_info=error.original)
+                await _safe_ctx_send(
+                    "Something went wrong while running that command. Please try again later."
+                )
         else:
-            logger.error(f"Command error: {error}")
-            await _safe_ctx_send("An error occurred while processing your command.")
+            logger.exception("Unhandled command error", exc_info=error)
+            await _safe_ctx_send(
+                "Something went wrong while running that command. Please try again later."
+            )
 
     async def on_app_command_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
@@ -258,24 +288,55 @@ class Fun2OoshBot(commands.Bot):
         # Silence unknown slash/app commands.
         # `app_commands` doesn't expose a stable CommandNotFound across versions, so be conservative.
 
+        async def _safe_interaction_send(message: str) -> None:
+            try:
+                if interaction.response.is_done():
+                    await interaction.followup.send(message, ephemeral=True)
+                else:
+                    await interaction.response.send_message(message, ephemeral=True)
+            except (discord.Forbidden, discord.HTTPException):
+                return
+
         # If it's a cooldown, inform user
         if isinstance(error, app_commands.CommandOnCooldown):
-            await interaction.response.send_message(
+            await _safe_interaction_send(
                 f"This command is on cooldown. Try again in {error.retry_after:.2f} seconds.",
-                ephemeral=True,
             )
+        elif isinstance(error, app_commands.MissingPermissions):
+            permissions = ", ".join(permission.replace("_", " ") for permission in error.missing_permissions)
+            await _safe_interaction_send(
+                f"You need the following permission(s): {permissions}."
+            )
+        elif isinstance(error, app_commands.BotMissingPermissions):
+            permissions = ", ".join(permission.replace("_", " ") for permission in error.missing_permissions)
+            await _safe_interaction_send(
+                f"I need the following permission(s): {permissions}."
+            )
+        elif isinstance(error, app_commands.TransformerError):
+            await _safe_interaction_send("Invalid input. Please check the command options and try again.")
+        elif isinstance(error, app_commands.CheckFailure):
+            await _safe_interaction_send(
+                "You cannot use this command here or do not meet its requirements."
+            )
+        elif isinstance(error, app_commands.CommandInvokeError):
+            if isinstance(error.original, discord.Forbidden):
+                await _safe_interaction_send(
+                    "I don't have permission to complete that action in this channel."
+                )
+            elif isinstance(error.original, discord.HTTPException):
+                await _safe_interaction_send(
+                    "Discord could not process that request. Please try again shortly."
+                )
+            else:
+                logger.exception("Slash command failed", exc_info=error.original)
+                await _safe_interaction_send(
+                    "Something went wrong while running that command. Please try again later."
+                )
         else:
-            # For other app command errors, log and try to respond once
-            logger.error(f"Slash command error: {error}")
-            try:
-                if not interaction.response.is_done():
-                    await interaction.response.send_message(
-                        "An error occurred while processing your command.",
-                        ephemeral=True,
-                    )
-            except Exception:
-                # If sending fails, silently ignore to avoid noisy errors for unknown commands
-                return
+            logger.exception("Unhandled slash command error", exc_info=error)
+            await _safe_interaction_send(
+                "Something went wrong while running that command. Please try again later."
+            )
 
 
 async def main():

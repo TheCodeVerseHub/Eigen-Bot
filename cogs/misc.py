@@ -166,6 +166,20 @@ class Misc(commands.Cog):
             return empty_text
         return "\n".join(f"• [{link.label}]({link.url})" for link in links)
 
+    @staticmethod
+    def _fit_embed_field(values: list[str], maximum_length: int = 1024) -> str:
+        """Join values without exceeding Discord's embed field limit."""
+        formatted: list[str] = []
+        current_length = 0
+        for value in values:
+            item = f"`{value}`"
+            separator_length = 2 if formatted else 0
+            if current_length + separator_length + len(item) > maximum_length - 3:
+                return ", ".join(formatted) + ", ..."
+            formatted.append(item)
+            current_length += separator_length + len(item)
+        return ", ".join(formatted)
+
     def _build_resource_embed(
         self, guild: discord.Guild | None, resource: LanguageResource
     ) -> discord.Embed:
@@ -402,7 +416,9 @@ class Misc(commands.Cog):
             supported = get_supported_language_names()
             embed = discord.Embed(
                 title="Language Not Supported",
-                description=f"`{language}` is not currently configured.",
+                description=(
+                    f"`{language}` has no available resources in the bot database."
+                ),
                 color=0x000000,
             )
             if suggestions:
@@ -414,7 +430,7 @@ class Misc(commands.Cog):
             if supported:
                 embed.add_field(
                     name="Available Languages",
-                    value=", ".join(f"`{name}`" for name in supported),
+                    value=self._fit_embed_field(supported),
                     inline=False,
                 )
             await self._send_resource_response(ctx, embed)
